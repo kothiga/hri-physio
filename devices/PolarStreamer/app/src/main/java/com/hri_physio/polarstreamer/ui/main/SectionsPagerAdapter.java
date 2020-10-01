@@ -8,6 +8,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentPagerAdapter;
 
+import com.hri_physio.polarstreamer.PolarH10Frag;
+import com.hri_physio.polarstreamer.PolarOH1Frag;
 import com.hri_physio.polarstreamer.R;
 
 /**
@@ -27,10 +29,18 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public Fragment getItem(int position) {
-        // getItem is called to instantiate the fragment for the given page.
-        // Return a PlaceholderFragment (defined as a static inner class below).
-        return PlaceholderFragment.newInstance(position + 1);
+        Fragment fragment = null;
+        switch (position) {
+            case 0:
+                fragment = new PolarH10Frag();
+                break;
+            case 1:
+                fragment = new PolarOH1Frag();
+                break;
+        }
+        return fragment;
     }
+
 
     @Nullable
     @Override
