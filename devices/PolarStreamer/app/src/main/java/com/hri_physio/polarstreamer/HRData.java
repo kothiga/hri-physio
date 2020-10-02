@@ -26,7 +26,7 @@ import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarHrData;
 
-public class HRActivity extends AppCompatActivity implements PlotterListener {
+public class HRData extends AppCompatActivity implements PlotterListener {
 
     private XYPlot plot;
     private TimePlotter plotter;

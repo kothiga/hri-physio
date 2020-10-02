@@ -31,7 +31,7 @@ import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
 import polar.com.sdk.api.model.PolarSensorSetting;
 
-public class ECGActivity extends AppCompatActivity implements PlotterListener {
+public class ECGData extends AppCompatActivity implements PlotterListener {
 
     private XYPlot plot;
     private Plotter plotter;
