@@ -2,4 +2,5 @@
     <string name="app_name">PolarStreamer</string>
     <string name="tab_text_1">H10 Heart rate sensor</string>
     <string name="tab_text_2">OH1 Optical heart rate sensor</string>
+    <string name="set_id_button">Enter device ID</string>
 </resources>
