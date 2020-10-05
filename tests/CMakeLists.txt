@@ -9,6 +9,6 @@ add_subdirectory( libHriPhysio_Core )
 #add_subdirectory( libHriPhysio_Manager )
 #add_subdirectory( libHriPhysio_Processing )
 #add_subdirectory( libHriPhysio_Stream )
-#add_subdirectory( libHriPhysio_Helpers )
+add_subdirectory( libHriPhysio_Helpers )
 
 ############################################################

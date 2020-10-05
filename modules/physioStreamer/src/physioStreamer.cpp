@@ -18,6 +18,9 @@
 // #include <signal.h>
 // #include <sys/wait.h>
 
+#include <HriPhysio/Manager/physioManager.h>
+#include <HriPhysio/Stream/streamerInterface.h>
+#include <HriPhysio/Factory/streamerFactory.h>
 #include <HriPhysio/helpers.h>
 
 int main (int argc, char **argv) {
@@ -28,6 +31,13 @@ int main (int argc, char **argv) {
 
     std::cout << "filename: " << filename << std::endl;
 
+
+    hriPhysio::Factory::StreamerFactory factory();
+    hriPhysio::Stream::StreamerInterface* streamer;
+
+    streamer = factory.getStreamer("string");
+
+    
 
     return 0;
 }
