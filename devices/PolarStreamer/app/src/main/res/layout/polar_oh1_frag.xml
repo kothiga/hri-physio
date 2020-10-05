@@ -14,7 +14,6 @@
         android:layout_marginEnd="64dp"
         android:layout_marginBottom="160dp"
         android:background="#4A8BC3"
-        android:onClick="onClickChangeID"
         android:padding="8dp"
         android:text="@string/set_id_button"
         android:textColor="@android:color/widget_edittext_dark"
