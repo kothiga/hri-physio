@@ -2,7 +2,7 @@
     <string name="app_name">PolarStreamer</string>
     <string name="tab_text_1">H10 Heart rate sensor</string>
     <string name="tab_text_2">OH1 Optical heart rate sensor</string>
-    <string name="set_id_button">Enter device ID</string>
+    <string name="set_id_button">Enter Device ID</string>
     <string name="device_id">device_id</string>
     <string name="ecg_name">ECG</string>
     <string name="hr_name">HR / RR</string>
