@@ -25,7 +25,7 @@ public class PolarH10Frag extends Fragment {
         View view = inflater.inflate(R.layout.polar_h10_frag, container, false);
         sharedPreferences = this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
-        EditText enterIdText = (EditText) view.findViewById(R.id.buttonSetID);
+        EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID);
         enterIdText.setInputType(InputType.TYPE_CLASS_TEXT);
         enterIdText.addTextChangedListener(new TextWatcher() {
             @Override
