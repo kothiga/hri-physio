@@ -126,7 +126,7 @@ public class ECGData extends AppCompatActivity implements PlotterListener {
             public void batteryLevelReceived(String s, int i) {
                 String msg = "ID: " + s + "\nBattery level: " + i;
                 Log.d(TAG, "Battery level " + s + " " + i);
-//                Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
+                Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
                 textViewFW.append(msg + "\n");
             }
 

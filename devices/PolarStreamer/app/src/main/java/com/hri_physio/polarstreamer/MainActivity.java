@@ -12,9 +12,8 @@ import android.view.View;
 import com.hri_physio.polarstreamer.ui.main.SectionsPagerAdapter;
 
 public class MainActivity extends AppCompatActivity {
-    private String DEVICE_ID;
+
     public SharedPreferences sharedPreferences;
-    private String sharedPrefsKey = "polar_device_id";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
