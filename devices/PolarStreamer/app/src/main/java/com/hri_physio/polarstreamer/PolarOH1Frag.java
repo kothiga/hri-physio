@@ -38,6 +38,10 @@ public class PolarOH1Frag extends Fragment {
     public SharedPreferences sharedPreferences;
     private String sharedPrefsKey = "polar_device_id";
     private String TAG = "Polar_OH1Frag";
+    public PolarBleApi api;
+    public Context classContext;
+    public TextView textViewBattery;
+    public TextView connectStatus;
 
     @Nullable
     @Override
@@ -75,6 +79,7 @@ public class PolarOH1Frag extends Fragment {
                 } else {
                     // The toggle is disabled
                     // Stop Connection
+                    onClickStopConnection(view);
                 }
             }
         });
@@ -130,9 +135,9 @@ public class PolarOH1Frag extends Fragment {
             showDialog(view);
         } else {
             Toast.makeText(view.getContext(),getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
-            PolarBleApi api;
-            Context classContext = this.getActivity().getApplicationContext();
-            TextView textViewBattery = (TextView) view.findViewById(R.id.battery);
+            classContext = this.getActivity().getApplicationContext();
+            textViewBattery = (TextView) view.findViewById(R.id.battery);
+            connectStatus = (TextView) view.findViewById(R.id.status);
 
             api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
                     PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
@@ -148,13 +153,23 @@ public class PolarOH1Frag extends Fragment {
                 @Override
                 public void deviceConnected(PolarDeviceInfo s) {
                     Log.d(TAG, "Device connected " + s.deviceId);
-                    Toast.makeText(classContext, R.string.connected,
-                            Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(classContext, R.string.connected,
+                    //        Toast.LENGTH_SHORT).show();
+                    connectStatus.setText("");
+                    connectStatus.append("Connected\n");
+                }
+
+                @Override
+                public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+
                 }
 
                 @Override
                 public void deviceDisconnected(PolarDeviceInfo s) {
                     Log.d(TAG, "Device disconnected " + s);
+                    //Toast.makeText(classContext, R.string.disconnected,
+                    //        Toast.LENGTH_SHORT).show();
+                    connectStatus.append("Disconnected\n");
                 }
 
                 @Override
@@ -179,6 +194,11 @@ public class PolarOH1Frag extends Fragment {
                 }
 
                 @Override
+                public void biozFeatureReady(String s) {
+
+                }
+
+                @Override
                 public void hrFeatureReady(String s) {
                     Log.d(TAG, "HR Feature ready " + s);
                 }
@@ -196,7 +216,7 @@ public class PolarOH1Frag extends Fragment {
                 public void batteryLevelReceived(String s, int i) {
                     String msg = ""+i+"%";
                     Log.d(TAG, "Battery level " + s + " " + i);
-                    Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
+                    //Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
                     textViewBattery.append(msg + "\n");
                 }
 
@@ -219,6 +239,17 @@ public class PolarOH1Frag extends Fragment {
             } catch (PolarInvalidArgument a){
                 a.printStackTrace();
             }
+        }
+    }
+
+    public void onClickStopConnection(View view) {
+        try {
+            api.disconnectFromDevice(DEVICE_ID);
+            textViewBattery.setText("");
+            connectStatus.setText("");
+            Log.d(TAG, "finish");
+        } catch (PolarInvalidArgument a){
+            a.printStackTrace();
         }
     }
 }
