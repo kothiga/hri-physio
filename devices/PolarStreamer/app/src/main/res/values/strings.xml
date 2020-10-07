@@ -15,13 +15,11 @@
     <string name="connecting">Connecting to device</string>
     <string name="connected">Connected!</string>
     <string name="disconnected">Disconnected!</string>
+    <string name="searchBattery">Searching for Battery Level</string>string>
     <string name="connection_device_view">Connect Device: </string>
     <string name="connection_status_view">Connection Status: </string>
     <string name="battery_view">Battery: </string>
     <string name="timer_view">Timer: </string>
     <string name="start_connection">Start</string>
     <string name="stop_connection">Stop</string>
-
-
-
 </resources>

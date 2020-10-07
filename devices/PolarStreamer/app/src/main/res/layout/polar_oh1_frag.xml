@@ -76,7 +76,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="36dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="20dp"
             android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@+id/connectStatusView"
             app:layout_constraintTop_toBottomOf="@+id/start_stop_connection" />
@@ -96,14 +96,14 @@
             android:id="@+id/battery"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="124dp"
+            android:layout_marginStart="144dp"
             android:layout_marginTop="24dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/connectStatusView" />
 
         <TextView
-            android:id="@+id/Timer"
+            android:id="@+id/timerView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -112,6 +112,18 @@
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/batteryView" />
+
+        <Chronometer
+            android:id="@+id/timer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="104dp"
+            android:layout_marginTop="68dp"
+            android:textSize="18sp"
+            android:textColor="@color/ap_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/connectStatusView" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
