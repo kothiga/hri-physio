@@ -64,9 +64,7 @@ public class TimePlotter {
                 "HR");
     }
 
-    public SimpleXYSeries getHrSeries() {
-        return (SimpleXYSeries) hrSeries;
-    }
+    public SimpleXYSeries getHrSeries() { return (SimpleXYSeries) hrSeries; }
 
     public SimpleXYSeries getRrSeries() {
         return (SimpleXYSeries) rrSeries;

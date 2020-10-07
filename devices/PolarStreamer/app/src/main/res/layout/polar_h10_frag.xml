@@ -46,30 +46,18 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/idView" />
 
-        <Button
-            android:id="@+id/buttonStartConnect"
+        <ToggleButton
+            android:id="@+id/start_stop_connection"
             style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="12dp"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="8dp"
             android:background="@android:color/white"
-            android:text="@string/start_connection"
-            android:textColor="@color/colorPrimaryDark"
+            android:textColor="@color/colorPrimary"
+            android:textOff="Start Connection"
+            android:textOn="Stop Connection"
             app:layout_constraintStart_toEndOf="@+id/connectView"
-            app:layout_constraintTop_toBottomOf="@id/editTextSetID" />
-
-        <Button
-            android:id="@+id/buttonStopConnect"
-            style="@style/Widget.AppCompat.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:layout_marginTop="12dp"
-            android:background="@android:color/white"
-            android:text="@string/stop_connection"
-            android:textColor="@color/colorPrimaryDark"
-            app:layout_constraintStart_toEndOf="@+id/buttonStartConnect"
             app:layout_constraintTop_toBottomOf="@id/editTextSetID" />
 
         <TextView
@@ -104,6 +92,18 @@
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/batteryView" />
+
+        <Button
+            android:id="@+id/plot_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="30dp"
+            android:background="@android:color/white"
+            android:text="@string/plot_button_view"
+            android:textColor="@color/colorPrimary"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/Timer" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
