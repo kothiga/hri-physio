@@ -15,11 +15,11 @@
 
 #include <atomic>
 #include <chrono>
+#include <functional>
+#include <map>
 #include <memory>
 #include <mutex>
 #include <thread>
-
-#include <map>
 #include <vector>
 
 #include <HriPhysio/helpers.h>
@@ -47,11 +47,13 @@ public:
     ~ThreadManager();
 
     //virtual void interactive();
+    //virtual void configure(std::string yaml_conf);
 
     //std::thread::id addThread(int (*func)(int,int), bool start=true);
-    std::thread::id addThread(void (*func)(void), const bool start=true);
+    std::thread::id addThread(std::function<void(void)> func, const bool start=true);
 
-    std::thread::id addLoopThread(void (*func)(void), const double period=0.0, const bool start=true);
+    //std::thread::id addLoopThread(void (*func)(void), ThreadManager* tm, const double period=0.0, const bool start=true);
+    std::thread::id addLoopThread(std::function<void(void)> func, const double period=0.0, const bool start=true);
 
     void interruptThread(const std::thread::id thread_id);
 
@@ -66,9 +68,14 @@ public:
     void close();
 
 
+protected:
+    //virtual bool threadInit();
+
+
 private:
     void setThreadStatus(const bool thread_status);
-    void looperWrapper(void (*func)(void), const double period);
+    void looperWrapper(std::function<void(void)> func, const double period);
+
 
 public:
     //-- Disallow copy and assignment operators.

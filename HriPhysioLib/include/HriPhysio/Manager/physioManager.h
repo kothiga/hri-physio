@@ -19,8 +19,12 @@
 #include <mutex>
 #include <thread>
 
-#include <HriPhysio/Dev/deviceInterface.h>
-#include <HriPhysio/Stream/streamerInterface.h>
+#include <iostream>
+
+#include <HriPhysio/Manager/threadManager.h>
+
+//#include <HriPhysio/Dev/deviceInterface.h>
+//#include <HriPhysio/Stream/streamerInterface.h>
 
 #include <HriPhysio/helpers.h>
 
@@ -30,32 +34,39 @@ namespace hriPhysio {
     }
 }
 
-class hriPhysio::Manager::PhysioManager {
+class hriPhysio::Manager::PhysioManager : public hriPhysio::Manager::ThreadManager {
 private:
     
-    hriPhysio::Dev::DeviceInterface* dev;
-    hriPhysio::Stream::StreamerInterface* stream;
-
-    double period_read;
-    double period_publish;
-    
-    std::atomic<bool> run_read;
-    std::atomic<bool> run_publish;
-
-    std::thread thread_read;
-    std::thread thread_publish;
+//    hriPhysio::Dev::DeviceInterface* dev;
+//    hriPhysio::Stream::StreamerInterface* stream;
+//
+//    double period_read;
+//    double period_publish;
+//    
+//    std::atomic<bool> run_read;
+//    std::atomic<bool> run_publish;
+//
+//    std::thread thread_read;
+//    std::thread thread_publish;
+    int tempint;
 
 
 public:
     PhysioManager();
+    ~PhysioManager();
 
-    void start();
-    void step();
-    void stop();
+    void interactive();
+
 
 private:
-    void deviceLoop();
-    void streamLoop();
+    //void setInputStreamName(std::string inputStreamName);
+
+    bool threadInit();
+
+    //void tempA();
+    void tempB();
+    //void deviceLoop();
+    //void streamLoop();
 
 };
 

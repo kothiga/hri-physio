@@ -18,7 +18,7 @@ set(${LIBRARY_TARGET_NAME}_SRC
     src/butterworthLowPass.cpp
     #src/deviceInterface.cpp
     src/helpers.cpp
-    #src/physioManager.cpp
+    src/physioManager.cpp
     #src/streamerFactory.cpp
     src/threadManager.cpp
 )
@@ -40,7 +40,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
     # include/HriPhysio/Factory/streamerFactory.h
 
     # MANAGER
-    # include/HriPhysio/Manager/physioManager.h    # TODO: uncomment when implementing.
+    include/HriPhysio/Manager/physioManager.h
     include/HriPhysio/Manager/threadManager.h
 
     include/HriPhysio/Processing/biquadratic.h
@@ -136,6 +136,10 @@ target_include_directories(
 
 # If find_package() is used need target_include_directories() 
 # and/or target_link_libraries() here.
+target_link_libraries(
+    ${LIBRARY_TARGET_NAME} 
+    pthread
+)
 
 
 # Specify installation targets, typology and destination folders.

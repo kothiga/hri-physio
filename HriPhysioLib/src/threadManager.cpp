@@ -32,7 +32,7 @@ ThreadManager::~ThreadManager() {
 }
 
 
-std::thread::id ThreadManager::addThread(void (*func)(void), const bool start/*=true*/) {
+std::thread::id ThreadManager::addThread(std::function<void(void)> func, const bool start/*=true*/) {
     
     //-- Lock the mutex to ensure read/write atomicity.
     lock.lock();
@@ -52,7 +52,8 @@ std::thread::id ThreadManager::addThread(void (*func)(void), const bool start/*=
 }
 
 
-std::thread::id ThreadManager::addLoopThread(void (*func)(void), const double period/*=0.0*/, const bool start/*=true*/) {
+//std::thread::id ThreadManager::addLoopThread(void (*func)(void), ThreadManager* tm, const double period/*=0.0*/, const bool start/*=true*/) {
+std::thread::id ThreadManager::addLoopThread(std::function<void(void)> func, const double period/*=0.0*/, const bool start/*=true*/) {
 
     //-- Lock the mutex to ensure read/write atomicity.
     lock.lock();
@@ -150,8 +151,8 @@ void ThreadManager::setThreadStatus(const bool thread_status) {
     lock.unlock();
 }
 
-
-void ThreadManager::looperWrapper(void (*func)(void), const double period) {
+#include <iostream>
+void ThreadManager::looperWrapper(std::function<void(void)> func, const double period) {
 
     //-- Get the id for the current thread.
     const std::thread::id thread_id = std::this_thread::get_id();
@@ -164,7 +165,7 @@ void ThreadManager::looperWrapper(void (*func)(void), const double period) {
 
         //-- Call the provided function if this thread is enabled.
         if (getThreadStatus(thread_id)) {
-            (*func)();
+            func();
         }
 
         //-- Sleep the thread for the remaining time of the period.
@@ -175,8 +176,8 @@ void ThreadManager::looperWrapper(void (*func)(void), const double period) {
             std::chrono::duration<double>( (diff > 0.0) ? diff : 0.0 ) //seconds.
         );
 
-        //auto loop_time = std::chrono::system_clock::now();
-        //std::chrono::duration<double> loop_dur = loop_time - start;
-        //std::cout << "[DEBUG] Thread id ("<< thread_id << ") executed in " << loop_dur.count() << " seconds." << std::endl;
+        auto loop_time = std::chrono::system_clock::now();
+        std::chrono::duration<double> loop_dur = loop_time - start;
+        std::cout << "[DEBUG] Thread id ("<< thread_id << ") executed in " << loop_dur.count() << " seconds." << std::endl;
     }
 }

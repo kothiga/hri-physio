@@ -14,70 +14,44 @@
 
 using namespace hriPhysio::Manager;
 
+void tempA() {
+    std::cout << "tempA" << std::endl;
+}
 
 PhysioManager::PhysioManager() {
 
+    addLoopThread(tempA, 1.5, false);
+    addLoopThread(std::bind(&PhysioManager::tempB, this), 1.2, false);
 }
 
 
-void PhysioManager::start() {
-
-    if (!run_read) {
-        thread_read = std::thread(&PhysioManager::deviceLoop, this);
-    }
-
-    if (!run_publish) {
-        thread_publish = std::thread(&PhysioManager::streamLoop, this);
-    }
-}
-
-
-void PhysioManager::step() {
+PhysioManager::~PhysioManager() {
 
 }
 
+void PhysioManager::interactive() {
+    std::string str;
+    while (true) {
+        std::cin >> str;
+        std::cout << ">> " << str << std::endl;
 
-void PhysioManager::stop() {
-
-    //-- Release the loops, so that return can be reached.
-    run_read = false;
-    run_publish = false;
-    
-    //-- Join the threads.
-    thread_read.join();
-    thread_publish.join();
-
-    return;
-}
-
-
-void PhysioManager::deviceLoop() {
-
-    run_read = true;
-    while (run_read) {
-
-        dev->read();
-        
-        std::this_thread::sleep_for(
-            std::chrono::duration<double>(period_read) //seconds.
-        );
-    }
-}
-
-
-void PhysioManager::streamLoop() {
-
-    run_publish = true;
-    while (run_publish) {
-        
-        bool success = dev->write();
-
-        if (success) {
-            stream->publish();
+        if (str == "exit") {
+            break;
         }
-
-        std::this_thread::sleep_for(
-            std::chrono::duration<double>(period_publish) //seconds.
-        );
     }
+}
+
+
+bool PhysioManager::threadInit() {
+    return true;
+}
+
+
+//void PhysioManager::tempA() {
+//    std::cout << "tempA" << std::endl;
+//}
+
+
+void PhysioManager::tempB() {
+    std::cout << "tempB" << std::endl;
 }

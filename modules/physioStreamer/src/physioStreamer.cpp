@@ -19,25 +19,28 @@
 // #include <sys/wait.h>
 
 #include <HriPhysio/Manager/physioManager.h>
-#include <HriPhysio/Stream/streamerInterface.h>
-#include <HriPhysio/Factory/streamerFactory.h>
+//#include <HriPhysio/Stream/streamerInterface.h>
+//#include <HriPhysio/Factory/streamerFactory.h>
 #include <HriPhysio/helpers.h>
 
 int main (int argc, char **argv) {
 
     hriPhysio::InputParser input(argc, argv);
 
-    const std::string &filename = input.getCmdOption("--file");
+    const std::string &filename = input.getCmdOption("--conf");
 
     std::cout << "filename: " << filename << std::endl;
 
+    hriPhysio::Manager::PhysioManager *manager = new hriPhysio::Manager::PhysioManager();
+    manager->start(); 
+    manager->interactive();
 
-    hriPhysio::Factory::StreamerFactory factory();
-    hriPhysio::Stream::StreamerInterface* streamer;
+    //hriPhysio::Factory::StreamerFactory factory();
+    //hriPhysio::Stream::StreamerInterface* streamer;
 
-    streamer = factory.getStreamer("string");
+    //streamer = factory.getStreamer("string");
 
+    delete manager;
     
-
     return 0;
 }
