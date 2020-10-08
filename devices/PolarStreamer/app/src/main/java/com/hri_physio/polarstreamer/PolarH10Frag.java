@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
@@ -16,18 +17,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Chronometer;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-
 import java.util.UUID;
-
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
@@ -38,12 +37,14 @@ import polar.com.sdk.api.model.PolarHrData;
 public class PolarH10Frag extends Fragment {
     private String DEVICE_ID;
     public SharedPreferences sharedPreferences;
-    private String sharedPrefsKey = "polar_device_id";
+    private String sharedPrefsKey = "polar_h10_device_id";
     private String TAG = "Polar_H10Frag";
     public PolarBleApi api;
     public Context classContext;
     public TextView textViewBattery;
     public TextView connectStatus;
+    public Chronometer showStartTime;
+    public ToggleButton toggle;
 
     @Nullable
     @Override
@@ -52,7 +53,7 @@ public class PolarH10Frag extends Fragment {
         sharedPreferences = this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
         // Enter device ID text field
-        EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID);
+        EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID_frag1);
         enterIdText.setInputType(InputType.TYPE_CLASS_TEXT);
         enterIdText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -71,23 +72,21 @@ public class PolarH10Frag extends Fragment {
         });
 
         // Connection Status: start and stop toggle button
-        ToggleButton toggle = (ToggleButton) view.findViewById(R.id.start_stop_connection);
+        toggle = (ToggleButton) view.findViewById(R.id.start_stop_connection_frag1);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    // The toggle is enabled
-                    // Start Connection
+                    // The toggle is enabled: Start Connection
                     onClickStartConnection(view);
                 } else {
-                    // The toggle is disabled
-                    // Stop Connection
+                    // The toggle is disabled: Stop Connection
                     onClickStopConnection(view);
                 }
             }
         });
 
         //Show button that links to plots
-        Button button = view.findViewById(R.id.plot_button);
+        Button button = view.findViewById(R.id.plot_button_frag1);
         button.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
                 // Code here executes on main thread after user presses button
@@ -156,12 +155,31 @@ public class PolarH10Frag extends Fragment {
         Log.d(TAG,DEVICE_ID);
         if(DEVICE_ID.equals("")){
             showDialog(view);
+            toggle.setChecked(false);
         } else {
+            // Show that the app is trying to connect with the given device ID
             Toast.makeText(view.getContext(),getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
-            classContext = this.getActivity().getApplicationContext();
-            textViewBattery = (TextView) view.findViewById(R.id.battery);
-            connectStatus = (TextView) view.findViewById(R.id.status);
 
+            // Set up properties
+            classContext = this.getActivity().getApplicationContext();
+            textViewBattery = (TextView) view.findViewById(R.id.battery_frag1);
+            connectStatus = (TextView) view.findViewById(R.id.status_frag1);
+
+            showStartTime = (Chronometer) view.findViewById(R.id.timer_frag1);
+            showStartTime.setBase(SystemClock.elapsedRealtime());
+            showStartTime.setFormat("00:%s");
+            showStartTime.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+                public void onChronometerTick(Chronometer c) {
+                    long elapsedMillis = SystemClock.elapsedRealtime() -c.getBase();
+                    if(elapsedMillis > 3600000L){
+                        c.setFormat("0%s");
+                    }else{
+                        c.setFormat("00:%s");
+                    }
+                }
+            });
+
+            // Override some methods in api
             api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
                     PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
                             PolarBleApi.FEATURE_BATTERY_INFO |
@@ -178,6 +196,7 @@ public class PolarH10Frag extends Fragment {
                     Log.d(TAG, "Device connected " + s.deviceId);
                     //Toast.makeText(classContext, R.string.connected,
                     //        Toast.LENGTH_SHORT).show();
+                    showStartTime.start();
                     connectStatus.setText("");
                     connectStatus.append("Connected\n");
                 }
@@ -192,6 +211,8 @@ public class PolarH10Frag extends Fragment {
                     Log.d(TAG, "Device disconnected " + s);
                     //Toast.makeText(classContext, R.string.disconnected,
                     //        Toast.LENGTH_SHORT).show();
+                    showStartTime.stop();
+                    showStartTime.setText("");
                     connectStatus.append("Disconnected\n");
                 }
 
@@ -256,6 +277,7 @@ public class PolarH10Frag extends Fragment {
                 }
             });
 
+            // Connect to the device
             try {
                 api.connectToDevice(DEVICE_ID);
                 Log.d(TAG, "finish");

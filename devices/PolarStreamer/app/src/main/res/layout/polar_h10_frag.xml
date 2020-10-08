@@ -11,7 +11,7 @@
             android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/idView"
+            android:id="@+id/idView_frag1"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
@@ -19,12 +19,12 @@
             android:layout_marginEnd="20dp"
             android:text="@string/device_id_view"
             android:textSize="18sp"
-            app:layout_constraintEnd_toStartOf="@+id/editTextSetID"
+            app:layout_constraintEnd_toStartOf="@+id/editTextSetID_frag1"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-            android:id="@+id/editTextSetID"
+            android:id="@+id/editTextSetID_frag1"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="28dp"
@@ -36,7 +36,7 @@
             tools:ignore="Suspicious0dp" />
 
         <TextView
-            android:id="@+id/connectView"
+            android:id="@+id/connectView_frag1"
             android:layout_width="129dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
@@ -44,10 +44,10 @@
             android:text="@string/connection_device_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/idView" />
+            app:layout_constraintTop_toBottomOf="@id/idView_frag1" />
 
         <ToggleButton
-            android:id="@+id/start_stop_connection"
+            android:id="@+id/start_stop_connection_frag1"
             style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,11 +57,11 @@
             android:textColor="@color/colorPrimary"
             android:textOff="Start Connection"
             android:textOn="Stop Connection"
-            app:layout_constraintStart_toEndOf="@+id/connectView"
-            app:layout_constraintTop_toBottomOf="@id/editTextSetID" />
+            app:layout_constraintStart_toEndOf="@+id/connectView_frag1"
+            app:layout_constraintTop_toBottomOf="@id/editTextSetID_frag1" />
 
         <TextView
-            android:id="@+id/connectStatusView"
+            android:id="@+id/connectStatusView_frag1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
@@ -69,10 +69,20 @@
             android:text="@string/connection_status_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectView" />
+            app:layout_constraintTop_toBottomOf="@+id/connectView_frag1" />
 
         <TextView
-            android:id="@+id/batteryView"
+            android:id="@+id/status_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="36dp"
+            android:layout_marginTop="20dp"
+            android:textSize="18sp"
+            app:layout_constraintStart_toEndOf="@+id/connectStatusView_frag1"
+            app:layout_constraintTop_toBottomOf="@+id/start_stop_connection_frag1" />
+
+        <TextView
+            android:id="@+id/batteryView_frag1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
@@ -80,10 +90,20 @@
             android:text="@string/battery_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectStatusView" />
+            app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag1" />
 
         <TextView
-            android:id="@+id/Timer"
+            android:id="@+id/battery_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="144dp"
+            android:layout_marginTop="24dp"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag1" />
+
+        <TextView
+            android:id="@+id/Timer_frag1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
@@ -91,10 +111,21 @@
             android:text="@string/timer_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/batteryView" />
+            app:layout_constraintTop_toBottomOf="@+id/batteryView_frag1" />
+
+        <Chronometer
+            android:id="@+id/timer_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="104dp"
+            android:layout_marginTop="68dp"
+            android:textSize="18sp"
+            android:textColor="@color/ap_gray"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag1" />
 
         <Button
-            android:id="@+id/plot_button"
+            android:id="@+id/plot_button_frag1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
@@ -103,7 +134,7 @@
             android:text="@string/plot_button_view"
             android:textColor="@color/colorPrimary"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/Timer" />
+            app:layout_constraintTop_toBottomOf="@id/Timer_frag1" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

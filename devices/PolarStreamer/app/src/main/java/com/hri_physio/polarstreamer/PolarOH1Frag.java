@@ -25,8 +25,6 @@ import android.widget.ToggleButton;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.UUID;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
@@ -38,13 +36,16 @@ import polar.com.sdk.api.model.PolarHrData;
 public class PolarOH1Frag extends Fragment {
     private String DEVICE_ID;
     public SharedPreferences sharedPreferences;
-    private String sharedPrefsKey = "polar_device_id";
+    private String sharedPrefsKey = "polar_oh1_device_id";
     private String TAG = "Polar_OH1Frag";
     public PolarBleApi api;
     public Context classContext;
     public TextView textViewBattery;
     public TextView connectStatus;
     public Chronometer showStartTime;
+    public ToggleButton toggle;
+
+
 
 
     @Nullable
@@ -54,7 +55,7 @@ public class PolarOH1Frag extends Fragment {
         sharedPreferences = this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
         // Enter device ID text field
-        EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID);
+        EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID_frag2);
         enterIdText.setInputType(InputType.TYPE_CLASS_TEXT);
         enterIdText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -73,16 +74,14 @@ public class PolarOH1Frag extends Fragment {
         });
 
         // Connection Status: start and stop toggle button
-        ToggleButton toggle = (ToggleButton) view.findViewById(R.id.start_stop_connection);
+        toggle = (ToggleButton) view.findViewById(R.id.start_stop_connection_frag2);
         toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
-                    // The toggle is enabled
-                    // Start Connection
+                    // The toggle is enabled: Start Connection
                     onClickStartConnection(view);
                 } else {
-                    // The toggle is disabled
-                    // Stop Connection
+                    // The toggle is disabled: Stop Connection
                     onClickStopConnection(view);
                 }
             }
@@ -137,13 +136,17 @@ public class PolarOH1Frag extends Fragment {
         Log.d(TAG,DEVICE_ID);
         if(DEVICE_ID.equals("")){
             showDialog(view);
+            toggle.setChecked(false);
         } else {
+            // Show that the app is trying to connect with the given device ID
             Toast.makeText(view.getContext(),getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
-            classContext = this.getActivity().getApplicationContext();
-            textViewBattery = (TextView) view.findViewById(R.id.battery);
-            connectStatus = (TextView) view.findViewById(R.id.status);
 
-            showStartTime = (Chronometer) view.findViewById(R.id.timer);
+            // set up properties
+            classContext = this.getActivity().getApplicationContext();
+            textViewBattery = (TextView) view.findViewById(R.id.battery_frag2);
+            connectStatus = (TextView) view.findViewById(R.id.status_frag2);
+
+            showStartTime = (Chronometer) view.findViewById(R.id.timer_frag2);
             showStartTime.setBase(SystemClock.elapsedRealtime());
             showStartTime.setFormat("00:%s");
             showStartTime.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
@@ -157,6 +160,7 @@ public class PolarOH1Frag extends Fragment {
                 }
             });
 
+            // Override some methods of api
             api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
                     PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
                             PolarBleApi.FEATURE_BATTERY_INFO |
@@ -196,7 +200,6 @@ public class PolarOH1Frag extends Fragment {
                 @Override
                 public void ecgFeatureReady(String s) {
                     Log.d(TAG, "ECG Feature ready " + s);
-                    //streamECG();
                 }
 
                 @Override
@@ -254,6 +257,7 @@ public class PolarOH1Frag extends Fragment {
                 }
             });
 
+            // Connect to the device
             try {
                 api.connectToDevice(DEVICE_ID);
                 Log.d(TAG, "finish");

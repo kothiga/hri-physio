@@ -11,19 +11,19 @@
         android:layout_height="wrap_content">
 
         <TextView
-            android:id="@+id/idView"
+            android:id="@+id/idView_frag2"
             android:layout_width="89dp"
             android:layout_height="28dp"
             android:layout_marginTop="52dp"
             android:layout_marginEnd="20dp"
             android:text="@string/device_id_view"
             android:textSize="18sp"
-            app:layout_constraintEnd_toStartOf="@+id/editTextSetID"
+            app:layout_constraintEnd_toStartOf="@+id/editTextSetID_frag2"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
         <EditText
-            android:id="@+id/editTextSetID"
+            android:id="@+id/editTextSetID_frag2"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="40dp"
@@ -31,12 +31,12 @@
             android:hint="@string/set_id_button"
             android:padding="8dp"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/idView"
+            app:layout_constraintStart_toEndOf="@+id/idView_frag2"
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="Suspicious0dp" />
 
         <TextView
-            android:id="@+id/connectView"
+            android:id="@+id/connectView_frag2"
             android:layout_width="129dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -44,10 +44,10 @@
             android:text="@string/connection_device_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/idView" />
+            app:layout_constraintTop_toBottomOf="@id/idView_frag2" />
 
         <ToggleButton
-            android:id="@+id/start_stop_connection"
+            android:id="@+id/start_stop_connection_frag2"
             style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -57,11 +57,11 @@
             android:textColor="@color/colorPrimary"
             android:textOff="Start Connection"
             android:textOn="Stop Connection"
-            app:layout_constraintStart_toEndOf="@+id/connectView"
-            app:layout_constraintTop_toBottomOf="@id/editTextSetID" />
+            app:layout_constraintStart_toEndOf="@+id/connectView_frag2"
+            app:layout_constraintTop_toBottomOf="@id/editTextSetID_frag2" />
 
         <TextView
-            android:id="@+id/connectStatusView"
+            android:id="@+id/connectStatusView_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -69,20 +69,20 @@
             android:text="@string/connection_status_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectView" />
+            app:layout_constraintTop_toBottomOf="@+id/connectView_frag2" />
 
         <TextView
-            android:id="@+id/status"
+            android:id="@+id/status_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="36dp"
             android:layout_marginTop="20dp"
             android:textSize="18sp"
-            app:layout_constraintStart_toEndOf="@+id/connectStatusView"
-            app:layout_constraintTop_toBottomOf="@+id/start_stop_connection" />
+            app:layout_constraintStart_toEndOf="@+id/connectStatusView_frag2"
+            app:layout_constraintTop_toBottomOf="@+id/start_stop_connection_frag2" />
 
         <TextView
-            android:id="@+id/batteryView"
+            android:id="@+id/batteryView_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -90,20 +90,20 @@
             android:text="@string/battery_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectStatusView" />
+            app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag2" />
 
         <TextView
-            android:id="@+id/battery"
+            android:id="@+id/battery_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="144dp"
             android:layout_marginTop="24dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectStatusView" />
+            app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag2" />
 
         <TextView
-            android:id="@+id/timerView"
+            android:id="@+id/timerView_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
@@ -111,10 +111,10 @@
             android:text="@string/timer_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/batteryView" />
+            app:layout_constraintTop_toBottomOf="@+id/batteryView_frag2" />
 
         <Chronometer
-            android:id="@+id/timer"
+            android:id="@+id/timer_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="104dp"
@@ -122,7 +122,7 @@
             android:textSize="18sp"
             android:textColor="@color/ap_gray"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectStatusView" />
+            app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag2" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
