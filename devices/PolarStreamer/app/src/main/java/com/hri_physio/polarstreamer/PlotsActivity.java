@@ -4,7 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -27,7 +27,6 @@ import io.reactivex.rxjava3.functions.Function;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
-import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
@@ -40,17 +39,21 @@ public class PlotsActivity extends AppCompatActivity implements PlotterListener 
     private Plotter plotter;
 
     private String TAG = "Polar_PlotActivity";
-    public PolarBleApi api;
     private Disposable ecgDisposable = null;
     private Context classContext = this;
     private String DEVICE_ID;
     private String FROM_FRAG;
+    private PolarBleApi api;
+    private Boolean apiConnected;
+    public TextView connectStatus;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         DEVICE_ID = getIntent().getStringExtra("id");
         FROM_FRAG = getIntent().getStringExtra("from_frag");
+        apiConnected = getIntent().getBooleanExtra("apiConnected", Boolean.FALSE);
+
         setContentView(R.layout.activity_plots);
 
         plotECG = findViewById(R.id.plotECG);
@@ -65,101 +68,108 @@ public class PlotsActivity extends AppCompatActivity implements PlotterListener 
         plotHR = findViewById(R.id.plotHR);
         plotACC = findViewById(R.id.plotACC);
 
+        connectStatus = (TextView) findViewById(R.id.status_connection);
+
         api = PolarBleApiDefaultImpl.defaultImplementation(this,
                 PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
                         PolarBleApi.FEATURE_BATTERY_INFO |
                         PolarBleApi.FEATURE_DEVICE_INFO |
                         PolarBleApi.FEATURE_HR);
-        api.setApiCallback(new PolarBleApiCallback() {
-            @Override
-            public void blePowerStateChanged(boolean b) {
-                Log.d(TAG, "BluetoothStateChanged " + b);
-            }
 
-            @Override
-            public void deviceConnected(PolarDeviceInfo s) {
-                Log.d(TAG, "Device connected " + s.deviceId);
-                Toast.makeText(classContext, R.string.connected,
-                        Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
-
-            }
-
-            @Override
-            public void deviceDisconnected(PolarDeviceInfo s) {
-                Log.d(TAG, "Device disconnected " + s);
-
-            }
-
-            @Override
-            public void ecgFeatureReady(String s) {
-                Log.d(TAG, "ECG Feature ready " + s);
-                streamECG();
-            }
-
-            @Override
-            public void accelerometerFeatureReady(String s) {
-                Log.d(TAG, "ACC Feature ready " + s);
-            }
-
-            @Override
-            public void ppgFeatureReady(String s) {
-                Log.d(TAG, "PPG Feature ready " + s);
-            }
-
-            @Override
-            public void ppiFeatureReady(String s) {
-                Log.d(TAG, "PPI Feature ready " + s);
-            }
-
-            @Override
-            public void biozFeatureReady(String s) {
-
-            }
-
-            @Override
-            public void hrFeatureReady(String s) {
-                Log.d(TAG, "HR Feature ready " + s);
-            }
-
-            @Override
-            public void disInformationReceived(String s, UUID u, String s1) {
-                if( u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
-                    String msg = "Firmware: " + s1.trim();
-                    Log.d(TAG, "Firmware: " + s + " " + s1.trim());
-//                    textViewFW.append(msg + "\n");
-                }
-            }
-
-            @Override
-            public void batteryLevelReceived(String s, int i) {
-                String msg = "ID: " + s + "\nBattery level: " + i;
-                Log.d(TAG, "Battery level " + s + " " + i);
-                Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
-//                textViewFW.append(msg + "\n");
-            }
-
-            @Override
-            public void hrNotificationReceived(String s,
-                                               PolarHrData polarHrData) {
-                Log.d(TAG, "HR " + polarHrData.hr);
-//                textViewHR.setText(String.valueOf(polarHrData.hr));
-                timeplotter.addValues(polarHrData);
-            }
-
-            @Override
-            public void polarFtpFeatureReady(String s) {
-                Log.d(TAG, "Polar FTP ready " + s);
-            }
-        });
-        try {
-            api.connectToDevice(DEVICE_ID);
-        } catch (PolarInvalidArgument a){
-            a.printStackTrace();
+        if(apiConnected.booleanValue()==Boolean.FALSE){
+            connectStatus.setText("");
+            connectStatus.append("Device is disconnected. Start connection to view data plots.\n");
         }
+        else {
+            connectStatus.setText("");
+            connectStatus.append("Passed on connected = True");
+
+            api.setApiCallback(new PolarBleApiCallback() {
+                @Override
+                public void blePowerStateChanged(boolean b) {
+                    Log.d(TAG, "BluetoothStateChanged " + b);
+                }
+
+                @Override
+                public void deviceConnected(PolarDeviceInfo s) {
+                    Log.d(TAG, "Device connected " + s.deviceId);
+//                Toast.makeText(classContext, R.string.connected,
+//                        Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+                    Log.d(TAG, "Device connecting " + polarDeviceInfo.deviceId);
+                }
+
+                @Override
+                public void deviceDisconnected(PolarDeviceInfo s) {
+                    Log.d(TAG, "Device disconnected " + s);
+                    //Toast.makeText(classContext, R.string.disconnected,
+                    //        Toast.LENGTH_SHORT).show();
+                }
+
+                @Override
+                public void ecgFeatureReady(String s) {
+                    Log.d(TAG, "ECG Feature ready " + s);
+                    streamECG();
+                }
+
+                @Override
+                public void accelerometerFeatureReady(String s) {
+                    Log.d(TAG, "ACC Feature ready " + s);
+                }
+
+                @Override
+                public void ppgFeatureReady(String s) {
+                    Log.d(TAG, "PPG Feature ready " + s);
+                }
+
+                @Override
+                public void ppiFeatureReady(String s) {
+                    Log.d(TAG, "PPI Feature ready " + s);
+                }
+
+                @Override
+                public void biozFeatureReady(String s) {
+
+                }
+
+                @Override
+                public void hrFeatureReady(String s) {
+                    Log.d(TAG, "HR Feature ready " + s);
+                }
+
+                @Override
+                public void disInformationReceived(String s, UUID u, String s1) {
+                    if( u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
+                        String msg = "Firmware: " + s1.trim();
+                        Log.d(TAG, "Firmware: " + s + " " + s1.trim());
+                    }
+                }
+
+                @Override
+                public void hrNotificationReceived(String s,
+                                                   PolarHrData polarHrData) {
+                    Log.d(TAG, "HR " + polarHrData.hr);
+//                textViewHR.setText(String.valueOf(polarHrData.hr));
+                    timeplotter.addValues(polarHrData);
+                }
+
+                @Override
+                public void polarFtpFeatureReady(String s) {
+                    Log.d(TAG, "Polar FTP ready " + s);
+                }
+            });
+            api.setAutomaticReconnection(true);
+//            try {
+//                api.connectToDevice(DEVICE_ID);
+//                Log.d(TAG, "finish");
+//            } catch (PolarInvalidArgument a){
+//                a.printStackTrace();
+//            }
+        }
+
 
         // Plot HR/RR graph
         timeplotter = new TimePlotter(this, "HR/RR");

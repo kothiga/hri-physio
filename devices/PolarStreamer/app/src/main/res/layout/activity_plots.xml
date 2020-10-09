@@ -17,7 +17,7 @@
             android:layout_width="325dp"
             android:layout_height="230dp"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="50dp"
             android:layout_marginEnd="8dp"
             app:backgroundColor="@color/design_default_color_background"
             app:graphBackgroundColor="@color/design_default_color_background"
@@ -89,7 +89,6 @@
             app:graphMarginTop="20dp"
             app:gridBackgroundColor="#F1F4F4"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.494"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/plotHR"
 
@@ -121,10 +120,10 @@
             app:layout_constraintBottom_toBottomOf="parent"
 
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.494"
+            app:layout_constraintHorizontal_bias="0.505"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/plotECG"
-            app:layout_constraintVertical_bias="0.0"
+            app:layout_constraintVertical_bias="1.0"
             app:lineLabelInsetLeft="12dp"
             app:lineLabels="left"
             app:rangeTitle="@string/acc_range_title"
@@ -134,6 +133,16 @@
             app:title="@string/acc_title"
             app:titleTextColor="#000000"
             app:titleTextSize="15dp" />
+
+        <TextView
+            android:id="@+id/status_connection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="15dp"
+            android:layout_marginTop="15dp"
+            android:textSize="14sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

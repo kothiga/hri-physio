@@ -16,23 +16,41 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
+import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.StepMode;
+import com.androidplot.xy.XYGraphWidget;
+import com.androidplot.xy.XYPlot;
+import com.google.android.material.snackbar.Snackbar;
+
+import org.reactivestreams.Publisher;
+
+import java.text.DecimalFormat;
 import java.util.UUID;
+
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
 import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
+import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
+import polar.com.sdk.api.model.PolarSensorSetting;
 
 public class PolarH10Frag extends Fragment {
     private String DEVICE_ID;
@@ -45,6 +63,23 @@ public class PolarH10Frag extends Fragment {
     public TextView connectStatus;
     public Chronometer showStartTime;
     public ToggleButton toggle;
+    public ToggleButton togglePlotHR;
+    public ToggleButton togglePlotACC;
+    public ToggleButton togglePlotECG;
+    public Boolean apiConnected = Boolean.FALSE;
+
+    private XYPlot plotHR, plotECG, plotACC;
+    private TimePlotter timeplotter;
+    private Plotter plotter;
+    private PlotterListener plotterListener = new PlotterListener() {
+        @Override
+        public void update() {
+            plotHR.redraw();
+            plotECG.redraw();
+            plotACC.redraw();
+        }
+    };
+    private Disposable ecgDisposable = null;
 
     @Nullable
     @Override
@@ -52,15 +87,26 @@ public class PolarH10Frag extends Fragment {
         View view = inflater.inflate(R.layout.polar_h10_frag, container, false);
         sharedPreferences = this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
+        //Default to hide all plots at first
+        plotHR = view.findViewById(R.id.plotHR);
+        plotHR.setVisibility(View.GONE);
+        plotECG = view.findViewById(R.id.plotECG);
+        plotECG.setVisibility(View.GONE);
+        plotACC = view.findViewById(R.id.plotACC);
+        plotACC.setVisibility(View.GONE);
+
+
         // Enter device ID text field
         EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID_frag1);
         enterIdText.setInputType(InputType.TYPE_CLASS_TEXT);
         enterIdText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {  }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {  }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+            }
 
             @Override
             public void afterTextChanged(Editable s) {
@@ -85,22 +131,46 @@ public class PolarH10Frag extends Fragment {
             }
         });
 
-        //Show button that links to plots
-        Button button = view.findViewById(R.id.plot_button_frag1);
-        button.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View v) {
-                // Code here executes on main thread after user presses button
-                checkBT();
-                DEVICE_ID = sharedPreferences.getString(sharedPrefsKey,"");
-                Log.d(TAG,DEVICE_ID);
-                if(DEVICE_ID.equals("")){
-                    showDialog(view);
-                } else {
-                    Toast.makeText(view.getContext(),getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent(view.getContext(), PlotsActivity.class);
-                    intent.putExtra("id", DEVICE_ID);
-                    intent.putExtra("from_frag", TAG);
-                    startActivity(intent);
+        //button linking to HR plot
+        togglePlotHR = (ToggleButton) view.findViewById(R.id.plot_HR_button_frag1);
+        togglePlotHR.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!apiConnected){
+                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    togglePlotHR.setChecked(false);
+                }
+                else {
+                    if (isChecked) {
+                        //show plot
+                        showPlotHR(view);
+                    } else {
+                        // hide plot
+                        plotHR.setVisibility(View.GONE);
+                    }
+
+                }
+            }
+        });
+
+        //button linking to ECG plot
+        togglePlotECG = (ToggleButton) view.findViewById(R.id.plot_ECG_button_frag1);
+        togglePlotECG.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!apiConnected){
+                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    togglePlotECG.setChecked(false);
+                }
+                else {
+                    if (isChecked) {
+                        //show plot
+                        showPlotECG(view);
+                    } else {
+                        // hide plot
+                        plotECG.setVisibility(View.GONE);
+                    }
+
                 }
             }
         });
@@ -194,32 +264,35 @@ public class PolarH10Frag extends Fragment {
                 @Override
                 public void deviceConnected(PolarDeviceInfo s) {
                     Log.d(TAG, "Device connected " + s.deviceId);
-                    //Toast.makeText(classContext, R.string.connected,
-                    //        Toast.LENGTH_SHORT).show();
+                    Toast.makeText(classContext, R.string.connected,
+                            Toast.LENGTH_SHORT).show();
                     showStartTime.start();
                     connectStatus.setText("");
                     connectStatus.append("Connected\n");
+                    apiConnected = Boolean.TRUE;
                 }
 
                 @Override
                 public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
-
+//                    Toast.makeText(classContext, R.string.connecting,
+//                            Toast.LENGTH_SHORT).show();
                 }
 
                 @Override
                 public void deviceDisconnected(PolarDeviceInfo s) {
                     Log.d(TAG, "Device disconnected " + s);
-                    //Toast.makeText(classContext, R.string.disconnected,
-                    //        Toast.LENGTH_SHORT).show();
+                    Toast.makeText(classContext, R.string.disconnected,
+                            Toast.LENGTH_SHORT).show();
                     showStartTime.stop();
                     showStartTime.setText("");
                     connectStatus.append("Disconnected\n");
+                    apiConnected = Boolean.FALSE;
                 }
 
                 @Override
                 public void ecgFeatureReady(String s) {
                     Log.d(TAG, "ECG Feature ready " + s);
-                    //streamECG();
+                    plotECG();
                 }
 
                 @Override
@@ -268,6 +341,7 @@ public class PolarH10Frag extends Fragment {
                 public void hrNotificationReceived(String s,
                                                    PolarHrData polarHrData) {
                     Log.d(TAG, "HR " + polarHrData.hr);
+                    timeplotter.addValues(polarHrData);
                     //textViewHR.setText(String.valueOf(polarHrData.hr));
                 }
 
@@ -280,6 +354,7 @@ public class PolarH10Frag extends Fragment {
             // Connect to the device
             try {
                 api.connectToDevice(DEVICE_ID);
+                apiConnected = Boolean.TRUE;
                 Log.d(TAG, "finish");
             } catch (PolarInvalidArgument a){
                 a.printStackTrace();
@@ -292,11 +367,84 @@ public class PolarH10Frag extends Fragment {
             api.disconnectFromDevice(DEVICE_ID);
             textViewBattery.setText("");
             connectStatus.setText("");
+            apiConnected = Boolean.FALSE;
             Log.d(TAG, "finish");
         } catch (PolarInvalidArgument a){
             a.printStackTrace();
         }
+        togglePlotHR.setChecked(false);
+        plotHR.setVisibility(View.GONE);
+        togglePlotECG.setChecked(false);
+        plotECG.setVisibility(View.GONE);
+        plotACC.setVisibility(View.GONE);
     }
 
+    public void showPlotHR(View view){
+        plotHR.setVisibility(View.VISIBLE);
+        // Plot HR/RR graph
+        timeplotter = new TimePlotter(classContext, "HR/RR");
+        timeplotter.setListener(plotterListener);
+        plotHR.addSeries(timeplotter.getHrSeries(), timeplotter.getHrFormatter());
+        plotHR.addSeries(timeplotter.getRrSeries(), timeplotter.getRrFormatter());
+        plotHR.setRangeBoundaries(50, 100,
+                BoundaryMode.AUTO);
+        plotHR.setDomainBoundaries(0, 360000,
+                BoundaryMode.AUTO);
+        // Left labels will increment by 10
+        plotHR.setRangeStep(StepMode.INCREMENT_BY_VAL, 10);
+        plotHR.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
+        // Make left labels be an integer (no decimal places)
+        plotHR.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
+                setFormat(new DecimalFormat("#"));
+        // These don't seem to have an effect
+        plotHR.setLinesPerRangeLabel(2);
+    }
+
+    public void showPlotECG(View view){
+        plotECG.setVisibility(View.VISIBLE);
+        //Plot ECG graph
+        plotter = new Plotter(classContext, "ECG");
+        plotter.setListener(plotterListener);
+
+        plotECG.addSeries(plotter.getSeries(), plotter.getFormatter());
+        plotECG.setRangeBoundaries(-3.3, 3.3, BoundaryMode.FIXED);
+        plotECG.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.55);
+        plotECG.setDomainBoundaries(0, 500, BoundaryMode.GROW);
+        plotECG.setLinesPerRangeLabel(2);
+    }
+
+    private void plotECG(){
+        api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarEcgData>>() {
+            @Override
+            public Publisher<PolarEcgData> apply(PolarSensorSetting sensorSetting) throws Exception {
+                return api.startEcgStreaming(DEVICE_ID,
+                        sensorSetting.maxSettings());
+            }
+        }).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                new Consumer<PolarEcgData>() {
+                    @Override
+                    public void accept(PolarEcgData polarEcgData) throws Exception {
+                        Log.d(TAG, "ecg update");
+                        for (Integer data : polarEcgData.samples) {
+                            plotter.sendSingleSample((float) ((float) data / 1000.0));
+                        }
+                    }
+                },
+                new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e(TAG,
+                                "" + throwable.getLocalizedMessage());
+                        ecgDisposable = null;
+                    }
+                },
+                new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "complete");
+                    }
+                }
+        );
+    }
 
 }
