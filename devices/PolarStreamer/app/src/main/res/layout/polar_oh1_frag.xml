@@ -96,8 +96,8 @@
             android:id="@+id/battery_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="144dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginStart="192dp"
+            android:layout_marginTop="36dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag2" />
@@ -107,7 +107,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="28dp"
             android:text="@string/timer_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -117,12 +117,33 @@
             android:id="@+id/timer_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="104dp"
-            android:layout_marginTop="68dp"
-            android:textSize="18sp"
+            android:layout_marginStart="108dp"
+            android:layout_marginTop="76dp"
             android:textColor="@color/ap_gray"
+            android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag2" />
+
+        <TextView
+            android:id="@+id/hrView_frag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/hr"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/timerView_frag2" />
+
+        <TextView
+            android:id="@+id/hr_frag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="184dp"
+            android:layout_marginTop="32dp"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/timer_frag2" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

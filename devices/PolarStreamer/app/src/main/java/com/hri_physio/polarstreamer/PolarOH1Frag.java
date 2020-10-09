@@ -25,6 +25,9 @@ import android.widget.ToggleButton;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
+import org.w3c.dom.Text;
+
 import java.util.UUID;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
@@ -32,6 +35,9 @@ import polar.com.sdk.api.PolarBleApiDefaultImpl;
 import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarHrData;
+import polar.com.sdk.api.model.PolarOhrPPGData;
+import polar.com.sdk.api.model.PolarOhrPPIData;
+import polar.com.sdk.api.model.PolarAccelerometerData;
 
 public class PolarOH1Frag extends Fragment {
     private String DEVICE_ID;
@@ -42,6 +48,7 @@ public class PolarOH1Frag extends Fragment {
     public Context classContext;
     public TextView textViewBattery;
     public TextView connectStatus;
+    public TextView heartRate;
     public Chronometer showStartTime;
     public ToggleButton toggle;
 
@@ -145,6 +152,7 @@ public class PolarOH1Frag extends Fragment {
             classContext = this.getActivity().getApplicationContext();
             textViewBattery = (TextView) view.findViewById(R.id.battery_frag2);
             connectStatus = (TextView) view.findViewById(R.id.status_frag2);
+            heartRate = (TextView) view.findViewById(R.id.hr_frag2);
 
             showStartTime = (Chronometer) view.findViewById(R.id.timer_frag2);
             showStartTime.setBase(SystemClock.elapsedRealtime());
@@ -180,6 +188,7 @@ public class PolarOH1Frag extends Fragment {
                     showStartTime.start();
                     connectStatus.setText("");
                     connectStatus.append("Connected\n");
+                    heartRate.setText("");
                 }
 
                 @Override
@@ -195,6 +204,7 @@ public class PolarOH1Frag extends Fragment {
                     showStartTime.stop();
                     showStartTime.setText("");
                     connectStatus.append("Disconnected\n");
+                    heartRate.setText("");
                 }
 
                 @Override
@@ -248,7 +258,7 @@ public class PolarOH1Frag extends Fragment {
                 public void hrNotificationReceived(String s,
                                                    PolarHrData polarHrData) {
                     Log.d(TAG, "HR " + polarHrData.hr);
-                    //textViewHR.setText(String.valueOf(polarHrData.hr));
+                    heartRate.setText(String.valueOf(polarHrData.hr));
                 }
 
                 @Override

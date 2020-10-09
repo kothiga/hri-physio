@@ -29,4 +29,5 @@
     <string name="ppg_range_title">Amplitude (au)</string>
     <string name="ppg_title">PPG Amplitude (au) vs. Time</string>
     <string name="plot_button_view">View Plot</string>
+    <string name="hr">Heart Rate:</string>
 </resources>
