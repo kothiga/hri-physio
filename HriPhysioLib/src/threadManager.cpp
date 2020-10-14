@@ -101,7 +101,7 @@ bool ThreadManager::getThreadStatus(const std::thread::id thread_id) {
 }
 
 
-bool ThreadManager::getThreadRunning() {
+bool ThreadManager::getManagerRunning() {
     return running;
 }
 
@@ -158,7 +158,7 @@ void ThreadManager::looperWrapper(std::function<void(void)> func, const double p
     const std::thread::id thread_id = std::this_thread::get_id();
 
     //-- Loop until it's time to shutdown.
-    while (getThreadRunning()) {
+    while (getManagerRunning()) {
 
         //-- Get the clock time for now.
         auto start = std::chrono::system_clock::now();

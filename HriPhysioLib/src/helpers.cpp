@@ -21,6 +21,7 @@ void stringTransform(std::string& str, int (*func)(int)) {
     }
 }
 
+
 void hriPhysio::toLower(std::string& str) { 
     stringTransform(str, std::tolower);
 }

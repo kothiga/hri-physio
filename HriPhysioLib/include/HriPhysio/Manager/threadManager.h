@@ -59,7 +59,7 @@ public:
 
     bool getThreadStatus(const std::thread::id thread_id);
     
-    bool getThreadRunning();
+    bool getManagerRunning();
 
     void start();
 
