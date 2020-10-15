@@ -26,7 +26,7 @@
             android:id="@+id/editTextSetID_frag2"
             android:layout_width="200dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="40dp"
+            android:layout_marginTop="48dp"
             android:layout_marginEnd="56dp"
             android:hint="@string/set_id_button"
             android:padding="8dp"
@@ -139,11 +139,32 @@
             android:id="@+id/hr_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="184dp"
+            android:layout_marginStart="156dp"
             android:layout_marginTop="32dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/timer_frag2" />
+
+        <TextView
+            android:id="@+id/accView_frag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/acc"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hrView_frag2" />
+
+        <TextView
+            android:id="@+id/acc_frag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="220dp"
+            android:layout_marginTop="32dp"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hr_frag2" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,6 +1,7 @@
 package com.hri_physio.polarstreamer;
 
 import android.Manifest;
+import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -25,19 +26,24 @@ import android.widget.ToggleButton;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-
-import org.w3c.dom.Text;
-
+import org.reactivestreams.Publisher;
 import java.util.UUID;
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
+import io.reactivex.rxjava3.functions.Function;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
 import polar.com.sdk.api.errors.PolarInvalidArgument;
 import polar.com.sdk.api.model.PolarDeviceInfo;
+import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
 import polar.com.sdk.api.model.PolarOhrPPGData;
 import polar.com.sdk.api.model.PolarOhrPPIData;
 import polar.com.sdk.api.model.PolarAccelerometerData;
+import polar.com.sdk.api.model.PolarSensorSetting;
 
 public class PolarOH1Frag extends Fragment {
     private String DEVICE_ID;
@@ -49,11 +55,12 @@ public class PolarOH1Frag extends Fragment {
     public TextView textViewBattery;
     public TextView connectStatus;
     public TextView heartRate;
+    public TextView accelerometerData;
     public Chronometer showStartTime;
     public ToggleButton toggle;
-
-
-
+    public Disposable accDisposable;
+    public Disposable ppgDisposable;
+    public Activity classActivity;
 
     @Nullable
     @Override
@@ -93,6 +100,145 @@ public class PolarOH1Frag extends Fragment {
                 }
             }
         });
+
+        // set up properties
+        classContext = this.getActivity().getApplicationContext();
+        classActivity = this.getActivity();
+
+        textViewBattery = (TextView) view.findViewById(R.id.battery_frag2);
+        connectStatus = (TextView) view.findViewById(R.id.status_frag2);
+        heartRate = (TextView) view.findViewById(R.id.hr_frag2);
+        accelerometerData = (TextView) view.findViewById(R.id.acc_frag2);
+        showStartTime = (Chronometer) view.findViewById(R.id.timer_frag2);
+        showStartTime.setBase(SystemClock.elapsedRealtime());
+        showStartTime.setFormat("00:%s");
+        showStartTime.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
+            public void onChronometerTick(Chronometer c) {
+                long elapsedMillis = SystemClock.elapsedRealtime() -c.getBase();
+                if(elapsedMillis > 3600000L){
+                    c.setFormat("0%s");
+                }else{
+                    c.setFormat("00:%s");
+                }
+            }
+        });
+
+        // Override some methods of api
+        api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
+                PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
+                        PolarBleApi.FEATURE_BATTERY_INFO |
+                        PolarBleApi.FEATURE_DEVICE_INFO |
+                        PolarBleApi.FEATURE_HR);
+        api.setApiCallback(new PolarBleApiCallback() {
+            @Override
+            public void blePowerStateChanged(boolean b) {
+                Log.d(TAG, "BluetoothStateChanged " + b);
+            }
+
+            @Override
+            public void deviceConnected(PolarDeviceInfo s) {
+                Log.d(TAG, "Device connected " + s.deviceId);
+                Toast.makeText(classContext, R.string.searchBattery,
+                        Toast.LENGTH_SHORT).show();
+                showStartTime.start();
+                connectStatus.setText("");
+                connectStatus.append("Connected\n");
+                heartRate.setText("");
+                accelerometerData.setText("loading data...");
+            }
+
+            @Override
+            public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
+
+            }
+
+            @Override
+            public void deviceDisconnected(PolarDeviceInfo s) {
+
+            }
+
+            @Override
+            public void ecgFeatureReady(String s) {
+                Log.d(TAG, "ECG Feature ready " + s);
+            }
+
+            @Override
+            public void accelerometerFeatureReady(String s) {
+                Log.d(TAG, "ACC Feature ready " + s);
+                //Toast.makeText(classContext, "ACC Feature ready " + s, Toast.LENGTH_LONG).show();
+                if(accDisposable == null) {
+                    accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
+                        PolarSensorSetting sensorSetting = settings.maxSettings();
+                        return api.startAccStreaming(DEVICE_ID,sensorSetting);
+                    }).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                            polarAccelerometerData -> {
+                                // display data in UI
+                                accelerometerData.setText("    x: " + polarAccelerometerData.samples.get(0).x + "mG   y: " + polarAccelerometerData.samples.get(0).y + "mG   z: "+ polarAccelerometerData.samples.get(0).z + "mG");
+                            },
+                            throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
+                            () -> Log.d(TAG,"complete")
+                    );
+                } else {
+                    // NOTE dispose will stop streaming if it is "running"
+                    accDisposable.dispose();
+                    accDisposable = null;
+                }
+
+            }
+
+            @Override
+            public void ppgFeatureReady(String s) {
+                Log.d(TAG, "PPG Feature ready " + s);
+                //accelerometerData.setText("ready");
+            }
+
+            @Override
+            public void ppiFeatureReady(String s) {
+                Log.d(TAG, "PPI Feature ready " + s);
+
+            }
+
+            @Override
+            public void biozFeatureReady(String s) {
+
+            }
+
+            @Override
+            public void hrFeatureReady(String s) {
+                Log.d(TAG, "HR Feature ready " + s);
+                //accelerometerData.setText("ready");
+            }
+
+            @Override
+            public void disInformationReceived(String s, UUID u, String s1) {
+                if( u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
+                    String msg = "Firmware: " + s1.trim();
+                    Log.d(TAG, "Firmware: " + s + " " + s1.trim());
+                    //textViewFW.append(msg + "\n");
+                }
+            }
+
+            @Override
+            public void batteryLevelReceived(String s, int i) {
+                String msg = ""+i+"%";
+                Log.d(TAG, "Battery level " + s + " " + i);
+                //Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
+                textViewBattery.append(msg + "\n");
+            }
+
+            @Override
+            public void hrNotificationReceived(String s,
+                                               PolarHrData polarHrData) {
+                Log.d(TAG, "HR " + polarHrData.hr);
+                heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
+            }
+
+            @Override
+            public void polarFtpFeatureReady(String s) {
+                Log.d(TAG, "Polar FTP ready " + s);
+            }
+        });
+
         return view;
     }
 
@@ -148,125 +294,6 @@ public class PolarOH1Frag extends Fragment {
             // Show that the app is trying to connect with the given device ID
             Toast.makeText(view.getContext(),getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
 
-            // set up properties
-            classContext = this.getActivity().getApplicationContext();
-            textViewBattery = (TextView) view.findViewById(R.id.battery_frag2);
-            connectStatus = (TextView) view.findViewById(R.id.status_frag2);
-            heartRate = (TextView) view.findViewById(R.id.hr_frag2);
-
-            showStartTime = (Chronometer) view.findViewById(R.id.timer_frag2);
-            showStartTime.setBase(SystemClock.elapsedRealtime());
-            showStartTime.setFormat("00:%s");
-            showStartTime.setOnChronometerTickListener(new Chronometer.OnChronometerTickListener() {
-                public void onChronometerTick(Chronometer c) {
-                    long elapsedMillis = SystemClock.elapsedRealtime() -c.getBase();
-                    if(elapsedMillis > 3600000L){
-                        c.setFormat("0%s");
-                    }else{
-                        c.setFormat("00:%s");
-                    }
-                }
-            });
-
-            // Override some methods of api
-            api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
-                    PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
-                            PolarBleApi.FEATURE_BATTERY_INFO |
-                            PolarBleApi.FEATURE_DEVICE_INFO |
-                            PolarBleApi.FEATURE_HR);
-            api.setApiCallback(new PolarBleApiCallback() {
-                @Override
-                public void blePowerStateChanged(boolean b) {
-                    Log.d(TAG, "BluetoothStateChanged " + b);
-                }
-
-                @Override
-                public void deviceConnected(PolarDeviceInfo s) {
-                    Log.d(TAG, "Device connected " + s.deviceId);
-                    Toast.makeText(classContext, R.string.searchBattery,
-                            Toast.LENGTH_SHORT).show();
-                    showStartTime.start();
-                    connectStatus.setText("");
-                    connectStatus.append("Connected\n");
-                    heartRate.setText("");
-                }
-
-                @Override
-                public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
-
-                }
-
-                @Override
-                public void deviceDisconnected(PolarDeviceInfo s) {
-                    Log.d(TAG, "Device disconnected " + s);
-                    //Toast.makeText(classContext, R.string.disconnected,
-                    //        Toast.LENGTH_SHORT).show();
-                    showStartTime.stop();
-                    showStartTime.setText("");
-                    connectStatus.append("Disconnected\n");
-                    heartRate.setText("");
-                }
-
-                @Override
-                public void ecgFeatureReady(String s) {
-                    Log.d(TAG, "ECG Feature ready " + s);
-                }
-
-                @Override
-                public void accelerometerFeatureReady(String s) {
-                    Log.d(TAG, "ACC Feature ready " + s);
-                }
-
-                @Override
-                public void ppgFeatureReady(String s) {
-                    Log.d(TAG, "PPG Feature ready " + s);
-                }
-
-                @Override
-                public void ppiFeatureReady(String s) {
-                    Log.d(TAG, "PPI Feature ready " + s);
-                }
-
-                @Override
-                public void biozFeatureReady(String s) {
-
-                }
-
-                @Override
-                public void hrFeatureReady(String s) {
-                    Log.d(TAG, "HR Feature ready " + s);
-                }
-
-                @Override
-                public void disInformationReceived(String s, UUID u, String s1) {
-                    if( u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
-                        String msg = "Firmware: " + s1.trim();
-                        Log.d(TAG, "Firmware: " + s + " " + s1.trim());
-                        //textViewFW.append(msg + "\n");
-                    }
-                }
-
-                @Override
-                public void batteryLevelReceived(String s, int i) {
-                    String msg = ""+i+"%";
-                    Log.d(TAG, "Battery level " + s + " " + i);
-                    //Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
-                    textViewBattery.append(msg + "\n");
-                }
-
-                @Override
-                public void hrNotificationReceived(String s,
-                                                   PolarHrData polarHrData) {
-                    Log.d(TAG, "HR " + polarHrData.hr);
-                    heartRate.setText(String.valueOf(polarHrData.hr));
-                }
-
-                @Override
-                public void polarFtpFeatureReady(String s) {
-                    Log.d(TAG, "Polar FTP ready " + s);
-                }
-            });
-
             // Connect to the device
             try {
                 api.connectToDevice(DEVICE_ID);
@@ -280,6 +307,14 @@ public class PolarOH1Frag extends Fragment {
     public void onClickStopConnection(View view) {
         try {
             api.disconnectFromDevice(DEVICE_ID);
+            showStartTime.stop();
+            showStartTime.setText("");
+            connectStatus.append("Disconnected\n");
+            heartRate.setText("");
+            accelerometerData.setText("");
+            accDisposable = null;
+            ppgDisposable = null;
+
             textViewBattery.setText("");
             connectStatus.setText("");
             Log.d(TAG, "finish");

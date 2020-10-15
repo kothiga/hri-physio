@@ -30,4 +30,5 @@
     <string name="ppg_title">PPG Amplitude (au) vs. Time</string>
     <string name="plot_button_view">View Plot</string>
     <string name="hr">Heart Rate:</string>
+    <string name="acc">Accelerometer Data:</string>
 </resources>
