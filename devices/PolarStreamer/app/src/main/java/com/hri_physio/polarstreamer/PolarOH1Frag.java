@@ -23,28 +23,26 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+
 import org.reactivestreams.Publisher;
+
 import java.util.UUID;
+
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
-import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.Disposable;
-import io.reactivex.rxjava3.functions.Action;
-import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
-import io.reactivex.rxjava3.schedulers.Schedulers;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
 import polar.com.sdk.api.errors.PolarInvalidArgument;
+import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarDeviceInfo;
-import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
 import polar.com.sdk.api.model.PolarOhrPPGData;
-import polar.com.sdk.api.model.PolarOhrPPIData;
-import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarSensorSetting;
 
 public class PolarOH1Frag extends Fragment {
@@ -182,7 +180,6 @@ public class PolarOH1Frag extends Fragment {
                                 return api.startAccStreaming(DEVICE_ID, sensorSetting);
                             }).observeOn(AndroidSchedulers.mainThread()).subscribe(
                             polarAccelerometerData -> {
-                                // display data in UI
                                 accelerometerData.setText("    x: " + polarAccelerometerData.samples.get(0).x + "mG   y: " + polarAccelerometerData.samples.get(0).y + "mG   z: "+ polarAccelerometerData.samples.get(0).z + "mG");
                             },
                             throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),

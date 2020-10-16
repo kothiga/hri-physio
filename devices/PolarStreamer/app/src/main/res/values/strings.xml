@@ -7,8 +7,8 @@
     <string name="device_id_view">Device ID: </string>
     <string name="ecg_name">ECG</string>
     <string name="hr_name">HR / RR</string>
-    <string name="hr_title">HR and RR vs. Time (for 5 min)</string>
-    <string name="ecg_title">ECG vs. Time (for 5 min)</string>
+    <string name="hr_title">HR and RR vs. Time</string>
+    <string name="ecg_title">ECG vs. Time</string>
     <string name="hr_range_title">HR, /sec RR, ms/10</string>
     <string name="disconnect">DISCONNECT</string>
     <string name="connect">CONNECT ECG</string>
@@ -24,7 +24,7 @@
     <string name="start_connection">Start</string>
     <string name="stop_connection">Stop</string>
     <string name="ecg_range_title">ECG, mV</string>
-    <string name="acc_title">ACC (x, y, z) vs. Time</string>
+    <string name="acc_title">ACC X, Y, Z (g) vs. Time</string>
     <string name="acc_range_title">ACC, g</string>
     <string name="ppg_range_title">Amplitude (au)</string>
     <string name="ppg_title">PPG Amplitude (au) vs. Time</string>

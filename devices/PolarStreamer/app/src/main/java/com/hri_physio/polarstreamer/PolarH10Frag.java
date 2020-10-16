@@ -38,15 +38,16 @@ import org.reactivestreams.Publisher;
 import java.text.DecimalFormat;
 import java.util.UUID;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
 import polar.com.sdk.api.errors.PolarInvalidArgument;
+import polar.com.sdk.api.model.PolarAccelerometerData;
 import polar.com.sdk.api.model.PolarDeviceInfo;
 import polar.com.sdk.api.model.PolarEcgData;
 import polar.com.sdk.api.model.PolarHrData;
@@ -70,8 +71,9 @@ public class PolarH10Frag extends Fragment {
 
     private XYPlot plotHR, plotECG, plotACC;
     private TimePlotter timeplotter;
+    private TimePlotterACC timeplotterACC;
     private Plotter plotter;
-    private PlotterListener plotterListener = new PlotterListener() {
+    public PlotterListener plotterListener = new PlotterListener() {
         @Override
         public void update() {
             plotHR.redraw();
@@ -80,6 +82,7 @@ public class PolarH10Frag extends Fragment {
         }
     };
     private Disposable ecgDisposable = null;
+    private Disposable accDisposable = null;
 
     @Nullable
     @Override
@@ -146,9 +149,9 @@ public class PolarH10Frag extends Fragment {
                         showPlotHR(view);
                     } else {
                         // hide plot
+                        plotHR.clear();
                         plotHR.setVisibility(View.GONE);
                     }
-
                 }
             }
         });
@@ -168,13 +171,34 @@ public class PolarH10Frag extends Fragment {
                         showPlotECG(view);
                     } else {
                         // hide plot
+                        plotECG.clear();
                         plotECG.setVisibility(View.GONE);
                     }
-
-                }
+             }
             }
         });
 
+        //button linking to ACC plot
+        togglePlotACC = (ToggleButton) view.findViewById(R.id.plot_ACC_button_frag1);
+        togglePlotACC.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!apiConnected){
+                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    togglePlotACC.setChecked(false);
+                }
+                else {
+                if (isChecked) {
+                    //show plot
+                    showPlotACC(view);
+                } else {
+                    // hide plot
+                    plotACC.clear();
+                    plotACC.setVisibility(View.GONE);
+                }
+             }
+            }
+        });
         return view;
     }
 
@@ -298,6 +322,7 @@ public class PolarH10Frag extends Fragment {
                 @Override
                 public void accelerometerFeatureReady(String s) {
                     Log.d(TAG, "ACC Feature ready " + s);
+                    plotACC();
                 }
 
                 @Override
@@ -362,23 +387,6 @@ public class PolarH10Frag extends Fragment {
         }
     }
 
-    public void onClickStopConnection(View view) {
-        try {
-            api.disconnectFromDevice(DEVICE_ID);
-            textViewBattery.setText("");
-            connectStatus.setText("");
-            apiConnected = Boolean.FALSE;
-            Log.d(TAG, "finish");
-        } catch (PolarInvalidArgument a){
-            a.printStackTrace();
-        }
-        togglePlotHR.setChecked(false);
-        plotHR.setVisibility(View.GONE);
-        togglePlotECG.setChecked(false);
-        plotECG.setVisibility(View.GONE);
-        plotACC.setVisibility(View.GONE);
-    }
-
     public void showPlotHR(View view){
         plotHR.setVisibility(View.VISIBLE);
         // Plot HR/RR graph
@@ -390,14 +398,13 @@ public class PolarH10Frag extends Fragment {
                 BoundaryMode.AUTO);
         plotHR.setDomainBoundaries(0, 360000,
                 BoundaryMode.AUTO);
-        // Left labels will increment by 10
-        plotHR.setRangeStep(StepMode.INCREMENT_BY_VAL, 10);
+        // Left labels will increment by 2
+        plotHR.setRangeStep(StepMode.SUBDIVIDE, 5);
         plotHR.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
         // Make left labels be an integer (no decimal places)
         plotHR.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
                 setFormat(new DecimalFormat("#"));
-        // These don't seem to have an effect
-        plotHR.setLinesPerRangeLabel(2);
+        plotHR.getLegend().setVisible(true);
     }
 
     public void showPlotECG(View view){
@@ -413,6 +420,27 @@ public class PolarH10Frag extends Fragment {
         plotECG.setLinesPerRangeLabel(2);
     }
 
+    public void showPlotACC(View view){
+        plotACC.setVisibility(View.VISIBLE);
+        //Plot ACC graph
+        timeplotterACC = new TimePlotterACC(classContext, "ACC");
+        timeplotterACC.setListener(plotterListener);
+        plotACC.addSeries(timeplotterACC.getAccXSeries(), timeplotterACC.getAccXFormatter());
+        plotACC.addSeries(timeplotterACC.getAccYSeries(), timeplotterACC.getAccYFormatter());
+        plotACC.addSeries(timeplotterACC.getAccZSeries(), timeplotterACC.getAccZFormatter());
+        plotACC.setRangeBoundaries(-1000, 1000,
+                BoundaryMode.AUTO);
+        plotACC.setDomainBoundaries(0, 360000,
+                BoundaryMode.AUTO);
+        // Left labels
+        plotACC.setRangeStep(StepMode.SUBDIVIDE, 10);
+        plotACC.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
+        // Make left labels be an integer (no decimal places)
+        plotACC.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
+                setFormat(new DecimalFormat("#"));
+        plotACC.getLegend().setVisible(true);
+    }
+
     private void plotECG(){
         api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarEcgData>>() {
             @Override
@@ -420,7 +448,7 @@ public class PolarH10Frag extends Fragment {
                 return api.startEcgStreaming(DEVICE_ID,
                         sensorSetting.maxSettings());
             }
-        }).observeOn(AndroidSchedulers.mainThread()).subscribe(
+        }).subscribeOn(Schedulers.newThread()).subscribe(
                 new Consumer<PolarEcgData>() {
                     @Override
                     public void accept(PolarEcgData polarEcgData) throws Exception {
@@ -445,6 +473,58 @@ public class PolarH10Frag extends Fragment {
                     }
                 }
         );
+    }
+
+    private void plotACC() {
+        api.requestAccSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>() {
+            @Override
+            public Publisher<PolarAccelerometerData> apply(PolarSensorSetting polarSensorSetting) throws Throwable {
+                return api.startAccStreaming(DEVICE_ID,
+                        polarSensorSetting.maxSettings());
+            }}).subscribeOn(Schedulers.newThread())
+                .subscribe(
+                new Consumer<PolarAccelerometerData>() {
+                @Override
+                public void accept(PolarAccelerometerData polarAccData) throws Exception {
+                    Log.d(TAG, "acceloremeter update");
+                    for (PolarAccelerometerData.PolarAccelerometerSample data : polarAccData.samples) {
+                        timeplotterACC.addValues(data);
+                    }
+                }
+            },
+                new Consumer<Throwable>() {
+                    @Override
+                    public void accept(Throwable throwable) throws Exception {
+                        Log.e(TAG,
+                                "" + throwable.getLocalizedMessage());
+                        accDisposable = null;
+                    }
+                },
+                new Action() {
+                    @Override
+                    public void run() throws Exception {
+                        Log.d(TAG, "complete");
+                    }
+                }
+        );
+    }
+
+    public void onClickStopConnection(View view) {
+        try {
+            api.disconnectFromDevice(DEVICE_ID);
+            textViewBattery.setText("");
+            connectStatus.setText("");
+            apiConnected = Boolean.FALSE;
+            Log.d(TAG, "finish");
+        } catch (PolarInvalidArgument a){
+            a.printStackTrace();
+        }
+        togglePlotHR.setChecked(false);
+        plotHR.setVisibility(View.GONE);
+        togglePlotECG.setChecked(false);
+        plotECG.setVisibility(View.GONE);
+        togglePlotACC.setChecked(false);
+        plotACC.setVisibility(View.GONE);
     }
 
 }

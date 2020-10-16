@@ -152,6 +152,20 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/plotHR" />
 
+        <ToggleButton
+            android:id="@+id/plot_ACC_button_frag1"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="8dp"
+            android:background="@android:color/white"
+            android:textColor="@color/colorPrimary"
+            android:textOff="Show graph"
+            android:textOn="Hide graph"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/plotECG" />
+
         <com.androidplot.xy.XYPlot
             android:id="@+id/plotHR"
             style="@style/FullScreenGraph"
@@ -165,7 +179,7 @@
             app:graphMarginBottom="12dp"
             app:graphMarginLeft="30dp"
 
-            app:graphMarginRight="5dp"
+            app:graphMarginRight="8dp"
             app:graphMarginTop="20dp"
             app:gridBackgroundColor="#F1F4F4"
             app:gridInsetLeft="25dp"
@@ -174,7 +188,7 @@
             app:layout_constraintTop_toBottomOf="@id/plot_HR_button_frag1"
 
             app:lineLabels="left"
-            app:paddingBottom="5dp"
+            app:paddingBottom="10dp"
             app:paddingLeft="5dp"
             app:paddingRight="5dp"
             app:paddingTop="5dp"
@@ -235,8 +249,12 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.505"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/plotECG"
+            app:layout_constraintTop_toBottomOf="@+id/plot_ACC_button_frag1"
             app:layout_constraintVertical_bias="1.0"
+            app:paddingBottom="10dp"
+            app:paddingLeft="5dp"
+            app:paddingRight="5dp"
+            app:paddingTop="5dp"
             app:lineLabelInsetLeft="12dp"
             app:lineLabels="left"
             app:rangeTitle="@string/acc_range_title"

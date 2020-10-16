@@ -5,6 +5,7 @@ import android.graphics.Color;
 
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
+import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeriesFormatter;
 
 import java.util.Arrays;
@@ -17,7 +18,7 @@ import polar.com.sdk.api.model.PolarHrData;
  * Implements two series for HR and RR using time for the x values.
  */
 public class TimePlotter {
-    private static final int NVALS = 300;  // 5 min
+    private static final int NVALS = 20;  // 20 sec
 
     String title;
     private String TAG = "Polar_Plotter";
@@ -26,6 +27,7 @@ public class TimePlotter {
     private Context context;
     private XYSeriesFormatter hrFormatter;
     private XYSeriesFormatter rrFormatter;
+    private XYPlot hrSeriesXY;
     private SimpleXYSeries hrSeries;
     private SimpleXYSeries rrSeries;
     private Double[] xHrVals = new Double[NVALS];
@@ -49,19 +51,18 @@ public class TimePlotter {
             yRrVals[i] = new Double(100);
         }
 
+        // Format series: HR/RR
         hrFormatter = new LineAndPointFormatter(Color.RED,
                 null, null, null);
-        hrFormatter.setLegendIconEnabled(false);
         hrSeries = new SimpleXYSeries(Arrays.asList(xHrVals),
                 Arrays.asList(yHrVals),
                 "HR");
 
         rrFormatter = new LineAndPointFormatter(Color.BLUE,
                 null, null, null);
-        rrFormatter.setLegendIconEnabled(false);
         rrSeries = new SimpleXYSeries(Arrays.asList(xRrVals),
                 Arrays.asList(yRrVals),
-                "HR");
+                "RR");
     }
 
     public SimpleXYSeries getHrSeries() { return (SimpleXYSeries) hrSeries; }
@@ -85,8 +86,11 @@ public class TimePlotter {
      * @param polarHrData The HR data that came in.
      */
     public void addValues(PolarHrData polarHrData) {
+
         Date now = new Date();
         long time = now.getTime();
+        double endTime = now.getTime();
+        double startTime = endTime - NVALS * 1000;
         for (int i = 0; i < NVALS - 1; i++) {
             xHrVals[i] = xHrVals[i + 1];
             yHrVals[i] = yHrVals[i + 1];
