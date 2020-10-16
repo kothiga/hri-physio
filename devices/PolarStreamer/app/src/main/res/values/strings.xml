@@ -31,4 +31,6 @@
     <string name="plot_button_view">View Plot</string>
     <string name="hr">Heart Rate:</string>
     <string name="acc">Accelerometer Data:</string>
+    <string name="ppg">PPG:</string>
+    <string name="ppi">PPI:</string>>
 </resources>

@@ -29,10 +29,12 @@ import androidx.fragment.app.Fragment;
 import org.reactivestreams.Publisher;
 import java.util.UUID;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.core.Scheduler;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Action;
 import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
@@ -56,10 +58,13 @@ public class PolarOH1Frag extends Fragment {
     public TextView connectStatus;
     public TextView heartRate;
     public TextView accelerometerData;
+    public TextView ppgData;
+    public TextView ppiData;
     public Chronometer showStartTime;
     public ToggleButton toggle;
     public Disposable accDisposable;
     public Disposable ppgDisposable;
+    public Disposable ppiDisposable;
     public Activity classActivity;
 
     @Nullable
@@ -109,6 +114,9 @@ public class PolarOH1Frag extends Fragment {
         connectStatus = (TextView) view.findViewById(R.id.status_frag2);
         heartRate = (TextView) view.findViewById(R.id.hr_frag2);
         accelerometerData = (TextView) view.findViewById(R.id.acc_frag2);
+        ppgData = (TextView) view.findViewById(R.id.ppg_frag2);
+        ppiData = (TextView) view.findViewById(R.id.ppi_frag2);
+
         showStartTime = (Chronometer) view.findViewById(R.id.timer_frag2);
         showStartTime.setBase(SystemClock.elapsedRealtime());
         showStartTime.setFormat("00:%s");
@@ -143,8 +151,11 @@ public class PolarOH1Frag extends Fragment {
                 showStartTime.start();
                 connectStatus.setText("");
                 connectStatus.append("Connected\n");
-                heartRate.setText("");
+                textViewBattery.setText("loading data...");
+                heartRate.setText("loading data...");
                 accelerometerData.setText("loading data...");
+                ppgData.setText("loading data...");
+                ppiData.setText("loading data...");
             }
 
             @Override
@@ -165,12 +176,11 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void accelerometerFeatureReady(String s) {
                 Log.d(TAG, "ACC Feature ready " + s);
-                //Toast.makeText(classContext, "ACC Feature ready " + s, Toast.LENGTH_LONG).show();
                 if(accDisposable == null) {
                     accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
-                        PolarSensorSetting sensorSetting = settings.maxSettings();
-                        return api.startAccStreaming(DEVICE_ID,sensorSetting);
-                    }).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                                PolarSensorSetting sensorSetting = settings.maxSettings();
+                                return api.startAccStreaming(DEVICE_ID, sensorSetting);
+                            }).observeOn(AndroidSchedulers.mainThread()).subscribe(
                             polarAccelerometerData -> {
                                 // display data in UI
                                 accelerometerData.setText("    x: " + polarAccelerometerData.samples.get(0).x + "mG   y: " + polarAccelerometerData.samples.get(0).y + "mG   z: "+ polarAccelerometerData.samples.get(0).z + "mG");
@@ -183,19 +193,43 @@ public class PolarOH1Frag extends Fragment {
                     accDisposable.dispose();
                     accDisposable = null;
                 }
-
             }
 
             @Override
             public void ppgFeatureReady(String s) {
                 Log.d(TAG, "PPG Feature ready " + s);
-                //accelerometerData.setText("ready");
+                if(ppgDisposable == null) {
+                    ppgDisposable = api.requestPpgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>) polarPPGSettings -> api.startOhrPPGStreaming(DEVICE_ID,polarPPGSettings.maxSettings())).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                            polarOhrPPGData -> {
+                            // display data in UI
+                            ppgData.setText("ppg0: " + polarOhrPPGData.samples.get(0).ppg0 + "   ppg1: " + polarOhrPPGData.samples.get(0).ppg1 + "   ppg2: " + polarOhrPPGData.samples.get(0).ppg2);
+                            },
+                            throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
+                            () -> Log.d(TAG,"complete")
+                    );
+                } else {
+                    ppgDisposable.dispose();
+                    ppgDisposable = null;
+                }
+
             }
 
             @Override
             public void ppiFeatureReady(String s) {
                 Log.d(TAG, "PPI Feature ready " + s);
-
+                if(ppiDisposable == null) {
+                    ppiDisposable = api.startOhrPPIStreaming(DEVICE_ID).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                            polarOhrPPIData -> {
+                                // display data in UI
+                                ppiData.setText(polarOhrPPIData.samples.get(0).ppi + "ms");
+                            },
+                            throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
+                            () -> Log.d(TAG,"complete")
+                    );
+                } else {
+                    ppiDisposable.dispose();
+                    ppiDisposable = null;
+                }
             }
 
             @Override
@@ -222,8 +256,7 @@ public class PolarOH1Frag extends Fragment {
             public void batteryLevelReceived(String s, int i) {
                 String msg = ""+i+"%";
                 Log.d(TAG, "Battery level " + s + " " + i);
-                //Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
-                textViewBattery.append(msg + "\n");
+                textViewBattery.setText(msg + "\n");
             }
 
             @Override
@@ -312,8 +345,10 @@ public class PolarOH1Frag extends Fragment {
             connectStatus.append("Disconnected\n");
             heartRate.setText("");
             accelerometerData.setText("");
+            ppgData.setText("");
             accDisposable = null;
             ppgDisposable = null;
+            ppiDisposable = null;
 
             textViewBattery.setText("");
             connectStatus.setText("");
