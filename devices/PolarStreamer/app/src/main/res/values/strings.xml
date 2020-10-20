@@ -24,13 +24,22 @@
     <string name="start_connection">Start</string>
     <string name="stop_connection">Stop</string>
     <string name="ecg_range_title">ECG, mV</string>
-    <string name="acc_title">ACC X, Y, Z (g) vs. Time</string>
-    <string name="acc_range_title">ACC, g</string>
+    <string name="acc_title">ACC X, Y, Z (mg) vs. Time</string>
+    <string name="acc_range_title">ACC, mg</string>
     <string name="ppg_range_title">Amplitude (au)</string>
     <string name="ppg_title">PPG Amplitude (au) vs. Time</string>
     <string name="plot_button_view">View Plot</string>
     <string name="hr">Heart Rate:</string>
     <string name="acc">Accelerometer Data:</string>
     <string name="ppg">PPG:</string>
-    <string name="ppi">PPI:</string>>
+    <string name="ppi">PPI:</string>
+    <string name="Hz25">25 Hz</string>
+    <string name="Hz50">50 Hz</string>
+    <string name="Hz100">100 Hz</string>
+    <string name="Hz200">200 Hz</string>
+    <string name="G2">2 g</string>
+    <string name="G4">4 g</string>
+    <string name="G8">8 g</string>
+    <string name="range_setting">Range</string>
+    <string name="sampling_rate_setting">Sampling Rate</string>>
 </resources>

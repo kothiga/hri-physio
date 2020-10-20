@@ -16,9 +16,12 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
@@ -62,17 +65,29 @@ public class PolarH10Frag extends Fragment {
     public Context classContext;
     public TextView textViewBattery;
     public TextView connectStatus;
+
+    public PolarSensorSetting sensorSetting;
+    public RadioGroup radioGroupSamplingRate;
+    public RadioButton Hz25;
+    public RadioButton Hz50;
+    public RadioButton Hz100;
+    public RadioButton Hz200;
+    public RadioGroup radioGroupRange;
+    public RadioButton G2;
+    public RadioButton G4;
+    public RadioButton G8;
     public Chronometer showStartTime;
     public ToggleButton toggle;
+    public Button editSetting;
     public ToggleButton togglePlotHR;
     public ToggleButton togglePlotACC;
     public ToggleButton togglePlotECG;
     public Boolean apiConnected = Boolean.FALSE;
 
     private XYPlot plotHR, plotECG, plotACC;
-    private TimePlotter timeplotter;
+    private TimePlotterHR timePlotterHR;
     private TimePlotterACC timeplotterACC;
-    private Plotter plotter;
+    private TimePlotterECG timeplotterECG;
     public PlotterListener plotterListener = new PlotterListener() {
         @Override
         public void update() {
@@ -131,6 +146,15 @@ public class PolarH10Frag extends Fragment {
                     // The toggle is disabled: Stop Connection
                     onClickStopConnection(view);
                 }
+            }
+        });
+
+        //Edit setting button for H10: set sampling frequency and range
+        editSetting = (Button) view.findViewById(R.id.setting_button);
+        editSetting.setOnClickListener(new Button.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                showSettingDialog(v);
             }
         });
 
@@ -202,19 +226,7 @@ public class PolarH10Frag extends Fragment {
         return view;
     }
 
-    public void checkBT(){
-        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        if (mBluetoothAdapter != null && !mBluetoothAdapter.isEnabled()) {
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            startActivityForResult(enableBtIntent, 2);
-        }
-
-        //requestPermissions() method needs to be called when the build SDK version is 23 or above
-        if(Build.VERSION.SDK_INT >= 23){
-            this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},1);
-        }
-    }
-
+    // Sensor ID dialog: if device ID is not entered, show dialog to ask for ID input.
     public void showDialog(View view){
         AlertDialog.Builder dialog = new AlertDialog.Builder(this.getContext(), R.style.PolarTheme);
         dialog.setTitle("Enter your Polar device's ID");
@@ -243,6 +255,119 @@ public class PolarH10Frag extends Fragment {
         dialog.show();
     }
 
+    // Sensor setting dialog: allows user to set sampling rate and range for ACC streaming.
+    public void showSettingDialog(View view){
+        AlertDialog.Builder dialog = new AlertDialog.Builder(this.getContext(), R.style.PolarTheme);
+        PolarSensorSetting.Builder builder = PolarSensorSetting.Builder.newBuilder();
+        dialog.setTitle("Sensor Setting");
+
+        View viewInflated = LayoutInflater.from(this.getActivity().getApplicationContext()).inflate(R.layout.h10_setting_dialog_layout,(ViewGroup) view.getRootView() , false);
+
+        dialog.setView(viewInflated);
+
+        radioGroupSamplingRate = (RadioGroup) viewInflated.findViewById(R.id.radioGroupSamplingRate);
+        Hz25 = (RadioButton) viewInflated.findViewById(R.id.Hz25);
+        Hz50 = (RadioButton) viewInflated.findViewById(R.id.Hz50);
+        Hz100 = (RadioButton) viewInflated.findViewById(R.id.Hz100);
+        Hz200 = (RadioButton) viewInflated.findViewById(R.id.Hz200);
+
+        radioGroupSamplingRate.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // find which radio button is selected
+                if(checkedId == R.id.Hz25) {
+                    Toast.makeText(viewInflated.getContext(), "Sampling Rate = 25 Hz",
+                            Toast.LENGTH_SHORT).show();
+                } else if(checkedId == R.id.Hz50) {
+                    Toast.makeText(viewInflated.getContext(), "Sampling Rate = 50 Hz",
+                            Toast.LENGTH_SHORT).show();
+                } else if(checkedId == R.id.Hz100) {
+                    Toast.makeText(viewInflated.getContext(), "Sampling Rate = 100 Hz",
+                            Toast.LENGTH_SHORT).show();
+                }
+                else {
+                    Toast.makeText(viewInflated.getContext(), "Sampling Rate = 200 Hz",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        radioGroupRange = (RadioGroup) viewInflated.findViewById(R.id.radioGroupRange);
+        G2 = (RadioButton) viewInflated.findViewById(R.id.G2);
+        G4 = (RadioButton) viewInflated.findViewById(R.id.G4);
+        G8 = (RadioButton) viewInflated.findViewById(R.id.G8);
+
+        radioGroupRange.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                // find which radio button is selected
+                if(checkedId == R.id.G2) {
+                    Toast.makeText(viewInflated.getContext(), "Range = 2 g",
+                            Toast.LENGTH_SHORT).show();
+                } else if(checkedId == R.id.G4) {
+                    Toast.makeText(viewInflated.getContext(), "Range = 4 g",
+                            Toast.LENGTH_SHORT).show();
+                } else if(checkedId == R.id.G8) {
+                    Toast.makeText(viewInflated.getContext(), "Range = 8 g",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        dialog.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                int selectedSamplingRateId = radioGroupSamplingRate.getCheckedRadioButtonId();
+                int selectedRangeId = radioGroupRange.getCheckedRadioButtonId();
+                if (selectedSamplingRateId == Hz25.getId()){
+                    builder.setSampleRate(25);
+                }
+                else if (selectedSamplingRateId == Hz50.getId()){
+                    builder.setSampleRate(50);
+                }
+                else if (selectedSamplingRateId == Hz100.getId()){
+                    builder.setSampleRate(100);
+                }
+                else {
+                    builder.setSampleRate(200);
+                }
+
+                if (selectedRangeId == G2.getId()){
+                    builder.setRange(2);
+                }
+                else if (selectedRangeId == G4.getId()){
+                    builder.setRange(4);
+                }
+                else {
+                    builder.setRange(8);
+                }
+                //default not customizable.
+                builder.setResolution(16);
+                sensorSetting = builder.build();
+            }
+        });
+        dialog.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.cancel();
+            }
+        });
+        dialog.show();
+    }
+
+    public void checkBT(){
+        BluetoothAdapter mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        if (mBluetoothAdapter != null && !mBluetoothAdapter.isEnabled()) {
+            Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+            startActivityForResult(enableBtIntent, 2);
+        }
+
+        //requestPermissions() method needs to be called when the build SDK version is 23 or above
+        if(Build.VERSION.SDK_INT >= 23){
+            this.requestPermissions(new String[]{Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION},1);
+        }
+    }
+
     public void onClickStartConnection(View view) {
         checkBT();
         DEVICE_ID = sharedPreferences.getString(sharedPrefsKey,"");
@@ -251,6 +376,7 @@ public class PolarH10Frag extends Fragment {
             showDialog(view);
             toggle.setChecked(false);
         } else {
+
             // Show that the app is trying to connect with the given device ID
             Toast.makeText(view.getContext(),getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
 
@@ -297,9 +423,8 @@ public class PolarH10Frag extends Fragment {
                 }
 
                 @Override
-                public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
-//                    Toast.makeText(classContext, R.string.connecting,
-//                            Toast.LENGTH_SHORT).show();
+                public void deviceConnecting(PolarDeviceInfo s) {
+                    Log.d(TAG, "Device connecting " + s.deviceId);
                 }
 
                 @Override
@@ -307,6 +432,10 @@ public class PolarH10Frag extends Fragment {
                     Log.d(TAG, "Device disconnected " + s);
                     Toast.makeText(classContext, R.string.disconnected,
                             Toast.LENGTH_SHORT).show();
+                    ecgDisposable = null;
+                    accDisposable = null;
+//                    ppgDisposable = null;
+//                    ppiDisposable = null;
                     showStartTime.stop();
                     showStartTime.setText("");
                     connectStatus.append("Disconnected\n");
@@ -336,9 +465,7 @@ public class PolarH10Frag extends Fragment {
                 }
 
                 @Override
-                public void biozFeatureReady(String s) {
-
-                }
+                public void biozFeatureReady(String s) { Log.d(TAG, "Bioz Feature ready " + s);  }
 
                 @Override
                 public void hrFeatureReady(String s) {
@@ -358,7 +485,6 @@ public class PolarH10Frag extends Fragment {
                 public void batteryLevelReceived(String s, int i) {
                     String msg = ""+i+"%";
                     Log.d(TAG, "Battery level " + s + " " + i);
-                    //Toast.makeText(classContext, msg, Toast.LENGTH_LONG).show();
                     textViewBattery.append(msg + "\n");
                 }
 
@@ -366,7 +492,7 @@ public class PolarH10Frag extends Fragment {
                 public void hrNotificationReceived(String s,
                                                    PolarHrData polarHrData) {
                     Log.d(TAG, "HR " + polarHrData.hr);
-                    timeplotter.addValues(polarHrData);
+                    timePlotterHR.addValues(polarHrData);
                     //textViewHR.setText(String.valueOf(polarHrData.hr));
                 }
 
@@ -390,15 +516,14 @@ public class PolarH10Frag extends Fragment {
     public void showPlotHR(View view){
         plotHR.setVisibility(View.VISIBLE);
         // Plot HR/RR graph
-        timeplotter = new TimePlotter(classContext, "HR/RR");
-        timeplotter.setListener(plotterListener);
-        plotHR.addSeries(timeplotter.getHrSeries(), timeplotter.getHrFormatter());
-        plotHR.addSeries(timeplotter.getRrSeries(), timeplotter.getRrFormatter());
+        timePlotterHR = new TimePlotterHR(classContext, "HR/RR");
+        timePlotterHR.setListener(plotterListener);
+        plotHR.addSeries(timePlotterHR.getHrSeries(), timePlotterHR.getHrFormatter());
+        plotHR.addSeries(timePlotterHR.getRrSeries(), timePlotterHR.getRrFormatter());
         plotHR.setRangeBoundaries(50, 100,
                 BoundaryMode.AUTO);
         plotHR.setDomainBoundaries(0, 360000,
                 BoundaryMode.AUTO);
-        // Left labels will increment by 2
         plotHR.setRangeStep(StepMode.SUBDIVIDE, 5);
         plotHR.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
         // Make left labels be an integer (no decimal places)
@@ -410,14 +535,15 @@ public class PolarH10Frag extends Fragment {
     public void showPlotECG(View view){
         plotECG.setVisibility(View.VISIBLE);
         //Plot ECG graph
-        plotter = new Plotter(classContext, "ECG");
-        plotter.setListener(plotterListener);
+        timeplotterECG = new TimePlotterECG(classContext, "ECG");
+        timeplotterECG.setListener(plotterListener);
 
-        plotECG.addSeries(plotter.getSeries(), plotter.getFormatter());
+        plotECG.addSeries(timeplotterECG.getEcgSeries(), timeplotterECG.getEcgFormatter());
         plotECG.setRangeBoundaries(-3.3, 3.3, BoundaryMode.FIXED);
-        plotECG.setRangeStep(StepMode.INCREMENT_BY_FIT, 0.55);
-        plotECG.setDomainBoundaries(0, 500, BoundaryMode.GROW);
-        plotECG.setLinesPerRangeLabel(2);
+        plotECG.setDomainBoundaries(0, 360000, BoundaryMode.AUTO);
+
+        plotACC.setRangeStep(StepMode.SUBDIVIDE, 10);
+        plotACC.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
     }
 
     public void showPlotACC(View view){
@@ -444,9 +570,8 @@ public class PolarH10Frag extends Fragment {
     private void plotECG(){
         api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarEcgData>>() {
             @Override
-            public Publisher<PolarEcgData> apply(PolarSensorSetting sensorSetting) throws Exception {
-                return api.startEcgStreaming(DEVICE_ID,
-                        sensorSetting.maxSettings());
+            public Publisher<PolarEcgData> apply(PolarSensorSetting polarSensorSetting) throws Exception {
+                return api.startEcgStreaming(DEVICE_ID, polarSensorSetting.maxSettings());
             }
         }).subscribeOn(Schedulers.newThread()).subscribe(
                 new Consumer<PolarEcgData>() {
@@ -454,7 +579,7 @@ public class PolarH10Frag extends Fragment {
                     public void accept(PolarEcgData polarEcgData) throws Exception {
                         Log.d(TAG, "ecg update");
                         for (Integer data : polarEcgData.samples) {
-                            plotter.sendSingleSample((float) ((float) data / 1000.0));
+                            timeplotterECG.addValues((float) ((float) data / 1000.0));
                         }
                     }
                 },
@@ -479,9 +604,13 @@ public class PolarH10Frag extends Fragment {
         api.requestAccSettings(DEVICE_ID).toFlowable().flatMap(new Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>() {
             @Override
             public Publisher<PolarAccelerometerData> apply(PolarSensorSetting polarSensorSetting) throws Throwable {
-                return api.startAccStreaming(DEVICE_ID,
-                        polarSensorSetting.maxSettings());
-            }}).subscribeOn(Schedulers.newThread())
+                if (sensorSetting != null){
+                    return api.startAccStreaming(DEVICE_ID, sensorSetting.maxSettings());
+                }
+                return api.startAccStreaming(DEVICE_ID, polarSensorSetting.maxSettings());
+            }}
+
+            ).subscribeOn(Schedulers.newThread())
                 .subscribe(
                 new Consumer<PolarAccelerometerData>() {
                 @Override

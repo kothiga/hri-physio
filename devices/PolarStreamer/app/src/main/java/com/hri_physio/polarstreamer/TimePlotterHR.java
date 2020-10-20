@@ -5,7 +5,6 @@ import android.graphics.Color;
 
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeriesFormatter;
 
 import java.util.Arrays;
@@ -17,7 +16,7 @@ import polar.com.sdk.api.model.PolarHrData;
 /**
  * Implements two series for HR and RR using time for the x values.
  */
-public class TimePlotter {
+public class TimePlotterHR {
     private static final int NVALS = 20;  // 20 sec
 
     String title;
@@ -27,7 +26,6 @@ public class TimePlotter {
     private Context context;
     private XYSeriesFormatter hrFormatter;
     private XYSeriesFormatter rrFormatter;
-    private XYPlot hrSeriesXY;
     private SimpleXYSeries hrSeries;
     private SimpleXYSeries rrSeries;
     private Double[] xHrVals = new Double[NVALS];
@@ -35,7 +33,7 @@ public class TimePlotter {
     private Double[] xRrVals = new Double[NVALS];
     private Double[] yRrVals = new Double[NVALS];
 
-    public TimePlotter(Context context, String title) {
+    public TimePlotterHR(Context context, String title) {
         this.context = context;
         this.title = title;  // Not used
         Date now = new Date();

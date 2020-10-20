@@ -5,7 +5,6 @@ import android.graphics.Color;
 
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
-import com.androidplot.xy.XYPlot;
 import com.androidplot.xy.XYSeriesFormatter;
 
 import java.util.Arrays;
@@ -17,8 +16,7 @@ import polar.com.sdk.api.model.PolarAccelerometerData;
  * Implements 3 series for Acceloremeter XYZ using time for the x values.
  */
 public class TimePlotterACC {
-    //    private static final int NVALS = 300;  // 5 min
-    private static final int NVALS = 120;  // 10 sec
+    private static final int NVALS = 120;  // 120 sec
 
     String title;
     private String TAG = "Polar_Plotter";
@@ -28,7 +26,6 @@ public class TimePlotterACC {
     private XYSeriesFormatter accXFormatter;
     private XYSeriesFormatter accYFormatter;
     private XYSeriesFormatter accZFormatter;
-    private XYPlot accSeriesXY;
     private SimpleXYSeries accXSeries;
     private SimpleXYSeries accYSeries;
     private SimpleXYSeries accZSeries;
@@ -58,7 +55,7 @@ public class TimePlotterACC {
             yaccZVals[i] = new Double(-900);
         }
 
-        // Format series: HR/RR, ACC X/Y/Z
+        // Format series: ACC X/Y/Z
         accXFormatter = new LineAndPointFormatter(Color.RED,
                 null, null, null);
         accXFormatter.setLegendIconEnabled(true);
