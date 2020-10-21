@@ -1,0 +1,9 @@
+name: rspSim
+type: rsp
+chunk: 32
+seconds: 10
+rate: 128
+noise: 0.02
+resp: 17
+rsp-method: breathmetrics
+loop: True

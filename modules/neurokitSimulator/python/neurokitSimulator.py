@@ -16,8 +16,6 @@ import time
 
 import numpy as np
 import pandas as pd
-#import neurokit2 as nk
-#import matplotlib.pyplot as plt
 from pylsl import StreamInfo, StreamOutlet, local_clock
 
 # These have to come after pylsl
@@ -28,6 +26,10 @@ import argparse
 import yaml
 
 
+# ===============
+# Formatting Help
+# ===============
+
 def logPrint(ptype, pfile=sys.stdout, *args, **kwargs):
     print("[{}] [{}]:".format(ptype, time.asctime()), *args, file=pfile, **kwargs)
 def errPrint(*args, **kwargs):
@@ -37,6 +39,10 @@ def debugPrint(*args, **kwargs):
 def infoPrint(*args, **kwargs):
     logPrint("INFO", sys.stdout,  *args, **kwargs)
 
+
+# ==================================
+# Argument and Configuration Parsing
+# ==================================
 
 def get_args():
 
@@ -53,11 +59,11 @@ def get_args():
     )
     parser.add_argument('--conf',       default=None,                                                     help='Override argparse with a yaml configuration. Location of a config file. (default: {})'.format(None))
     parser.add_argument('--name',       default='neuroSim',                                               help='Name for the module prefix.                                             (default: {})'.format('neuroSim'))
+    parser.add_argument('--type',       default='ecg',           choices=['ecg','ppg','rsp','eda','emg'], help='The type of signal to synthesize.                                       (default: {})'.format('ecg'))
     parser.add_argument('--chunk',      default=32,              type=pos_int,                            help='Size of data chunks to transmit.                                        (default: {})'.format(32))
     parser.add_argument('--seconds',    default=10,              type=pos_int,                            help='How many seconds of synthetic signal to simulate.                       (default: {})'.format(10))
     parser.add_argument('--rate',       default=128,             type=pos_int,                            help='Sampling rate of the synthetic signal.                                  (default: {})'.format(128))
     parser.add_argument('--noise',      default=0.01,            type=float,                              help='The amount of noise that should be added to signal.                     (default: {})'.format(0.01))
-    parser.add_argument('--type',       default='ecg',           choices=['ecg','ppg','rsp','eda','emg'], help='The type of signal to synthesize.                                       (default: {})'.format('ecg'))
     parser.add_argument('--bpm',        default=70,              type=pos_int,                            help='Beats per minute for signal. Used in ECG and PPG.                       (default: {})'.format(70))
     parser.add_argument('--ecg-method', default='ecgsyn',        choices=['ecgsyn','simple'],             help='The model used to generate the ECG signal.                              (default: {})'.format('ecgsyn'))
     parser.add_argument('--resp',       default=15,              type=pos_int,                            help='Respiratory rate (breath cycle per second). Used in RSP.                (default: {})'.format(15))
@@ -87,6 +93,8 @@ def get_args():
         # Overload default args from yaml if set.
         try: args.name       = conf['name']
         except KeyError: pass
+        try: args.type       = conf['type']
+        except KeyError: pass
         try: args.chunk      = conf['chunk']
         except KeyError: pass
         try: args.seconds    = conf['seconds']
@@ -94,8 +102,6 @@ def get_args():
         try: args.rate       = conf['rate']
         except KeyError: pass
         try: args.noise      = conf['noise']
-        except KeyError: pass
-        try: args.type       = conf['type']
         except KeyError: pass
         try: args.bpm        = conf['bpm']
         except KeyError: pass
@@ -130,7 +136,7 @@ def get_args():
         errPrint("\n")
         print("  Type ``{}`` is not supported. Please provide the program with one of the following types: ecg, ppg, rsp, eda, emg".format(args.type))
         print(" ")      
-    if args.ecg_meth.upper() not in ['ECGSYN', 'SIMPLE']:
+    if args.ecg_method.upper() not in ['ECGSYN', 'SIMPLE']:
         if not errOccurr:
             parser.print_help()
             errOccurr = True
@@ -138,7 +144,7 @@ def get_args():
         errPrint("\n")
         print("  ECG-Method ``{}`` is not supported. Please provide the program with one of the following types: ecgsyn, simple".format(args.ecg_meth))
         print(" ")
-    if args.rsp_meth.upper() not in ['BREATHMETRICS', 'SINUSOIDAL']:
+    if args.rsp_method.upper() not in ['BREATHMETRICS', 'SINUSOIDAL']:
         if not errOccurr:
             parser.print_help()
             errOccurr = True
@@ -159,15 +165,23 @@ def get_args():
     return args
 
 
-class neurokitSimulator(object):
+# ===================
+# Main Implementation
+# ===================
 
+class neurokitSimulator(object):
+    """
+    A simple streamer which encapsulates the use of neurokit2's
+    simulate methods for various physiological signals.  
+    Synthetic data is then forwarded out onto lab streaming layer.
+    """
     def __init__(self, args):
 
         # Store the args used after init.
         self.name    = args.name
+        self.type    = args.type.upper()
         self.chunk   = args.chunk
         self.rate    = args.rate
-        self.type    = args.type.upper()
         self.loop    = args.loop
         self.plot    = args.plot
         self.verb    = args.verbose
@@ -178,7 +192,7 @@ class neurokitSimulator(object):
 
         # Initialize the information for the stream.
         self.info = StreamInfo(
-            name           = "/{}/{}".format(self.name, args.type.upper()),
+            name           = "/{}/{}".format(self.name, self.type),
             channel_count  = 1, 
             nominal_srate  = self.rate, 
             channel_format = 'double64', 
@@ -197,7 +211,7 @@ class neurokitSimulator(object):
                 sampling_rate = self.rate,
                 noise         = args.noise,
                 heart_rate    = args.bpm,
-                method        = args.ecg_meth
+                method        = args.ecg_method
             )
         if self.type == 'PPG':
             self.simulated = nk.ppg_simulate(
@@ -212,7 +226,7 @@ class neurokitSimulator(object):
                 sampling_rate    = self.rate,
                 noise            = args.noise,
                 respiratory_rate = args.resp,
-                method           = args.rsp_meth
+                method           = args.rsp_method
             )
         if self.type == 'EDA':
             self.simulated = nk.eda_simulate(
@@ -307,10 +321,42 @@ class neurokitSimulator(object):
         return
 
 
+# ===================
+# Program Entry Point
+# ===================
+
 def main():
 
     # Get parameters from a user.
     args = get_args()
+
+    # Flush args to the screen.
+    print("\n")
+    print(" "*11, "[Neurokit Simulator]"); print(" "*2, "="*38)
+    print(" -- Stream Name        : {}".format("/{}/{}".format(args.name, args.type.upper())))
+    print(" -- Chunk Size         : {}".format(args.chunk))
+    print(" -- Seconds of Data    : {}".format(args.seconds))
+    print(" -- Sampling Rate      : {}".format(args.rate))
+    print(" -- Signal Noise       : {}".format(args.noise))
+    if args.type.upper() == "ECG":
+        print(" -- Beats per Minute   : {}".format(args.bpm))
+        print(" -- ECG Synth Method   : {}".format(args.ecg_method))
+    if args.type.upper() == "PPG":
+        print(" -- Beats per Minute   : {}".format(args.bpm))
+    if args.type.upper() == "RSP":
+        print(" -- Respiratory Rate   : {}".format(args.resp))
+        print(" -- RSP Synth Method   : {}".format(args.rsp_method))
+    if args.type.upper() == "EDA":
+        print(" -- Skin Conductance   : {}".format(args.scr))
+        print(" -- Slope of Lin Drift : {}".format(args.drift))
+    if args.type.upper() == "EMG":
+        print(" -- Number of Bursts   : {}".format(args.bnum))
+        print(" -- Duration of Bursts : {}".format(args.bdur))
+    print(" -- Loop when finished : {}".format("ENABLED" if args.loop else "DISABLED"))
+    print(" -- Plot Data Sent     : {}".format("ENABLED" if args.plot else "DISABLED"))
+    print(" -- Verbose Output     : {}".format("ENABLED" if args.verbose else "DISABLED"))
+    print("\n")
+    
     
     # Initialize the stream simulator module.
     simStream = neurokitSimulator(args)

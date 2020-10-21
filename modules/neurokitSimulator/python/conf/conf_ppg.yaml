@@ -1,0 +1,8 @@
+name: ppgSim
+type: ppg
+chunk: 32
+seconds: 10
+rate: 128
+noise: 0.08
+bpm: 89
+loop: True

@@ -1,0 +1,9 @@
+name: emgSim
+type: emg
+chunk: 32
+seconds: 10
+rate: 128
+noise: 0.42
+bnum: 5
+bdur: 0.89
+loop: True

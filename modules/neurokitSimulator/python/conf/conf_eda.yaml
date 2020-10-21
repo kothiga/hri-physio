@@ -1,0 +1,9 @@
+name: edaSim
+type: eda
+chunk: 32
+seconds: 10
+rate: 128
+noise: 0.13
+scr: 5
+drift: -0.08
+loop: True
