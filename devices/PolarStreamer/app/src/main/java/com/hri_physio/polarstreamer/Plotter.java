@@ -2,7 +2,6 @@ package com.hri_physio.polarstreamer;
 
 import android.content.Context;
 import android.graphics.Paint;
-
 import com.androidplot.xy.AdvancedLineAndPointRenderer;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeries;

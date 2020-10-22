@@ -41,5 +41,6 @@
     <string name="G4">4 g</string>
     <string name="G8">8 g</string>
     <string name="range_setting">Range</string>
-    <string name="sampling_rate_setting">Sampling Rate</string>>
+    <string name="sampling_rate_setting">Sampling Rate</string>
+    <string name="show_plots">Show Plots</string>string>
 </resources>

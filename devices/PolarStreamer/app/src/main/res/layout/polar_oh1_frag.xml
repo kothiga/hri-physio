@@ -145,12 +145,23 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/timer_frag2" />
 
+        <ToggleButton
+            android:id="@+id/start_acc_frag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="20dp"
+            android:textOff="Start Acc"
+            android:textOn="Stop Acc"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hrView_frag2" />
+
         <TextView
             android:id="@+id/accView_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginStart="112dp"
+            android:layout_marginTop="36dp"
             android:text="@string/acc"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -160,17 +171,28 @@
             android:id="@+id/acc_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="200dp"
-            android:layout_marginTop="32dp"
+            android:layout_marginStart="308dp"
+            android:layout_marginTop="36dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/hr_frag2" />
+
+        <ToggleButton
+            android:id="@+id/start_ppg_frag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:layout_marginTop="8dp"
+            android:textOff="start ppg"
+            android:textOn="stop ppg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/accView_frag2" />
 
         <TextView
             android:id="@+id/ppgView_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="108dp"
             android:layout_marginTop="32dp"
             android:text="@string/ppg"
             android:textSize="18sp"
@@ -181,18 +203,29 @@
             android:id="@+id/ppg_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="88dp"
+            android:layout_marginStart="172dp"
             android:layout_marginTop="32dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/acc_frag2" />
 
+        <ToggleButton
+            android:id="@+id/start_ppi_frag2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="4dp"
+            android:textOff="start ppi"
+            android:textOn="stop ppi"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/start_ppg_frag2" />
+
         <TextView
             android:id="@+id/ppiView_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginStart="112dp"
+            android:layout_marginTop="16dp"
             android:text="@string/ppi"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -202,11 +235,158 @@
             android:id="@+id/ppi_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="88dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginStart="164dp"
+            android:layout_marginTop="16dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ppg_frag2" />
+
+
+        <TextView
+            android:id="@+id/show_plots"
+            android:layout_width="128dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="24dp"
+            android:text="@string/show_plots"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/ppi_frag2" />
+
+        <RadioGroup
+            android:id="@+id/radioGroupShowPlots"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@+id/show_plots" >
+
+            <RadioButton
+                android:id="@+id/hr_plot"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:text="@string/hr"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/show_plots"/>
+
+            <RadioButton
+                android:id="@+id/acc_plot"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/acc"
+                app:layout_constraintStart_toEndOf="@id/hr_plot"
+                app:layout_constraintTop_toBottomOf="@id/show_plots" />
+
+            <RadioButton
+                android:id="@+id/ppg_plot"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="@string/ppg"
+                app:layout_constraintStart_toEndOf="@id/acc_plot"
+                app:layout_constraintTop_toBottomOf="@id/show_plots" />
+        </RadioGroup>
+
+
+        <com.androidplot.xy.XYPlot
+            android:id="@+id/plotHR"
+            style="@style/FullScreenGraph"
+            android:layout_width="325dp"
+            android:layout_height="230dp"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="76dp"
+            android:layout_marginEnd="8dp"
+            app:backgroundColor="@color/design_default_color_background"
+            app:graphBackgroundColor="@color/design_default_color_background"
+            app:graphMarginBottom="12dp"
+            app:graphMarginLeft="30dp"
+
+            app:graphMarginRight="8dp"
+            app:graphMarginTop="20dp"
+            app:gridBackgroundColor="#F1F4F4"
+            app:gridInsetLeft="25dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.1"
+            app:layout_constraintStart_toStartOf="parent"
+
+            app:layout_constraintTop_toBottomOf="@id/show_plots"
+            app:lineLabels="left"
+            app:paddingBottom="10dp"
+            app:paddingLeft="5dp"
+            app:paddingRight="5dp"
+            app:paddingTop="5dp"
+            app:rangeTitle="@string/hr_range_title"
+            app:rangeTitleTextColor="#000000"
+            app:rangeTitleTextSize="14dp"
+            app:renderMode="use_background_thread"
+            app:title="@string/hr_title"
+            app:titleTextColor="#000000"
+            app:titleTextSize="15dp" />
+
+        <com.androidplot.xy.XYPlot
+            android:id="@+id/plotACC"
+            style="@style/FullScreenGraph"
+            android:layout_width="324dp"
+            android:layout_height="234dp"
+            android:layout_marginTop="30dp"
+            android:layout_marginBottom="30dp"
+            app:backgroundColor="@color/design_default_color_background"
+            app:graphBackgroundColor="@color/design_default_color_background"
+            app:graphMarginBottom="12dp"
+            app:graphMarginLeft="30dp"
+            app:graphMarginRight="5dp"
+            app:graphMarginTop="20dp"
+            app:gridBackgroundColor="#F1F4F4"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.321"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/show_plots"
+            app:layout_constraintVertical_bias="1.0"
+            app:lineLabelInsetLeft="12dp"
+            app:lineLabels="left"
+            app:paddingBottom="10dp"
+            app:paddingLeft="5dp"
+            app:paddingRight="5dp"
+            app:paddingTop="5dp"
+            app:rangeTitle="@string/acc_range_title"
+            app:rangeTitleTextColor="#000000"
+            app:rangeTitleTextSize="14dp"
+            app:renderMode="use_background_thread"
+            app:title="@string/acc_title"
+            app:titleTextColor="#000000"
+            app:titleTextSize="15dp" />
+
+        <com.androidplot.xy.XYPlot
+            android:id="@+id/plotPPG"
+            style="@style/FullScreenGraph"
+            android:layout_width="274dp"
+            android:layout_height="184dp"
+            android:layout_marginTop="72dp"
+            app:backgroundColor="@color/design_default_color_background"
+            app:graphBackgroundColor="@color/design_default_color_background"
+            app:graphMarginBottom="12dp"
+            app:graphMarginLeft="30dp"
+
+            app:graphMarginRight="5dp"
+            app:graphMarginTop="20dp"
+            app:gridBackgroundColor="#F1F4F4"
+            app:layout_constraintEnd_toEndOf="parent"
+
+            app:layout_constraintHorizontal_bias="0.325"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/show_plots"
+            app:lineLabelInsetLeft="12dp"
+            app:lineLabels="left"
+            app:rangeTitle="@string/ppg_range_title"
+            app:rangeTitleTextColor="#000000"
+            app:rangeTitleTextSize="14dp"
+            app:renderMode="use_background_thread"
+            app:title="@string/ppg_title"
+            app:titleTextColor="#000000"
+            app:titleTextSize="15dp" />
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>

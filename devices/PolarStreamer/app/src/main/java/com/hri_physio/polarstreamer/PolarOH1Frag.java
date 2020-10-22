@@ -17,24 +17,32 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Chronometer;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
-
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
-
+import com.androidplot.xy.BoundaryMode;
+import com.androidplot.xy.StepMode;
+import com.androidplot.xy.XYGraphWidget;
+import com.androidplot.xy.XYPlot;
+import com.google.android.material.snackbar.Snackbar;
 import org.reactivestreams.Publisher;
-
+import java.text.DecimalFormat;
 import java.util.UUID;
-
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
+import io.reactivex.rxjava3.functions.Action;
+import io.reactivex.rxjava3.functions.Consumer;
 import io.reactivex.rxjava3.functions.Function;
+import io.reactivex.rxjava3.schedulers.Schedulers;
 import polar.com.sdk.api.PolarBleApi;
 import polar.com.sdk.api.PolarBleApiCallback;
 import polar.com.sdk.api.PolarBleApiDefaultImpl;
@@ -52,6 +60,7 @@ public class PolarOH1Frag extends Fragment {
     private String TAG = "Polar_OH1Frag";
     public PolarBleApi api;
     public Context classContext;
+    public Activity classActivity;
     public TextView textViewBattery;
     public TextView connectStatus;
     public TextView heartRate;
@@ -60,16 +69,56 @@ public class PolarOH1Frag extends Fragment {
     public TextView ppiData;
     public Chronometer showStartTime;
     public ToggleButton toggle;
-    public Disposable accDisposable;
-    public Disposable ppgDisposable;
-    public Disposable ppiDisposable;
-    public Activity classActivity;
+    public Disposable accDisposable = null;
+    public Disposable ppgDisposable = null;
+    public Disposable ppiDisposable = null;
+
+    // plot functionality
+    public ToggleButton togglePlotACC;
+    public ToggleButton togglePlotPPG;
+    public Boolean apiConnected = Boolean.FALSE;
+
+    private XYPlot plotHR, plotACC, plotPPG;
+    private TimePlotterHR timeplotter;
+    private TimePlotterACC timeplotterACC;
+    private Plotter timeplotterPPG;
+    public PlotterListener plotterListener = new PlotterListener() {
+        @Override
+        public void update() {
+            plotHR.redraw();
+            plotACC.redraw();
+            plotPPG.redraw();
+        }
+    };
+
+    //test
+    public ToggleButton startAcc;
+    public ToggleButton startPPG;
+    public ToggleButton startPPI;
+
+    // show plots
+    public RadioGroup showPlots;
+    public RadioButton hrPlot;
+    public RadioButton accPlot;
+    public RadioButton ppgPLot;
+
+
+
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.polar_oh1_frag, container, false);
         sharedPreferences = this.getActivity().getPreferences(Context.MODE_PRIVATE);
+
+        //Default to hide all plots at first
+        plotHR = view.findViewById(R.id.plotHR);
+        plotHR.setVisibility(View.GONE);
+        plotACC = view.findViewById(R.id.plotACC);
+        plotACC.setVisibility(View.GONE);
+        plotPPG = view.findViewById(R.id.plotPPG);
+        plotPPG.setVisibility(View.GONE);
+
 
         // Enter device ID text field
         EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID_frag2);
@@ -104,17 +153,217 @@ public class PolarOH1Frag extends Fragment {
             }
         });
 
+        // button linking to HR plot
+//        togglePlotHR = (ToggleButton) view.findViewById(R.id.plot_HR_button_frag2);
+//        togglePlotHR.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+//                if(!apiConnected){
+//                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
+//                            .setAction("Action", null).show();
+//                    togglePlotHR.setChecked(false);
+//                }
+//                else {
+//                    if (isChecked) {
+//                        //show plot
+//                        showPlotHR(view);
+//                        //togglePlotACC.setChecked(false);
+//                        togglePlotPPG.setChecked(false);
+//                    } else {
+//                        // hide plot
+//                        plotHR.clear();
+//                        plotHR.setVisibility(View.GONE);
+//                    }
+//                }
+//            }
+//        });
+
+        // start acc streaming
+        togglePlotACC = (ToggleButton) view.findViewById(R.id.start_acc_frag2);
+        togglePlotACC.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!apiConnected){
+                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    togglePlotACC.setChecked(false);
+                }
+                else {
+                    if (isChecked) {
+
+                        // test
+                        if(accDisposable == null) {
+                            accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
+                                PolarSensorSetting sensorSetting = settings.maxSettings();
+                                return api.startAccStreaming(DEVICE_ID, sensorSetting);
+                            }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                                    new Consumer<PolarAccelerometerData>() {
+                                        @Override
+                                        public void accept(PolarAccelerometerData polarAccData) throws Exception {
+                                            Log.d(TAG, "accelerometer update");
+                                            accelerometerData.setText("    x: " + polarAccData.samples.get(0).x + "mG   y: " + polarAccData.samples.get(0).y + "mG   z: "+ polarAccData.samples.get(0).z + "mG");
+                                            timeplotterACC.addValues(polarAccData.samples.get(0));
+                                        }
+                                    },
+
+                                    new Consumer<Throwable>() {
+                                        @Override
+                                        public void accept(Throwable throwable) throws Exception {
+                                            Log.e(TAG, "" + throwable.getLocalizedMessage());
+                                            accDisposable = null;
+                                        }
+                                    },
+
+                                    new Action() {
+                                        @Override
+                                        public void run() throws Exception {
+                                            Log.d(TAG, "complete");
+                                        }
+                                    }
+                            );
+                        } else {
+                            // NOTE dispose will stop streaming if it is "running"
+                            accDisposable.dispose();
+                            accDisposable = null;
+                        }
+
+                        //show plot
+                        showPlotACC(view);
+                        plotACC.clear();
+                        plotACC.setVisibility(View.GONE);
+                    } else {
+                        accelerometerData.setText("");
+                    }
+                }
+            }
+        });
+
+        // start ppg streaming
+        togglePlotPPG = (ToggleButton) view.findViewById(R.id.start_ppg_frag2);
+        togglePlotPPG.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!apiConnected){
+                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    togglePlotPPG.setChecked(false);
+                }
+                else {
+                    if (isChecked) {
+
+                        // test
+                        if(ppgDisposable == null) {
+                            ppgDisposable = api.requestPpgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>) polarPPGSettings -> api.startOhrPPGStreaming(DEVICE_ID,polarPPGSettings.maxSettings())).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                                    new Consumer<PolarOhrPPGData>() {
+                                        @Override
+                                        public void accept(PolarOhrPPGData polarPPGData) throws Exception {
+                                            Log.d(TAG, "accelerometer update");
+                                            float avg = (polarPPGData.samples.get(0).ppg0 + polarPPGData.samples.get(0).ppg1 + polarPPGData.samples.get(0).ppg2) / 3;
+                                            ppgData.setText("ppg0: " + polarPPGData.samples.get(0).ppg0 + "   ppg1: " + polarPPGData.samples.get(0).ppg1 + "   ppg2: " + polarPPGData.samples.get(0).ppg2);
+                                            timeplotterPPG.sendSingleSample((float) ((float) avg));
+                                        }
+                                    },
+                                    new Consumer<Throwable>() {
+                                        @Override
+                                        public void accept(Throwable throwable) throws Exception {
+                                            Log.e(TAG, "" + throwable.getLocalizedMessage());
+                                            ppgDisposable = null;
+                                        }
+                                    },
+                                    new Action() {
+                                        @Override
+                                        public void run() throws Exception {
+                                            Log.d(TAG, "complete");
+                                        }
+                                    }
+                            );
+                        } else {
+                            ppgDisposable.dispose();
+                            ppgDisposable = null;
+                        }
+
+                        //show plot
+                        showPlotPPG(view);
+                        plotPPG.clear();
+                        plotPPG.setVisibility(View.GONE);
+                    } else {
+                        ppgData.setText("");
+                    }
+                }
+            }
+        });
+
+        // start PPi streaming
+        startPPI = (ToggleButton) view.findViewById(R.id.start_ppi_frag2);
+        startPPI.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if(!apiConnected){
+                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
+                            .setAction("Action", null).show();
+                    startPPI.setChecked(false);
+                }
+                else {
+                    if (isChecked) {
+                        if(ppiDisposable == null) {
+                            ppiDisposable = api.startOhrPPIStreaming(DEVICE_ID).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                                    polarOhrPPIData -> {
+                                        // display data in UI
+                                        ppiData.setText(polarOhrPPIData.samples.get(0).ppi + "ms");
+                                    },
+                                    throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
+                                    () -> Log.d(TAG,"complete")
+                            );
+                        } else {
+                            ppiDisposable.dispose();
+                            ppiDisposable = null;
+                        }
+                    } else {
+                        ppiData.setText("");
+                    }
+                }
+            }
+        });
+
+        // set show plots radio buttons
+        showPlots = (RadioGroup) view.findViewById(R.id.radioGroupShowPlots);
+        hrPlot = (RadioButton) view.findViewById(R.id.hr_plot);
+        accPlot = (RadioButton) view.findViewById(R.id.acc_plot);
+        ppgPLot = (RadioButton) view.findViewById(R.id.ppg_plot);
+
+
+        showPlots.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(RadioGroup group, int checkedId) {
+                if(checkedId == R.id.hr_plot) {
+                    plotPPG.clear();
+                    plotPPG.setVisibility(View.GONE);
+                    plotACC.clear();
+                    plotACC.setVisibility(View.GONE);
+                    showPlotHR(view);
+                    plotHR.setVisibility(View.VISIBLE);
+                } else if(checkedId == R.id.acc_plot) {
+                    plotPPG.clear();
+                    plotPPG.setVisibility(View.GONE);
+                    plotHR.clear();
+                    plotHR.setVisibility(View.GONE);
+                    showPlotACC(view);
+                    plotACC.setVisibility(View.VISIBLE);
+                } else if(checkedId == R.id.ppg_plot) {
+                    plotACC.clear();
+                    plotACC.setVisibility(View.GONE);
+                    plotHR.clear();
+                    plotHR.setVisibility(View.GONE);
+                    showPlotPPG(view);
+                }
+            }
+        });
+
         // set up properties
         classContext = this.getActivity().getApplicationContext();
         classActivity = this.getActivity();
-
         textViewBattery = (TextView) view.findViewById(R.id.battery_frag2);
         connectStatus = (TextView) view.findViewById(R.id.status_frag2);
         heartRate = (TextView) view.findViewById(R.id.hr_frag2);
         accelerometerData = (TextView) view.findViewById(R.id.acc_frag2);
         ppgData = (TextView) view.findViewById(R.id.ppg_frag2);
         ppiData = (TextView) view.findViewById(R.id.ppi_frag2);
-
         showStartTime = (Chronometer) view.findViewById(R.id.timer_frag2);
         showStartTime.setBase(SystemClock.elapsedRealtime());
         showStartTime.setFormat("00:%s");
@@ -129,7 +378,7 @@ public class PolarOH1Frag extends Fragment {
             }
         });
 
-        // Override some methods of api
+
         api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
                 PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
                         PolarBleApi.FEATURE_BATTERY_INFO |
@@ -154,16 +403,16 @@ public class PolarOH1Frag extends Fragment {
                 accelerometerData.setText("loading data...");
                 ppgData.setText("loading data...");
                 ppiData.setText("loading data...");
+                apiConnected = Boolean.TRUE;
             }
 
             @Override
             public void deviceConnecting(PolarDeviceInfo polarDeviceInfo) {
-
             }
 
             @Override
             public void deviceDisconnected(PolarDeviceInfo s) {
-
+                apiConnected = Boolean.FALSE;
             }
 
             @Override
@@ -174,59 +423,18 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void accelerometerFeatureReady(String s) {
                 Log.d(TAG, "ACC Feature ready " + s);
-                if(accDisposable == null) {
-                    accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
-                                PolarSensorSetting sensorSetting = settings.maxSettings();
-                                return api.startAccStreaming(DEVICE_ID, sensorSetting);
-                            }).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                            polarAccelerometerData -> {
-                                accelerometerData.setText("    x: " + polarAccelerometerData.samples.get(0).x + "mG   y: " + polarAccelerometerData.samples.get(0).y + "mG   z: "+ polarAccelerometerData.samples.get(0).z + "mG");
-                            },
-                            throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
-                            () -> Log.d(TAG,"complete")
-                    );
-                } else {
-                    // NOTE dispose will stop streaming if it is "running"
-                    accDisposable.dispose();
-                    accDisposable = null;
-                }
+                //Toast.makeText(classContext, "acc ready", Toast.LENGTH_LONG).show();
+                //Snackbar.make(view, "acc ready", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             }
 
             @Override
             public void ppgFeatureReady(String s) {
                 Log.d(TAG, "PPG Feature ready " + s);
-                if(ppgDisposable == null) {
-                    ppgDisposable = api.requestPpgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarOhrPPGData>>) polarPPGSettings -> api.startOhrPPGStreaming(DEVICE_ID,polarPPGSettings.maxSettings())).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                            polarOhrPPGData -> {
-                            // display data in UI
-                            ppgData.setText("ppg0: " + polarOhrPPGData.samples.get(0).ppg0 + "   ppg1: " + polarOhrPPGData.samples.get(0).ppg1 + "   ppg2: " + polarOhrPPGData.samples.get(0).ppg2);
-                            },
-                            throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
-                            () -> Log.d(TAG,"complete")
-                    );
-                } else {
-                    ppgDisposable.dispose();
-                    ppgDisposable = null;
-                }
-
             }
 
             @Override
             public void ppiFeatureReady(String s) {
                 Log.d(TAG, "PPI Feature ready " + s);
-                if(ppiDisposable == null) {
-                    ppiDisposable = api.startOhrPPIStreaming(DEVICE_ID).observeOn(AndroidSchedulers.mainThread()).subscribe(
-                            polarOhrPPIData -> {
-                                // display data in UI
-                                ppiData.setText(polarOhrPPIData.samples.get(0).ppi + "ms");
-                            },
-                            throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
-                            () -> Log.d(TAG,"complete")
-                    );
-                } else {
-                    ppiDisposable.dispose();
-                    ppiDisposable = null;
-                }
             }
 
             @Override
@@ -237,7 +445,6 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void hrFeatureReady(String s) {
                 Log.d(TAG, "HR Feature ready " + s);
-                //accelerometerData.setText("ready");
             }
 
             @Override
@@ -245,7 +452,6 @@ public class PolarOH1Frag extends Fragment {
                 if( u.equals(UUID.fromString("00002a28-0000-1000-8000-00805f9b34fb"))) {
                     String msg = "Firmware: " + s1.trim();
                     Log.d(TAG, "Firmware: " + s + " " + s1.trim());
-                    //textViewFW.append(msg + "\n");
                 }
             }
 
@@ -257,10 +463,10 @@ public class PolarOH1Frag extends Fragment {
             }
 
             @Override
-            public void hrNotificationReceived(String s,
-                                               PolarHrData polarHrData) {
+            public void hrNotificationReceived(String s, PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
+                timeplotter.addValues(polarHrData);
             }
 
             @Override
@@ -346,12 +552,69 @@ public class PolarOH1Frag extends Fragment {
             accDisposable = null;
             ppgDisposable = null;
             ppiDisposable = null;
-
             textViewBattery.setText("");
             connectStatus.setText("");
             Log.d(TAG, "finish");
         } catch (PolarInvalidArgument a){
             a.printStackTrace();
         }
+        //plotHR.setVisibility(View.GONE);
+        //togglePlotACC.setChecked(false);
+        //plotACC.setVisibility(View.GONE);
     }
+
+    public void showPlotHR(View view){
+        plotHR.setVisibility(View.VISIBLE);
+        // Plot HR/RR graph
+        timeplotter = new TimePlotterHR(classContext, "HR/RR");
+        timeplotter.setListener(plotterListener);
+        plotHR.addSeries(timeplotter.getHrSeries(), timeplotter.getHrFormatter());
+        plotHR.addSeries(timeplotter.getRrSeries(), timeplotter.getRrFormatter());
+        plotHR.setRangeBoundaries(50, 100,
+                BoundaryMode.AUTO);
+        plotHR.setDomainBoundaries(0, 360000,
+                BoundaryMode.AUTO);
+        // Left labels will increment by 2
+        plotHR.setRangeStep(StepMode.SUBDIVIDE, 5);
+        plotHR.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
+        // Make left labels be an integer (no decimal places)
+        plotHR.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
+                setFormat(new DecimalFormat("#"));
+        plotHR.getLegend().setVisible(true);
+    }
+
+    public void showPlotACC(View view){
+        plotACC.setVisibility(View.VISIBLE);
+        //Plot ACC graph
+        timeplotterACC = new TimePlotterACC(classContext, "ACC");
+        timeplotterACC.setListener(plotterListener);
+        plotACC.addSeries(timeplotterACC.getAccXSeries(), timeplotterACC.getAccXFormatter());
+        plotACC.addSeries(timeplotterACC.getAccYSeries(), timeplotterACC.getAccYFormatter());
+        plotACC.addSeries(timeplotterACC.getAccZSeries(), timeplotterACC.getAccZFormatter());
+        plotACC.setRangeBoundaries(-1000, 1000,
+                BoundaryMode.AUTO);
+        plotACC.setDomainBoundaries(0, 360000,
+                BoundaryMode.AUTO);
+        // Left labels
+        plotACC.setRangeStep(StepMode.SUBDIVIDE, 10);
+        plotACC.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
+        // Make left labels be an integer (no decimal places)
+        plotACC.getGraph().getLineLabelStyle(XYGraphWidget.Edge.LEFT).
+                setFormat(new DecimalFormat("#"));
+        plotACC.getLegend().setVisible(true);
+    }
+
+    public void showPlotPPG(View view) {
+        plotPPG.setVisibility(View.VISIBLE);
+        timeplotterPPG = new Plotter(classContext, "PPG");
+        timeplotterPPG.setListener(plotterListener);
+        plotPPG.addSeries(timeplotterPPG.getSeries(), timeplotterPPG.getFormatter());
+        plotPPG.setRangeBoundaries(200000, 500000, BoundaryMode.AUTO);
+        plotPPG.setRangeStep(StepMode.INCREMENT_BY_FIT, 50000);
+        plotPPG.setDomainBoundaries(0, 500, BoundaryMode.AUTO);
+        plotPPG.setLinesPerRangeLabel(2);
+
+    }
+
+
 }
