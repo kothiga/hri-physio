@@ -7,8 +7,8 @@
     android:layout_height="match_parent">
 
     <androidx.constraintlayout.widget.ConstraintLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <TextView
             android:id="@+id/idView_frag1"
@@ -35,41 +35,43 @@
             app:layout_constraintTop_toTopOf="parent"
             tools:ignore="Suspicious0dp" />
 
-        <TextView
-            android:id="@+id/connectView_frag1"
-            android:layout_width="129dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="30dp"
-            android:text="@string/connection_device_view"
-            android:textSize="18sp"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/idView_frag1" />
+        <!--        <TextView-->
+        <!--            android:id="@+id/connectView_frag1"-->
+        <!--            android:layout_width="129dp"-->
+        <!--            android:layout_height="wrap_content"-->
+        <!--            android:layout_marginStart="30dp"-->
+        <!--            android:layout_marginTop="30dp"-->
+        <!--            android:text="@string/connection_device_view"-->
+        <!--            android:textSize="18sp"-->
+        <!--            app:layout_constraintStart_toStartOf="parent"-->
+        <!--            app:layout_constraintTop_toBottomOf="@id/idView_frag1" />-->
 
         <ToggleButton
             android:id="@+id/start_stop_connection_frag1"
             style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="60dp"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="10dp"
             android:background="@android:color/white"
             android:textColor="@color/colorPrimary"
             android:textOff="Start Connection"
             android:textOn="Stop Connection"
-            app:layout_constraintEnd_toStartOf="@+id/setting_button"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/editTextSetID_frag1" />
 
         <Button
             android:id="@+id/setting_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
             android:layout_marginTop="16dp"
-            android:layout_marginEnd="10dp"
+            android:layout_marginEnd="30dp"
             android:background="@android:color/white"
             android:text="setting"
             android:textColor="@color/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@+id/start_stop_connection_frag1"
             app:layout_constraintTop_toBottomOf="@id/editTextSetID_frag1" />
 
         <TextView
@@ -77,11 +79,11 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
-            android:layout_marginTop="30dp"
+            android:layout_marginTop="20dp"
             android:text="@string/connection_status_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectView_frag1" />
+            app:layout_constraintTop_toBottomOf="@id/start_stop_connection_frag1" />
 
         <TextView
             android:id="@+id/status_frag1"
@@ -102,20 +104,20 @@
             android:text="@string/battery_view"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/connectStatusView_frag1" />
+            app:layout_constraintTop_toBottomOf="@id/connectStatusView_frag1" />
 
         <TextView
             android:id="@+id/battery_frag1"
-            android:layout_width="0dp"
-            android:layout_height="18dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
             android:layout_marginTop="30dp"
             android:textSize="18sp"
             app:layout_constraintStart_toEndOf="@id/batteryView_frag1"
-            app:layout_constraintTop_toBottomOf="@+id/status_frag1" />
+            app:layout_constraintTop_toBottomOf="@id/connectStatusView_frag1" />
 
         <TextView
-            android:id="@+id/Timer_frag1"
+            android:id="@+id/timerView_frag1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="30dp"
@@ -133,50 +135,143 @@
             android:layout_marginTop="30dp"
             android:textColor="@color/ap_gray"
             android:textSize="18sp"
-            app:layout_constraintStart_toEndOf="@id/Timer_frag1"
-            app:layout_constraintTop_toBottomOf="@+id/battery_frag1" />
+            app:layout_constraintStart_toEndOf="@id/timerView_frag1"
+            app:layout_constraintTop_toBottomOf="@id/batteryView_frag1" />
+
+        <TextView
+            android:id="@+id/hrView_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/hr"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/timerView_frag1" />
+
+        <TextView
+            android:id="@+id/hr_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="32dp"
+            android:textSize="18sp"
+            app:layout_constraintStart_toEndOf="@id/hrView_frag1"
+            app:layout_constraintTop_toBottomOf="@id/timerView_frag1" />
+
+        <TextView
+            android:id="@+id/accView_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/acc"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/hrView_frag1" />
+
+        <TextView
+            android:id="@+id/acc_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="32dp"
+            android:textSize="18sp"
+            app:layout_constraintStart_toEndOf="@id/accView_frag1"
+            app:layout_constraintTop_toBottomOf="@id/hrView_frag1" />
+
+        <TextView
+            android:id="@+id/ecgView_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="32dp"
+            android:text="@string/ecg_name"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/accView_frag1" />
+
+
+        <TextView
+            android:id="@+id/ecg_frag1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginTop="30dp"
+            android:textSize="18sp"
+            app:layout_constraintStart_toEndOf="@+id/ecgView_frag1"
+            app:layout_constraintTop_toBottomOf="@id/accView_frag1" />
+
+<!--        <ToggleButton-->
+<!--            android:id="@+id/stream_HR_button_frag1"-->
+<!--            style="@style/Widget.AppCompat.Button"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginStart="40dp"-->
+<!--            android:layout_marginTop="32dp"-->
+<!--            android:background="@android:color/white"-->
+<!--            android:textColor="@color/colorPrimary"-->
+<!--            android:textOff="Stream HR"-->
+<!--            android:textOn="Pause Stream"-->
+<!--            app:layout_constraintStart_toStartOf="parent"-->
+<!--            app:layout_constraintTop_toBottomOf="@+id/ecg_frag1" />-->
 
         <ToggleButton
-            android:id="@+id/plot_HR_button_frag1"
+            android:id="@+id/stream_ECG_button_frag1"
             style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="20dp"
             android:background="@android:color/white"
             android:textColor="@color/colorPrimary"
-            android:textOff="Show graph"
-            android:textOn="Hide graph"
+            android:textOff="Stream ECG"
+            android:textOn="Pause Stream"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/Timer_frag1" />
+            app:layout_constraintTop_toBottomOf="@id/ecg_frag1" />
 
         <ToggleButton
-            android:id="@+id/plot_ECG_button_frag1"
+            android:id="@+id/stream_ACC_button_frag1"
             style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
             android:background="@android:color/white"
             android:textColor="@color/colorPrimary"
-            android:textOff="Show graph"
-            android:textOn="Hide graph"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/plotHR" />
+            android:textOff="Stream ACC"
+            android:textOn="Pause Stream"
+            app:layout_constraintStart_toEndOf="@+id/stream_ECG_button_frag1"
+            app:layout_constraintTop_toBottomOf="@id/ecg_frag1" />
 
-        <ToggleButton
-            android:id="@+id/plot_ACC_button_frag1"
-            style="@style/Widget.AppCompat.Button"
+        <RadioGroup
+            android:id="@+id/radioGroupPlots"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="40dp"
-            android:layout_marginTop="8dp"
-            android:background="@android:color/white"
-            android:textColor="@color/colorPrimary"
-            android:textOff="Show graph"
-            android:textOn="Hide graph"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/plotECG" />
+            app:layout_constraintTop_toBottomOf="@id/stream_ACC_button_frag1">
+
+            <RadioButton
+                android:id="@+id/radioButtonHR"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/hr_radio_button" />
+
+            <RadioButton
+                android:id="@+id/radioButtonECG"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/ECG_radio_button" />
+
+            <RadioButton
+                android:id="@+id/radioButtonACC"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:text="@string/ACC_radio_button" />
+        </RadioGroup>
 
         <com.androidplot.xy.XYPlot
             android:id="@+id/plotHR"
@@ -197,7 +292,7 @@
             app:gridInsetLeft="25dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/plot_HR_button_frag1"
+            app:layout_constraintTop_toBottomOf="@id/radioGroupPlots"
 
             app:lineLabels="left"
             app:paddingBottom="10dp"
@@ -215,7 +310,7 @@
         <com.androidplot.xy.XYPlot
             android:id="@+id/plotECG"
             style="@style/FullScreenGraph"
-            android:layout_width="325dp"
+            android:layout_width="321dp"
             android:layout_height="230dp"
             android:layout_marginTop="30dp"
             app:backgroundColor="@color/design_default_color_background"
@@ -227,9 +322,8 @@
             app:graphMarginTop="20dp"
             app:gridBackgroundColor="#F1F4F4"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.494"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/plot_ECG_button_frag1"
+            app:layout_constraintTop_toBottomOf="@id/radioGroupPlots"
 
             app:lineLabelInsetLeft="12dp"
             app:lineLabels="left"
@@ -256,19 +350,17 @@
             app:graphMarginRight="5dp"
             app:graphMarginTop="20dp"
             app:gridBackgroundColor="#F1F4F4"
-            app:layout_constraintBottom_toBottomOf="parent"
+
 
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.505"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/plot_ACC_button_frag1"
-            app:layout_constraintVertical_bias="1.0"
+            app:layout_constraintTop_toBottomOf="@id/radioGroupPlots"
+            app:lineLabelInsetLeft="12dp"
+            app:lineLabels="left"
             app:paddingBottom="10dp"
             app:paddingLeft="5dp"
             app:paddingRight="5dp"
             app:paddingTop="5dp"
-            app:lineLabelInsetLeft="12dp"
-            app:lineLabels="left"
             app:rangeTitle="@string/acc_range_title"
             app:rangeTitleTextColor="#000000"
             app:rangeTitleTextSize="14dp"
