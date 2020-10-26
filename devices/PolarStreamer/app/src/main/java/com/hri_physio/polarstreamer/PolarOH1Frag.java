@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -28,6 +29,7 @@ import android.widget.Toast;
 import android.widget.ToggleButton;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.StepMode;
@@ -35,6 +37,9 @@ import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.google.android.material.snackbar.Snackbar;
 import org.reactivestreams.Publisher;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
 import java.util.UUID;
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -74,13 +79,11 @@ public class PolarOH1Frag extends Fragment {
     public Disposable ppiDisposable = null;
 
     // plot functionality
-    public ToggleButton togglePlotACC;
-    public ToggleButton togglePlotPPG;
     public Boolean apiConnected = Boolean.FALSE;
 
     private XYPlot plotHR, plotACC, plotPPG;
     private TimePlotterHR timeplotter;
-    private TimePlotterACC timeplotterACC;
+    private PlotterACC timeplotterACC;
     private Plotter timeplotterPPG;
     public PlotterListener plotterListener = new PlotterListener() {
         @Override
@@ -92,6 +95,8 @@ public class PolarOH1Frag extends Fragment {
     };
 
     //test
+    public ToggleButton togglePlotACC;
+    public ToggleButton togglePlotPPG;
     public ToggleButton startAcc;
     public ToggleButton startPPG;
     public ToggleButton startPPI;
@@ -102,8 +107,15 @@ public class PolarOH1Frag extends Fragment {
     public RadioButton accPlot;
     public RadioButton ppgPLot;
 
+    // export acc/ppg/ppi
+    public Button exportAcc;
+    public Button exportPpg;
+    public Button exportPpi;
 
-
+    // generate acc/ppg/ppi csv data
+    StringBuilder accCSV = new StringBuilder();
+    StringBuilder ppgCSV = new StringBuilder();
+    StringBuilder ppiCSV = new StringBuilder();
 
     @Nullable
     @Override
@@ -153,29 +165,8 @@ public class PolarOH1Frag extends Fragment {
             }
         });
 
-        // button linking to HR plot
-//        togglePlotHR = (ToggleButton) view.findViewById(R.id.plot_HR_button_frag2);
-//        togglePlotHR.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-//            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//                if(!apiConnected){
-//                    Snackbar.make(view, "Device is not connected. Please start device connection to view plot. ", Snackbar.LENGTH_LONG)
-//                            .setAction("Action", null).show();
-//                    togglePlotHR.setChecked(false);
-//                }
-//                else {
-//                    if (isChecked) {
-//                        //show plot
-//                        showPlotHR(view);
-//                        //togglePlotACC.setChecked(false);
-//                        togglePlotPPG.setChecked(false);
-//                    } else {
-//                        // hide plot
-//                        plotHR.clear();
-//                        plotHR.setVisibility(View.GONE);
-//                    }
-//                }
-//            }
-//        });
+        // edit accCSV file
+        accCSV.append("Timestamp, x, y, z");
 
         // start acc streaming
         togglePlotACC = (ToggleButton) view.findViewById(R.id.start_acc_frag2);
@@ -188,7 +179,7 @@ public class PolarOH1Frag extends Fragment {
                 }
                 else {
                     if (isChecked) {
-
+                        accelerometerData.setText("loading data...");
                         // test
                         if(accDisposable == null) {
                             accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
@@ -201,6 +192,8 @@ public class PolarOH1Frag extends Fragment {
                                             Log.d(TAG, "accelerometer update");
                                             accelerometerData.setText("    x: " + polarAccData.samples.get(0).x + "mG   y: " + polarAccData.samples.get(0).y + "mG   z: "+ polarAccData.samples.get(0).z + "mG");
                                             timeplotterACC.addValues(polarAccData.samples.get(0));
+                                            String val = new BigDecimal(polarAccData.timeStamp).toPlainString();
+                                            accCSV.append("\n"+"#"+val+","+polarAccData.samples.get(0).x+","+polarAccData.samples.get(0).y+","+polarAccData.samples.get(0).z);
                                         }
                                     },
 
@@ -230,11 +223,19 @@ public class PolarOH1Frag extends Fragment {
                         plotACC.clear();
                         plotACC.setVisibility(View.GONE);
                     } else {
+                        if (accDisposable != null) {
+                            accDisposable.dispose();
+                            accDisposable = null;
+                        }
                         accelerometerData.setText("");
                     }
                 }
             }
         });
+
+
+        // edit ppg CSV
+        ppgCSV.append("Timestamp, ppg0, ppg1, ppg2");
 
         // start ppg streaming
         togglePlotPPG = (ToggleButton) view.findViewById(R.id.start_ppg_frag2);
@@ -258,6 +259,7 @@ public class PolarOH1Frag extends Fragment {
                                             float avg = (polarPPGData.samples.get(0).ppg0 + polarPPGData.samples.get(0).ppg1 + polarPPGData.samples.get(0).ppg2) / 3;
                                             ppgData.setText("ppg0: " + polarPPGData.samples.get(0).ppg0 + "   ppg1: " + polarPPGData.samples.get(0).ppg1 + "   ppg2: " + polarPPGData.samples.get(0).ppg2);
                                             timeplotterPPG.sendSingleSample((float) ((float) avg));
+                                            ppgCSV.append("\n"+"#"+polarPPGData.timeStamp+","+polarPPGData.samples.get(0).ppg0+","+polarPPGData.samples.get(0).ppg1+","+polarPPGData.samples.get(0).ppg2);
                                         }
                                     },
                                     new Consumer<Throwable>() {
@@ -290,6 +292,9 @@ public class PolarOH1Frag extends Fragment {
             }
         });
 
+        // edit ppi CSV
+        ppiCSV.append("Timestamp, ppi");
+
         // start PPi streaming
         startPPI = (ToggleButton) view.findViewById(R.id.start_ppi_frag2);
         startPPI.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -306,6 +311,7 @@ public class PolarOH1Frag extends Fragment {
                                     polarOhrPPIData -> {
                                         // display data in UI
                                         ppiData.setText(polarOhrPPIData.samples.get(0).ppi + "ms");
+                                        ppiCSV.append("\n"+"#"+polarOhrPPIData.timeStamp+","+polarOhrPPIData.samples.get(0).ppi);
                                     },
                                     throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
                                     () -> Log.d(TAG,"complete")
@@ -377,6 +383,24 @@ public class PolarOH1Frag extends Fragment {
                 }
             }
         });
+
+
+        // export acc
+        exportAcc = (Button) view.findViewById(R.id.export_acc);
+        exportAcc.setOnClickListener(v -> {
+            showExportAccDialogue(view);
+        });
+        // export ppg
+        exportPpg = (Button) view.findViewById(R.id.export_ppg);
+        exportPpg.setOnClickListener(v-> {
+            showExportPpgDialogue(view);
+        });
+        // export ppi
+        exportPpi = (Button) view.findViewById(R.id.export_ppi);
+        exportPpi.setOnClickListener(v-> {
+            showExportPpiDialogue(view);
+        });
+
 
 
         api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
@@ -586,7 +610,7 @@ public class PolarOH1Frag extends Fragment {
     public void showPlotACC(View view){
         plotACC.setVisibility(View.VISIBLE);
         //Plot ACC graph
-        timeplotterACC = new TimePlotterACC(classContext, "ACC");
+        timeplotterACC = new PlotterACC(classContext, "ACC");
         timeplotterACC.setListener(plotterListener);
         plotACC.addSeries(timeplotterACC.getAccXSeries(), timeplotterACC.getAccXFormatter());
         plotACC.addSeries(timeplotterACC.getAccYSeries(), timeplotterACC.getAccYFormatter());
@@ -616,5 +640,72 @@ public class PolarOH1Frag extends Fragment {
 
     }
 
+    public void showExportAccDialogue(View view) {
+        try{
+            //saving the file into device
+            FileOutputStream out = classActivity.openFileOutput("acc data.csv", Context.MODE_PRIVATE);
+            out.write((accCSV.toString()).getBytes());
+            out.close();
 
+            //exporting
+            Context context = classContext;
+            File fileLocation = new File(classActivity.getFilesDir(), "acc data.csv");
+            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
+            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+            fileIntent.setType("text/csv");
+            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(fileIntent, "Send Acc data"));
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void showExportPpgDialogue(View view) {
+        try{
+            //saving the file into device
+            FileOutputStream out = classActivity.openFileOutput("ppg data.csv", Context.MODE_PRIVATE);
+            out.write((ppgCSV.toString()).getBytes());
+            out.close();
+
+            //exporting
+            Context context = classContext;
+            File fileLocation = new File(classActivity.getFilesDir(), "ppg data.csv");
+            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
+            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+            fileIntent.setType("text/csv");
+            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(fileIntent, "Send Ppg data"));
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void showExportPpiDialogue(View view) {
+//        try{
+//            //saving the file into device
+//            FileOutputStream out = classActivity.openFileOutput("ppi data.csv", Context.MODE_PRIVATE);
+//            out.write((ppiCSV.toString()).getBytes());
+//            out.close();
+//
+//            //exporting
+//            Context context = classContext;
+//            File fileLocation = new File(classActivity.getFilesDir(), "ppi data.csv");
+//            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
+//            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+//            fileIntent.setType("text/csv");
+//            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+//            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+//            startActivity(Intent.createChooser(fileIntent, "Send ppi data"));
+//        }
+//        catch(Exception e){
+//            e.printStackTrace();
+//        }
+    }
 }

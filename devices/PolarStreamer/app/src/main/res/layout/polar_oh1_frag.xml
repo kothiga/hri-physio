@@ -242,6 +242,36 @@
             app:layout_constraintTop_toBottomOf="@+id/ppg_frag2" />
 
 
+        <Button
+            android:id="@+id/export_acc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_marginTop="24dp"
+            android:text="export acc"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ppi_frag2" />
+
+        <Button
+            android:id="@+id/export_ppg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="136dp"
+            android:layout_marginTop="24dp"
+            android:text="export ppg"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ppi_frag2" />
+
+        <Button
+            android:id="@+id/export_ppi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="272dp"
+            android:layout_marginTop="24dp"
+            android:text="export ppi"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/ppi_frag2" />
+
         <TextView
             android:id="@+id/show_plots"
             android:layout_width="128dp"
@@ -251,7 +281,7 @@
             android:text="@string/show_plots"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ppi_frag2" />
+            app:layout_constraintTop_toBottomOf="@id/export_acc" />
 
         <RadioGroup
             android:id="@+id/radioGroupShowPlots"
