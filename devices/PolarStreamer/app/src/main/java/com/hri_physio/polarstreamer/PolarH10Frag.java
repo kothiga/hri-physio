@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.SystemClock;
@@ -26,16 +27,25 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ToggleButton;
+
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+
 import com.androidplot.xy.BoundaryMode;
 import com.androidplot.xy.StepMode;
 import com.androidplot.xy.XYGraphWidget;
 import com.androidplot.xy.XYPlot;
 import com.google.android.material.snackbar.Snackbar;
+
 import org.reactivestreams.Publisher;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.Date;
 import java.util.UUID;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
@@ -59,6 +69,8 @@ public class PolarH10Frag extends Fragment {
     private String TAG = "Polar_H10Frag";
     public Context classContext;
     public PolarBleApi api;
+
+    // displays
     public Boolean apiConnected = Boolean.FALSE;
     public TextView textViewBattery;
     public TextView connectStatus;
@@ -66,6 +78,7 @@ public class PolarH10Frag extends Fragment {
     public TextView accelerometerData;
     public TextView ecgData;
 
+    // set acc sensor settings
     public PolarSensorSetting sensorSetting;
     public RadioGroup radioGroupSamplingRate;
     public RadioButton Hz25;
@@ -77,11 +90,21 @@ public class PolarH10Frag extends Fragment {
     public RadioButton G4;
     public RadioButton G8;
     public Button editSetting;
+
     public Chronometer showStartTime;
     public ToggleButton toggle;
     public ToggleButton toggleStreamACC;
     public ToggleButton toggleStreamECG;
 
+    // export acc/ecg/hr
+    public Button exportAcc;
+    public Button exportEcg;
+    public Button exportHr;
+    // generate acc/ecg/hr csv data
+    StringBuilder accCSV = new StringBuilder();
+    StringBuilder ecgCSV = new StringBuilder();
+    StringBuilder hrCSV = new StringBuilder();
+    // plots
     public RadioGroup radioGroupPlots;
     public RadioButton radioButtonHR;
     public RadioButton radioButtonECG;
@@ -115,6 +138,12 @@ public class PolarH10Frag extends Fragment {
         plotECG.setVisibility(View.GONE);
         plotACC = view.findViewById(R.id.plotACC);
         plotACC.setVisibility(View.GONE);
+
+        //Set column header to exported CSV
+        hrCSV.append("Timestamp, hr (bpm), rr interval (ms)");
+        ecgCSV.append("Timestamp, ecg (volt)");
+        accCSV.append("Timestamp, x (mg), y (mg), z (mg)");
+
 
         // Enter device ID text field
         EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID_frag1);
@@ -197,7 +226,7 @@ public class PolarH10Frag extends Fragment {
                 }
                 else {
                     if (isChecked) {
-                        //show plot
+                        //stream data, add to plot and write to file.
                         if(ecgDisposable == null) {
                             ecgDisposable = api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) settings -> {
                                 PolarSensorSetting sensorSetting = settings.maxSettings();
@@ -207,6 +236,7 @@ public class PolarH10Frag extends Fragment {
                                         ecgData.setText((float) ((float) polarEcgData.samples.get(0) / 1000.0) + "mV");
                                         for (Integer data : polarEcgData.samples) {
                                             plotterECG.sendSingleSample((float) ((float) data / 1000.0));
+                                            ecgCSV.append("\n"+"#"+polarEcgData.timeStamp+","+ data);
                                         }
                                     },
                                     throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
@@ -251,6 +281,10 @@ public class PolarH10Frag extends Fragment {
                                             + "y: " + polarAccelerometerData.samples.get(0).y + "mG "
                                             + "z: " + polarAccelerometerData.samples.get(0).z + "mG ");
                                     plotterACC.addValues(polarAccelerometerData.samples.get(0));
+                                    for(PolarAccelerometerData.PolarAccelerometerSample sample: polarAccelerometerData.samples){
+                                        String val = new BigDecimal(polarAccelerometerData.timeStamp).toPlainString();
+                                        accCSV.append("\n"+"#"+val+","+sample.x+","+sample.y+","+sample.z);
+                                    }
                                 },
                                 throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
                                 () -> Log.d(TAG,"complete")
@@ -267,6 +301,25 @@ public class PolarH10Frag extends Fragment {
                 }
              }
             }
+        });
+
+        // export hr
+        exportHr = (Button) view.findViewById(R.id.export_hr);
+        exportHr.setOnClickListener(v-> {
+            showExportHrDialogue(view);
+        });
+
+
+        // export ecg
+        exportEcg = (Button) view.findViewById(R.id.export_ecg);
+        exportEcg.setOnClickListener(v-> {
+            showExportEcgDialogue(view);
+        });
+
+        // export acc
+        exportAcc = (Button) view.findViewById(R.id.export_acc);
+        exportAcc.setOnClickListener(v -> {
+            showExportAccDialogue(view);
         });
 
         radioGroupPlots = (RadioGroup) view.findViewById(R.id.radioGroupPlots);
@@ -380,6 +433,17 @@ public class PolarH10Frag extends Fragment {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 timePlotterHR.addValues(polarHrData);
                 heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
+                // edit ecgCSV file
+                // This time value is in epoch date 1/1/1970 (different from timestamp in polar api which is set in 1/1/2000
+                Date now = new Date();
+                long time = now.getTime();
+                hrCSV.append("\n"+"#"+time+","+polarHrData.hr+",");
+                if(polarHrData.rrsMs.size() != 0){
+                    for(int i = 0; i < polarHrData.rrsMs.size(); i++){
+                        hrCSV.append(polarHrData.rrsMs.get(i)+" ");
+                    }
+                }
+
             }
 
             @Override
@@ -650,6 +714,77 @@ public class PolarH10Frag extends Fragment {
             a.printStackTrace();
         }
 
+    }
+
+    public void showExportHrDialogue(View view) {
+        try{
+            //saving the file into device
+            FileOutputStream out = classActivity.openFileOutput("hr data.csv", Context.MODE_PRIVATE);
+            out.write((hrCSV.toString()).getBytes());
+            out.close();
+
+            //exporting
+            Context context = classContext;
+            File fileLocation = new File(classActivity.getFilesDir(), "hr data.csv");
+            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
+            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+            fileIntent.setType("text/csv");
+            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            fileIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(fileIntent, "Send HR data"));
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void showExportEcgDialogue(View view) {
+        try{
+            //saving the file into device
+            FileOutputStream out = classActivity.openFileOutput("ecg data.csv", Context.MODE_PRIVATE);
+            out.write((ecgCSV.toString()).getBytes());
+            out.close();
+
+            //exporting
+            Context context = classContext;
+            File fileLocation = new File(classActivity.getFilesDir(), "ecg data.csv");
+            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
+            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+            fileIntent.setType("text/csv");
+            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            fileIntent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(fileIntent, "Send ECG data"));
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
+
+    public void showExportAccDialogue(View view) {
+        try{
+            //saving the file into device
+            FileOutputStream out = classActivity.openFileOutput("acc data.csv", Context.MODE_PRIVATE);
+            out.write((accCSV.toString()).getBytes());
+            out.close();
+
+            //exporting
+            Context context = classContext;
+            File fileLocation = new File(classActivity.getFilesDir(), "acc data.csv");
+            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
+            Intent fileIntent = new Intent(Intent.ACTION_SEND);
+            fileIntent.setType("text/csv");
+            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
+            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
+            startActivity(Intent.createChooser(fileIntent, "Send Acc data"));
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
 
 }

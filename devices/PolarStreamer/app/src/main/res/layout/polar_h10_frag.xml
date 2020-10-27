@@ -244,6 +244,36 @@
             app:layout_constraintStart_toEndOf="@+id/stream_ECG_button_frag1"
             app:layout_constraintTop_toBottomOf="@id/ecg_frag1" />
 
+        <Button
+            android:id="@+id/export_hr"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="36dp"
+            android:layout_marginTop="24dp"
+            android:text="Export HR/RR"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/stream_ECG_button_frag1" />
+
+        <Button
+            android:id="@+id/export_ecg"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="24dp"
+            android:text="Export ECG"
+            app:layout_constraintStart_toEndOf="@+id/export_hr"
+            app:layout_constraintTop_toBottomOf="@+id/stream_ECG_button_frag1" />
+
+        <Button
+            android:id="@+id/export_acc"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginTop="24dp"
+            android:text="export acc"
+            app:layout_constraintStart_toEndOf="@+id/export_ecg"
+            app:layout_constraintTop_toBottomOf="@+id/stream_ECG_button_frag1" />
+
         <RadioGroup
             android:id="@+id/radioGroupPlots"
             android:layout_width="wrap_content"
@@ -252,7 +282,7 @@
             android:layout_marginTop="20dp"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/stream_ACC_button_frag1">
+            app:layout_constraintTop_toBottomOf="@id/export_hr">
 
             <RadioButton
                 android:id="@+id/radioButtonHR"
@@ -368,6 +398,7 @@
             app:title="@string/acc_title"
             app:titleTextColor="#000000"
             app:titleTextSize="15dp" />
+
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

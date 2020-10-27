@@ -9,7 +9,7 @@
     <string name="hr_name">HR / RR</string>
     <string name="hr_title">HR and RR vs. Time</string>
     <string name="ecg_title">ECG vs. Time</string>
-    <string name="hr_range_title">HR, /sec RR, ms/10</string>
+    <string name="hr_range_title">HR, bpm  / RR, ms/10</string>
     <string name="disconnect">DISCONNECT</string>
     <string name="connect">CONNECT ECG</string>
     <string name="connect2">CONNECT HR/RR</string>
