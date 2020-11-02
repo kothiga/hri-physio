@@ -43,12 +43,13 @@ import org.reactivestreams.Publisher;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.UUID;
 
-import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -104,6 +105,9 @@ public class PolarH10Frag extends Fragment {
     StringBuilder accCSV = new StringBuilder();
     StringBuilder ecgCSV = new StringBuilder();
     StringBuilder hrCSV = new StringBuilder();
+    // LSL streaming
+    public LSLStream streamHr;
+    public LSLStream streamEcg;
     // plots
     public RadioGroup radioGroupPlots;
     public RadioButton radioButtonHR;
@@ -133,17 +137,16 @@ public class PolarH10Frag extends Fragment {
 
         //Default to hide all plots
         plotHR = view.findViewById(R.id.plotHR);
-        plotHR.setVisibility(View.GONE);
+//        plotHR.setVisibility(View.GONE);
         plotECG = view.findViewById(R.id.plotECG);
-        plotECG.setVisibility(View.GONE);
+//        plotECG.setVisibility(View.GONE);
         plotACC = view.findViewById(R.id.plotACC);
-        plotACC.setVisibility(View.GONE);
+//        plotACC.setVisibility(View.GONE);
 
         //Set column header to exported CSV
         hrCSV.append("Timestamp, hr (bpm), rr interval (ms)");
         ecgCSV.append("Timestamp, ecg (volt)");
         accCSV.append("Timestamp, x (mg), y (mg), z (mg)");
-
 
         // Enter device ID text field
         EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID_frag1);
@@ -226,18 +229,36 @@ public class PolarH10Frag extends Fragment {
                 }
                 else {
                     if (isChecked) {
+                        //create ECG stream
+                        streamEcg = new LSLStream();
+                        //streaming LSL
+                        // declare info strings to store stream data info for LSL
+                        // input info in format of:
+                        // info input in format of: { [0] "device name",
+                        // [1]  "type of data", [2]"channel count",
+                        // [3]"sampling rate", [4]"device id"}
+                        String[] ecgInfo = new String[]{"Polar H10", "ECG", "1", "130", DEVICE_ID};
+                        try {
+                            streamEcg.StreamOutlet(ecgInfo);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+
                         //stream data, add to plot and write to file.
                         if(ecgDisposable == null) {
                             ecgDisposable = api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) settings -> {
                                 PolarSensorSetting sensorSetting = settings.maxSettings();
                                 return api.startEcgStreaming(DEVICE_ID, sensorSetting);
-                            }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                            }).subscribeOn(Schedulers.newThread()).observeOn(Schedulers.single()).subscribe(
                                     polarEcgData -> {
                                         ecgData.setText((float) ((float) polarEcgData.samples.get(0) / 1000.0) + "mV");
                                         for (Integer data : polarEcgData.samples) {
                                             plotterECG.sendSingleSample((float) ((float) data / 1000.0));
                                             ecgCSV.append("\n"+"#"+polarEcgData.timeStamp+","+ data);
                                         }
+                                        streamEcg.runList(polarEcgData.samples);
                                     },
                                     throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
                                     () -> Log.d(TAG,"complete")
@@ -252,6 +273,7 @@ public class PolarH10Frag extends Fragment {
                         // NOTE dispose will stop streaming if it is "running"
                         ecgDisposable.dispose();
                         ecgDisposable = null;
+//                        streamEcg.close();
                     }
              }
             }
@@ -268,13 +290,14 @@ public class PolarH10Frag extends Fragment {
                 }
                 else {
                 if (isChecked) {
+//                  String[] accInfo = new String[]{"Polar H10", "ACC", "", "", DEVICE_ID};
                     if(accDisposable == null) {
                         accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
                             if (sensorSetting!=null){
                                 return api.startAccStreaming(DEVICE_ID, sensorSetting);
                             }
                             return api.startAccStreaming(DEVICE_ID, settings.maxSettings());
-                        }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(
+                        }).subscribeOn(Schedulers.newThread()).observeOn(Schedulers.single()).subscribe(
                                 polarAccelerometerData -> {
                                     accelerometerData.setText("x: "
                                             + polarAccelerometerData.samples.get(0).x + "mG "
@@ -349,6 +372,16 @@ public class PolarH10Frag extends Fragment {
                 }
             }
         });
+
+        streamHr = new LSLStream();
+        String[] hrInfo = new String[]{"Polar H10", "HR/RR", "1", "1", DEVICE_ID};
+        try {
+            streamHr.StreamOutlet(hrInfo);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         // Override some methods in api
         api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
@@ -433,8 +466,18 @@ public class PolarH10Frag extends Fragment {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 timePlotterHR.addValues(polarHrData);
                 heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
+
+                try {
+                    streamHr.runHr(polarHrData.hr);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
                 // edit ecgCSV file
                 // This time value is in epoch date 1/1/1970 (different from timestamp in polar api which is set in 1/1/2000
+                Calendar calendar = Calendar.getInstance();
+                calendar.set(Calendar.YEAR, 2000);
+
                 Date now = new Date();
                 long time = now.getTime();
                 hrCSV.append("\n"+"#"+time+","+polarHrData.hr+",");
