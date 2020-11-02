@@ -52,7 +52,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="40dp"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="12dp"
             android:background="@android:color/white"
             android:textColor="@color/colorPrimary"
             android:textOff="Start Connection"
@@ -242,33 +242,27 @@
             app:layout_constraintTop_toBottomOf="@+id/ppg_frag2" />
 
 
-        <Button
-            android:id="@+id/export_acc"
+        <ToggleButton
+            android:id="@+id/start_stop_recording_frag2"
+            style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:layout_marginTop="24dp"
-            android:text="export acc"
+            android:layout_marginTop="4dp"
+            android:background="@android:color/white"
+            android:textColor="@color/colorPrimary"
+            android:textOff="Start Recording"
+            android:textOn="Stop Recording"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ppi_frag2" />
+            app:layout_constraintTop_toBottomOf="@id/start_ppi_frag2" />
 
         <Button
-            android:id="@+id/export_ppg"
+            android:id="@+id/export_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="136dp"
-            android:layout_marginTop="24dp"
-            android:text="export ppg"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ppi_frag2" />
-
-        <Button
-            android:id="@+id/export_ppi"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="272dp"
-            android:layout_marginTop="24dp"
-            android:text="export ppi"
+            android:layout_marginStart="160dp"
+            android:layout_marginTop="16dp"
+            android:text="export data"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ppi_frag2" />
 
@@ -281,7 +275,7 @@
             android:text="@string/show_plots"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/export_acc" />
+            app:layout_constraintTop_toBottomOf="@id/export_data" />
 
         <RadioGroup
             android:id="@+id/radioGroupShowPlots"
@@ -293,12 +287,12 @@
             <RadioButton
                 android:id="@+id/hr_plot"
                 android:layout_width="0dp"
-                android:layout_weight="1"
                 android:layout_height="wrap_content"
+                android:layout_weight="1"
                 android:checked="true"
                 android:text="@string/hr"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/show_plots"/>
+                app:layout_constraintTop_toBottomOf="@id/show_plots" />
 
             <RadioButton
                 android:id="@+id/acc_plot"
