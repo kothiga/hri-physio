@@ -221,37 +221,40 @@
             app:layout_constraintStart_toEndOf="@+id/ecgView_frag1"
             app:layout_constraintTop_toBottomOf="@id/accView_frag1" />
 
-        <Button
-            android:id="@+id/export_hr"
+        <ToggleButton
+            android:id="@+id/start_stop_recording_frag1"
+            style="@style/Widget.AppCompat.Button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="36dp"
-            android:layout_marginTop="24dp"
-            android:text="Export HR/RR"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="32dp"
+            android:background="@android:color/white"
+            android:textColor="@color/colorPrimary"
+            android:textOff="Start Recording"
+            android:textOn="Stop Recording"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/ecg_frag1" />
+            app:layout_constraintTop_toBottomOf="@id/ecgView_frag1" />
 
         <Button
-            android:id="@+id/export_ecg"
+            android:id="@+id/export_data"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
-            android:layout_marginTop="24dp"
-            android:text="Export ECG"
-            app:layout_constraintStart_toEndOf="@+id/export_hr"
-            app:layout_constraintTop_toBottomOf="@+id/ecg_frag1" />
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="32dp"
+            android:text="export data"
+            app:layout_constraintStart_toEndOf="@+id/start_stop_recording_frag1"
+            app:layout_constraintTop_toBottomOf="@+id/ecgView_frag1" />
 
-        <Button
-            android:id="@+id/export_acc"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="12dp"
+        <TextView
+            android:id="@+id/show_plots"
+            android:layout_width="128dp"
+            android:layout_height="26dp"
+            android:layout_marginStart="8dp"
             android:layout_marginTop="24dp"
-            android:layout_marginEnd="12dp"
-            android:text="export acc"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/export_ecg"
-            app:layout_constraintTop_toBottomOf="@+id/ecg_frag1" />
+            android:text="@string/show_plots"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/export_data" />
 
         <RadioGroup
             android:id="@+id/radioGroupPlots"
@@ -261,7 +264,7 @@
             android:layout_marginTop="20dp"
             android:orientation="horizontal"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/export_acc">
+            app:layout_constraintTop_toBottomOf="@id/show_plots">
 
             <RadioButton
                 android:id="@+id/radioButtonHR"
