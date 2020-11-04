@@ -113,6 +113,7 @@ public class PolarH10Frag extends Fragment {
     // LSL streaming
     public LSLStream streamHr;
     public LSLStream streamEcg;
+    public LSLStream streamAcc;
     // plots
     public RadioGroup radioGroupPlots;
     public RadioButton radioButtonHR;
@@ -142,11 +143,11 @@ public class PolarH10Frag extends Fragment {
 
         //Default to hide all plots
         plotHR = view.findViewById(R.id.plotHR);
-//        plotHR.setVisibility(View.GONE);
+        plotHR.setVisibility(View.GONE);
         plotECG = view.findViewById(R.id.plotECG);
-//        plotECG.setVisibility(View.GONE);
+        plotECG.setVisibility(View.GONE);
         plotACC = view.findViewById(R.id.plotACC);
-//        plotACC.setVisibility(View.GONE);
+        plotACC.setVisibility(View.GONE);
 
         //Set column header to exported CSV
         hrCSV.append("System Time, Internal Time, hr (bpm), rr interval (ms)");
@@ -285,7 +286,7 @@ public class PolarH10Frag extends Fragment {
                         ecgDisposable = null;
 //                        streamEcg.close();
                     }
-             }
+                }
             }
         });
 
@@ -299,46 +300,65 @@ public class PolarH10Frag extends Fragment {
                     toggleStreamACC.setChecked(false);
                 }
                 else {
-                if (isChecked) {
-//                  String[] accInfo = new String[]{"Polar H10", "ACC", "", "", DEVICE_ID};
-                    if(accDisposable == null) {
-                        accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
-                            if (sensorSetting!=null){
-                                return api.startAccStreaming(DEVICE_ID, sensorSetting);
-                            }
-                            return api.startAccStreaming(DEVICE_ID, settings.maxSettings());
-                        }).subscribeOn(Schedulers.newThread()).observeOn(Schedulers.single()).subscribe(
-                                polarAccelerometerData -> {
-                                    plotACC.setVisibility(View.VISIBLE);
-                                    accelerometerData.setText("x: "
-                                            + polarAccelerometerData.samples.get(0).x + "mG "
-                                            + "y: " + polarAccelerometerData.samples.get(0).y + "mG "
-                                            + "z: " + polarAccelerometerData.samples.get(0).z + "mG ");
-                                    plotterACC.addValues(polarAccelerometerData.samples.get(0));
+                    //create ACC stream
+                    streamAcc = new LSLStream();
+                    //streaming LSL
+                    // declare info strings to store stream data info for LSL
+                    // info input in format of: { [0] "device name",
+                    // [1]  "type of data", [2]"channel count",
+                    // [3]"sampling rate", [4]"device id"}
+                    String[] accInfo = new String[]{"Polar H10", "ACC", "3", "200", DEVICE_ID};
+                    if(sensorSetting!= null){
+                        accInfo[3] = String.valueOf(sensorSetting.settings.get(PolarSensorSetting.SettingType.SAMPLE_RATE));
+                    }
+                    try {
+                        streamAcc.StreamOutlet(accInfo);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                    if (isChecked) {
+                        if(accDisposable == null) {
+                            accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
+                                PolarSensorSetting currentSetting;
+                                if (sensorSetting!=null){
+                                    currentSetting = sensorSetting;
+                                }
+                                else{
+                                    currentSetting = settings.maxSettings();
+                                }
+                                return api.startAccStreaming(DEVICE_ID, currentSetting);
+                            }).subscribeOn(Schedulers.newThread()).observeOn(Schedulers.single()).subscribe(
+                                    polarAccData -> {
+                                        accelerometerData.setText("x: " + polarAccData.samples.get(0).x + "mG y: " + polarAccData.samples.get(0).y + "mG z: "+ polarAccData.samples.get(0).z + "mG");
+                                        plotterACC.addValues(polarAccData.samples.get(0));
 
-                                    if(recording){
-                                        for(PolarAccelerometerData.PolarAccelerometerSample sample: polarAccelerometerData.samples){
-                                            SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
-                                            sdf.setTimeZone(TimeZone.getDefault());
-                                            String currentDateAndTime = sdf.format(new Date());
-                                            accCSV.append("\n"+currentDateAndTime+","+ showStartTime.getText() + "," + sample.x+","+ sample.y+","+sample.z);
+                                        if(recording){
+                                            for(PolarAccelerometerData.PolarAccelerometerSample sample: polarAccData.samples){
+                                                SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
+                                                sdf.setTimeZone(TimeZone.getDefault());
+                                                String currentDateAndTime = sdf.format(new Date());
+                                                accCSV.append("\n"+currentDateAndTime+","+ showStartTime.getText() + "," + sample.x+","+ sample.y+","+sample.z);
+                                            }
                                         }
-                                    }
-                                },
-                                throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
-                                () -> Log.d(TAG,"complete")
-                        );
+                                        streamAcc.runAcc(polarAccData.samples);
+                                    },
+                                    throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
+                                    () -> Log.d(TAG,"complete")
+                            );
+                        } else {
+                            // NOTE dispose will stop streaming if it is "running"
+                            accDisposable.dispose();
+                            accDisposable = null;
+                            isChecked = false;
+                        }
                     } else {
                         // NOTE dispose will stop streaming if it is "running"
                         accDisposable.dispose();
                         accDisposable = null;
                     }
-                } else {
-                    // hide plot
-                    accDisposable.dispose();
-                    accDisposable = null;
                 }
-             }
             }
         });
 
@@ -482,10 +502,20 @@ public class PolarH10Frag extends Fragment {
                 timePlotterHR.addValues(polarHrData);
                 heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
 
-                try {
-                    streamHr.runHr(polarHrData.hr);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
+                // stream to LSL: overloaded runHr method to stream rr interval when available
+                if(!polarHrData.rrsMs.isEmpty()){
+                    try {
+                        streamHr.runHr(polarHrData.hr, polarHrData.rrsMs);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else{
+                    try {
+                        streamHr.runHr(polarHrData.hr);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 }
 
                 // edit hrCSV
