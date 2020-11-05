@@ -5,7 +5,7 @@
     <string name="set_id_button">Enter Device ID</string>
     <string name="device_id">device_id</string>
     <string name="device_id_view">Device ID: </string>
-    <string name="ecg_name">ECG: </string>
+    <string name="ecg_name">ECG (mV): </string>
     <string name="hr_name">HR / RR</string>
     <string name="hr_title">HR and RR vs. Time</string>
     <string name="ecg_title">ECG vs. Time</string>
@@ -29,8 +29,8 @@
     <string name="ppg_range_title">Amplitude (au)</string>
     <string name="ppg_title">PPG Amplitude (au) vs. Time</string>
     <string name="plot_button_view">View Plot</string>
-    <string name="hr">Heart Rate:</string>
-    <string name="acc">Accelerometer Data:</string>
+    <string name="hr">HR (bpm):</string>
+    <string name="acc">ACC (mg):</string>
     <string name="ppg">PPG:</string>
     <string name="ppi">PPI:</string>
     <string name="Hz25">25 Hz</string>
@@ -45,5 +45,6 @@
     <string name="ACC_radio_button">ACC Plot</string>
     <string name="range_setting">Range</string>
     <string name="sampling_rate_setting">Sampling Rate</string>
-    <string name="show_plots">Show Plots</string>string>
+    <string name="show_plots">Show Plots</string>
+    <string name="rr">RR (ms):</string>string>
 </resources>

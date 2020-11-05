@@ -52,6 +52,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.Disposable;
 import io.reactivex.rxjava3.functions.Function;
 import io.reactivex.rxjava3.schedulers.Schedulers;
@@ -73,13 +74,15 @@ public class PolarH10Frag extends Fragment {
     public Context classContext;
     public PolarBleApi api;
 
-    // displays
+    // displays: data views+chronometer
     public Boolean apiConnected = Boolean.FALSE;
     public TextView textViewBattery;
     public TextView connectStatus;
     public TextView heartRate;
+    public TextView rrInterval;
     public TextView accelerometerData;
     public TextView ecgData;
+    public Chronometer showStartTime;
 
     // set acc sensor settings
     public PolarSensorSetting sensorSetting;
@@ -94,18 +97,16 @@ public class PolarH10Frag extends Fragment {
     public RadioButton G8;
     public Button editSetting;
 
-    public Chronometer showStartTime;
-    public ToggleButton toggle;
+    // connect, stream and recording buttons
+    public ToggleButton toggleConnection;
     public ToggleButton toggleStreamACC;
     public ToggleButton toggleStreamECG;
-
-    // start recording button
     public ToggleButton start_stop_recording;
     public Boolean recording = false;
 
-    // export acc/ecg/hr files
+    // button export acc/ecg/hr files
     public Button exportData;
-    // generate acc/ecg/hr csv data
+    // generate acc/ecg/hr csv data header
     StringBuilder accCSV = new StringBuilder();
     StringBuilder ecgCSV = new StringBuilder();
     StringBuilder hrCSV = new StringBuilder();
@@ -141,6 +142,10 @@ public class PolarH10Frag extends Fragment {
         View view = inflater.inflate(R.layout.polar_h10_frag, container, false);
         sharedPreferences = this.getActivity().getPreferences(Context.MODE_PRIVATE);
 
+        // Set up properties
+        classContext = this.getActivity().getApplicationContext();
+        classActivity = this.getActivity();
+
         //Default to hide all plots
         plotHR = view.findViewById(R.id.plotHR);
         plotHR.setVisibility(View.GONE);
@@ -149,7 +154,7 @@ public class PolarH10Frag extends Fragment {
         plotACC = view.findViewById(R.id.plotACC);
         plotACC.setVisibility(View.GONE);
 
-        //Set column header to exported CSV
+        //Set column header to to-be-exported CSV
         hrCSV.append("System Time, Internal Time, hr (bpm), rr interval (ms)");
         ecgCSV.append("System Time, Internal Time, ecg (micro volt)");
         accCSV.append("System Time, Internal Time, x (mg), y (mg), z (mg)");
@@ -176,8 +181,8 @@ public class PolarH10Frag extends Fragment {
         });
 
         // Connection Status: start and stop toggle button
-        toggle = (ToggleButton) view.findViewById(R.id.start_stop_connection_frag1);
-        toggle.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+        toggleConnection = (ToggleButton) view.findViewById(R.id.start_stop_connection_frag1);
+        toggleConnection.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
                     // The toggle is enabled: Start Connection
@@ -189,9 +194,13 @@ public class PolarH10Frag extends Fragment {
             }
         });
 
-        // Set up properties
-        classContext = this.getActivity().getApplicationContext();
-        classActivity = this.getActivity();
+        // Display info from api:
+        textViewBattery = (TextView) view.findViewById(R.id.battery_frag1);
+        connectStatus = (TextView) view.findViewById(R.id.status_frag1);
+        heartRate = (TextView) view.findViewById(R.id.hr_frag1);
+        rrInterval = (TextView) view.findViewById(R.id.rr_frag1);
+        ecgData = (TextView) view.findViewById(R.id.ecg_frag1);
+        accelerometerData = (TextView) view.findViewById(R.id.acc_frag1);
 
         // Show Timer
         showStartTime = (Chronometer) view.findViewById(R.id.timer_frag1);
@@ -207,13 +216,6 @@ public class PolarH10Frag extends Fragment {
                 }
             }
         });
-
-        // Display info from api:
-        textViewBattery = (TextView) view.findViewById(R.id.battery_frag1);
-        connectStatus = (TextView) view.findViewById(R.id.status_frag1);
-        heartRate = (TextView) view.findViewById(R.id.hr_frag1);
-        accelerometerData = (TextView) view.findViewById(R.id.acc_frag1);
-        ecgData = (TextView) view.findViewById(R.id.ecg_frag1);
 
         //Edit setting button for H10: set sampling frequency and range
         editSetting = (Button) view.findViewById(R.id.setting_button);
@@ -235,14 +237,11 @@ public class PolarH10Frag extends Fragment {
                 }
                 else {
                     if (isChecked) {
-                        //create ECG stream
+                        // create ECG stream
                         streamEcg = new LSLStream();
-                        //streaming LSL
+                        // streaming LSL
                         // declare info strings to store stream data info for LSL
-                        // input info in format of:
-                        // info input in format of: { [0] "device name",
-                        // [1]  "type of data", [2]"channel count",
-                        // [3]"sampling rate", [4]"device id"}
+                        // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
                         String[] ecgInfo = new String[]{"Polar H10", "ECG", "1", "130", DEVICE_ID};
                         try {
                             streamEcg.StreamOutlet(ecgInfo);
@@ -257,9 +256,9 @@ public class PolarH10Frag extends Fragment {
                             ecgDisposable = api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) settings -> {
                                 PolarSensorSetting sensorSetting = settings.maxSettings();
                                 return api.startEcgStreaming(DEVICE_ID, sensorSetting);
-                            }).subscribeOn(Schedulers.newThread()).observeOn(Schedulers.single()).subscribe(
+                            }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(
                                     polarEcgData -> {
-                                        ecgData.setText((float) ((float) polarEcgData.samples.get(0) / 1000.0) + "mV");
+                                        ecgData.setText(String.valueOf(polarEcgData.samples.get(0) / 1000.0));
                                         for (Integer data : polarEcgData.samples) {
                                             plotterECG.sendSingleSample((float) ((float) data / 1000.0));
                                             if (recording) {
@@ -284,7 +283,6 @@ public class PolarH10Frag extends Fragment {
                         // NOTE dispose will stop streaming if it is "running"
                         ecgDisposable.dispose();
                         ecgDisposable = null;
-//                        streamEcg.close();
                     }
                 }
             }
@@ -302,11 +300,9 @@ public class PolarH10Frag extends Fragment {
                 else {
                     //create ACC stream
                     streamAcc = new LSLStream();
-                    //streaming LSL
+                    // streaming LSL
                     // declare info strings to store stream data info for LSL
-                    // info input in format of: { [0] "device name",
-                    // [1]  "type of data", [2]"channel count",
-                    // [3]"sampling rate", [4]"device id"}
+                    // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
                     String[] accInfo = new String[]{"Polar H10", "ACC", "3", "200", DEVICE_ID};
                     if(sensorSetting!= null){
                         accInfo[3] = String.valueOf(sensorSetting.settings.get(PolarSensorSetting.SettingType.SAMPLE_RATE));
@@ -329,9 +325,9 @@ public class PolarH10Frag extends Fragment {
                                     currentSetting = settings.maxSettings();
                                 }
                                 return api.startAccStreaming(DEVICE_ID, currentSetting);
-                            }).subscribeOn(Schedulers.newThread()).observeOn(Schedulers.single()).subscribe(
+                            }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(
                                     polarAccData -> {
-                                        accelerometerData.setText("x: " + polarAccData.samples.get(0).x + "mG y: " + polarAccData.samples.get(0).y + "mG z: "+ polarAccData.samples.get(0).z + "mG");
+                                        accelerometerData.setText("x: " + polarAccData.samples.get(0).x + " y: " + polarAccData.samples.get(0).y + " z: "+ polarAccData.samples.get(0).z);
                                         plotterACC.addValues(polarAccData.samples.get(0));
 
                                         if(recording){
@@ -362,7 +358,7 @@ public class PolarH10Frag extends Fragment {
             }
         });
 
-        // Start and stop recording data
+        // Start and stop recording data to CSV
         start_stop_recording = (ToggleButton) view.findViewById(R.id.start_stop_recording_frag1);
         start_stop_recording.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -408,16 +404,6 @@ public class PolarH10Frag extends Fragment {
             }
         });
 
-        streamHr = new LSLStream();
-        String[] hrInfo = new String[]{"Polar H10", "HR/RR", "1", "1", DEVICE_ID};
-        try {
-            streamHr.StreamOutlet(hrInfo);
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
         // Override some methods in api
         api = PolarBleApiDefaultImpl.defaultImplementation(this.getActivity().getApplicationContext(),
                 PolarBleApi.FEATURE_POLAR_SENSOR_STREAMING |
@@ -440,6 +426,7 @@ public class PolarH10Frag extends Fragment {
                 apiConnected = Boolean.TRUE;
                 connectStatus.append("Connected\n");
                 heartRate.setText("loading data...");
+                rrInterval.setText("loading data...");
                 accelerometerData.setText("loading data...");
                 ecgData.setText("loading data...");
             }
@@ -478,6 +465,16 @@ public class PolarH10Frag extends Fragment {
             @Override
             public void hrFeatureReady(String s) {
                 Log.d(TAG, "HR Feature ready " + s);
+                //Create HR stream if HR is ready
+                streamHr = new LSLStream();
+                String[] hrInfo = new String[]{"Polar H10", "HR/RR", "1", "1", DEVICE_ID};
+                try {
+                    streamHr.StreamOutlet(hrInfo);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -500,10 +497,14 @@ public class PolarH10Frag extends Fragment {
                                                PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 timePlotterHR.addValues(polarHrData);
-                heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
+                heartRate.setText(String.valueOf(polarHrData.hr));
 
-                // stream to LSL: overloaded runHr method to stream rr interval when available
+                // When rr interval is available
                 if(!polarHrData.rrsMs.isEmpty()){
+                    // Update set text for RR
+                    for (Integer rr : polarHrData.rrsMs)
+                        rrInterval.setText(String.valueOf(rr));
+                    //stream to LSL: overloaded runHr method
                     try {
                         streamHr.runHr(polarHrData.hr, polarHrData.rrsMs);
                     } catch (InterruptedException e) {
@@ -511,6 +512,7 @@ public class PolarH10Frag extends Fragment {
                     }
                 }
                 else{
+                    //Only stream HR
                     try {
                         streamHr.runHr(polarHrData.hr);
                     } catch (InterruptedException e) {
@@ -588,7 +590,7 @@ public class PolarH10Frag extends Fragment {
     public void showSettingDialog(View view){
         AlertDialog.Builder dialog = new AlertDialog.Builder(this.getContext(), R.style.PolarTheme);
         PolarSensorSetting.Builder builder = PolarSensorSetting.Builder.newBuilder();
-        dialog.setTitle("Sensor Setting");
+        dialog.setTitle("Sensor Setting (ACC)");
 
         View viewInflated = LayoutInflater.from(this.getActivity().getApplicationContext()).inflate(R.layout.h10_setting_dialog_layout,(ViewGroup) view.getRootView() , false);
 
@@ -690,7 +692,7 @@ public class PolarH10Frag extends Fragment {
         Log.d(TAG,DEVICE_ID);
         if(DEVICE_ID.equals("")){
             showDialog(view);
-            toggle.setChecked(false);
+            toggleConnection.setChecked(false);
         } else {
 
             // Show that the app is trying to connect with the given device ID
@@ -791,6 +793,7 @@ public class PolarH10Frag extends Fragment {
             showStartTime.stop();
             showStartTime.setText("");
             heartRate.setText("");
+            rrInterval.setText("");
             accelerometerData.setText("");
             ecgData.setText("");
             accDisposable = null;
