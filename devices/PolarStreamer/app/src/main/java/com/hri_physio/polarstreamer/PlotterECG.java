@@ -8,6 +8,7 @@ import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeriesFormatter;
 
 import java.util.Arrays;
+import java.util.List;
 
 /**
  * Implements series ECG using time for the x values.
@@ -17,7 +18,7 @@ public class PlotterECG {
     private String TAG = "Polar_Plotter";
     private PlotterListener listener;
     private Context context;
-    private Number[] yEcgVals = new Number[800];
+    private Number[] yEcgVals = new Number[500];
     private XYSeriesFormatter ecgFormatter;
     private SimpleXYSeries ecgSeries;
     private int index;
@@ -45,17 +46,21 @@ public class PlotterECG {
         return ecgFormatter;
     }
 
-    public void sendSingleSample(float mV){
-        yEcgVals[index] = mV;
-        if(index >= yEcgVals.length - 1){
-            index = 0;
-        }
-        if(index < yEcgVals.length - 1){
-            yEcgVals[index + 1] = null;
-        }
+    public void sendList(List<Integer> samples){
+        int size = samples.size();
 
+        for (int i = 0; i < size; i++) {
+            if(i < yEcgVals.length - 1){
+                yEcgVals[index+1] = null;
+            }
+            yEcgVals[index] = (float) ((float) samples.get(i) / 1000.0);
+            index++;
+            if(index >= yEcgVals.length - 1){
+                index = 0;
+                break;
+            }
+        }
         ((SimpleXYSeries) ecgSeries).setModel(Arrays.asList(yEcgVals), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY);
-        index++;
         listener.update();
     }
 

@@ -72,6 +72,7 @@ public class PolarH10Frag extends Fragment {
     private String sharedPrefsKey = "polar_h10_device_id";
     private String TAG = "Polar_H10Frag";
     public Context classContext;
+    public Activity classActivity;
     public PolarBleApi api;
 
     // displays: data views+chronometer
@@ -134,7 +135,6 @@ public class PolarH10Frag extends Fragment {
     };
     public Disposable ecgDisposable;
     public Disposable accDisposable;
-    public Activity classActivity;
 
     @Nullable
     @Override
@@ -259,8 +259,8 @@ public class PolarH10Frag extends Fragment {
                             }).subscribeOn(Schedulers.newThread()).observeOn(AndroidSchedulers.mainThread()).subscribe(
                                     polarEcgData -> {
                                         ecgData.setText(String.valueOf(polarEcgData.samples.get(0) / 1000.0));
+                                        plotterECG.sendList(polarEcgData.samples);
                                         for (Integer data : polarEcgData.samples) {
-                                            plotterECG.sendSingleSample((float) ((float) data / 1000.0));
                                             if (recording) {
                                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                 sdf.setTimeZone(TimeZone.getDefault());
@@ -279,10 +279,17 @@ public class PolarH10Frag extends Fragment {
                             ecgDisposable = null;
                             isChecked = false;
                         }
+                        //show plot
+                        showPlotECG(view);
+                        plotECG.clear();
+                        plotECG.setVisibility(View.GONE);
                     } else {
                         // NOTE dispose will stop streaming if it is "running"
-                        ecgDisposable.dispose();
-                        ecgDisposable = null;
+                        if(ecgDisposable != null){
+                            ecgDisposable.dispose();
+                            ecgDisposable = null;
+                        }
+                        ecgData.setText("");
                     }
                 }
             }
@@ -315,6 +322,7 @@ public class PolarH10Frag extends Fragment {
                         e.printStackTrace();
                     }
                     if (isChecked) {
+                        accelerometerData.setText("loading data...");
                         if(accDisposable == null) {
                             accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
                                 PolarSensorSetting currentSetting;
@@ -329,7 +337,6 @@ public class PolarH10Frag extends Fragment {
                                     polarAccData -> {
                                         accelerometerData.setText("x: " + polarAccData.samples.get(0).x + " y: " + polarAccData.samples.get(0).y + " z: "+ polarAccData.samples.get(0).z);
                                         plotterACC.addValues(polarAccData.samples.get(0));
-
                                         if(recording){
                                             for(PolarAccelerometerData.PolarAccelerometerSample sample: polarAccData.samples){
                                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
@@ -349,10 +356,16 @@ public class PolarH10Frag extends Fragment {
                             accDisposable = null;
                             isChecked = false;
                         }
+                        //show plot
+                        showPlotACC(view);
+                        plotACC.clear();
+                        plotACC.setVisibility(View.GONE);
                     } else {
-                        // NOTE dispose will stop streaming if it is "running"
-                        accDisposable.dispose();
-                        accDisposable = null;
+                        if (accDisposable != null) {
+                            accDisposable.dispose();
+                            accDisposable = null;
+                        }
+                        accelerometerData.setText("");
                     }
                 }
             }
@@ -386,11 +399,23 @@ public class PolarH10Frag extends Fragment {
             public void onCheckedChanged(RadioGroup group, int checkedId) {
                 // find which radio button is selected
                 if(checkedId == R.id.radioButtonHR) {
+                    plotECG.clear();
+                    plotECG.setVisibility(View.GONE);
+                    plotACC.clear();
+                    plotACC.setVisibility(View.GONE);
                     showPlotHR(view);
                 } else if(checkedId == R.id.radioButtonECG) {
+                    plotHR.clear();
+                    plotHR.setVisibility(View.GONE);
+                    plotACC.clear();
+                    plotACC.setVisibility(View.GONE);
                     showPlotECG(view);
                 }
                 else if(checkedId == R.id.radioButtonACC){
+                    plotHR.clear();
+                    plotHR.setVisibility(View.GONE);
+                    plotECG.clear();
+                    plotECG.setVisibility(View.GONE);
                     showPlotACC(view);
                 }
                 else {
@@ -427,8 +452,6 @@ public class PolarH10Frag extends Fragment {
                 connectStatus.append("Connected\n");
                 heartRate.setText("loading data...");
                 rrInterval.setText("loading data...");
-                accelerometerData.setText("loading data...");
-                ecgData.setText("loading data...");
             }
 
             @Override
@@ -437,6 +460,7 @@ public class PolarH10Frag extends Fragment {
 
             @Override
             public void deviceDisconnected(PolarDeviceInfo s) {
+                apiConnected = Boolean.FALSE;
             }
 
             @Override
@@ -475,6 +499,9 @@ public class PolarH10Frag extends Fragment {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                showPlotHR(view);
+                plotHR.clear();
+                plotHR.setVisibility(View.GONE);
             }
 
             @Override
@@ -496,8 +523,8 @@ public class PolarH10Frag extends Fragment {
             public void hrNotificationReceived(String s,
                                                PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
-                timePlotterHR.addValues(polarHrData);
                 heartRate.setText(String.valueOf(polarHrData.hr));
+                timePlotterHR.addValues(polarHrData);
 
                 // When rr interval is available
                 if(!polarHrData.rrsMs.isEmpty()){
@@ -694,7 +721,6 @@ public class PolarH10Frag extends Fragment {
             showDialog(view);
             toggleConnection.setChecked(false);
         } else {
-
             // Show that the app is trying to connect with the given device ID
             Toast.makeText(view.getContext(),getString(R.string.connecting) + " " + DEVICE_ID,Toast.LENGTH_SHORT).show();
 
@@ -713,11 +739,6 @@ public class PolarH10Frag extends Fragment {
     }
 
     public void showPlotHR(View view){
-        plotACC.clear();
-        plotACC.setVisibility(View.GONE);
-        plotECG.clear();
-        plotECG.setVisibility(View.GONE);
-        plotHR.clear();
         plotHR.setVisibility(View.VISIBLE);
         // Plot HR/RR graph
         timePlotterHR = new TimePlotterHR(classContext, "HR/RR");
@@ -737,11 +758,6 @@ public class PolarH10Frag extends Fragment {
     }
 
     public void showPlotECG(View view){
-        plotHR.clear();
-        plotHR.setVisibility(View.GONE);
-        plotACC.clear();
-        plotACC.setVisibility(View.GONE);
-        plotECG.clear();
         plotECG.setVisibility(View.VISIBLE);
         //Plot ECG graph
         plotterECG = new PlotterECG(classContext, "ECG");
@@ -749,18 +765,13 @@ public class PolarH10Frag extends Fragment {
 
         plotECG.addSeries(plotterECG.getSeries(), plotterECG.getFormatter());
         plotECG.setRangeBoundaries(-4, 4, BoundaryMode.FIXED);
-        plotECG.setDomainBoundaries(0, 800, BoundaryMode.FIXED);
+        plotECG.setDomainBoundaries(0, 500, BoundaryMode.FIXED);
 
         plotACC.setRangeStep(StepMode.SUBDIVIDE, 10);
         plotACC.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
     }
 
     public void showPlotACC(View view){
-        plotHR.clear();
-        plotHR.setVisibility(View.GONE);
-        plotECG.clear();
-        plotECG.setVisibility(View.GONE);
-        plotACC.clear();
         plotACC.setVisibility(View.VISIBLE);
 //        //Plot ACC graph
         plotterACC = new PlotterACC(classContext, "ACC");
@@ -802,6 +813,9 @@ public class PolarH10Frag extends Fragment {
             toggleStreamECG.setChecked(false);
             toggleStreamACC.setChecked(false);
             radioGroupPlots.clearCheck();
+            plotHR.setVisibility(View.GONE);
+            plotECG.setVisibility(View.GONE);
+            plotACC.setVisibility(View.GONE);
             recording = false;
             Log.d(TAG, "finish");
         } catch (PolarInvalidArgument a){
