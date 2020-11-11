@@ -7,8 +7,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -17,7 +15,6 @@ import android.text.Editable;
 import android.text.InputType;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.util.PrintStreamPrinter;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -42,12 +39,11 @@ import com.google.android.material.snackbar.Snackbar;
 import org.reactivestreams.Publisher;
 import java.io.File;
 import java.io.FileOutputStream;
-import java.math.BigDecimal;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 import java.util.UUID;
@@ -128,6 +124,13 @@ public class PolarOH1Frag extends Fragment {
     public ToggleButton start_stop_recording;
     public Boolean recording = false;
 
+
+    // start streaming to lsl
+    public LSLStream streamHr;
+    public LSLStream streamAcc;
+    public LSLStream streamPPG;
+    public LSLStream streamPPI;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -201,6 +204,21 @@ public class PolarOH1Frag extends Fragment {
                     startAcc.setChecked(false);
                 }
                 else {
+                    //create ACC stream
+                    streamAcc = new LSLStream();
+                    // streaming LSL
+                    // declare info strings to store stream data info for LSL
+                    // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
+                    String[] accInfo = new String[]{"Polar OH1", "ACC", "3", "50", DEVICE_ID};
+                    try {
+                        streamAcc.StreamOutlet(accInfo);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+
                     if (isChecked) {
                         accelerometerData.setText("loading data...");
                         // test
@@ -224,6 +242,7 @@ public class PolarOH1Frag extends Fragment {
 
                                             accelerometerData.setText("    x: " + polarAccData.samples.get(0).x + "mG   y: " + polarAccData.samples.get(0).y + "mG   z: "+ polarAccData.samples.get(0).z + "mG");
                                             timeplotterACC.addValues(polarAccData.samples.get(0));
+                                            streamAcc.runAcc(polarAccData.samples);
                                         }
                                     },
 
@@ -277,6 +296,21 @@ public class PolarOH1Frag extends Fragment {
                     startPPG.setChecked(false);
                 }
                 else {
+
+                    //create PPG stream
+                    streamPPG = new LSLStream();
+                    // streaming LSL
+                    // declare info strings to store stream data info for LSL
+                    // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
+                    String[] ppgInfo = new String[]{"Polar OH1", "PPG", "3", "50", DEVICE_ID};
+                    try {
+                        streamPPG.StreamOutlet(ppgInfo);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
                     if (isChecked) {
                         ppgData.setText("loading data...");
                         // test
@@ -294,7 +328,8 @@ public class PolarOH1Frag extends Fragment {
                                                     ppgCSV.append("\n"+currentDateAndTime+","+showStartTime.getText() + ","+polarPPGData.samples.get(0).ppg0+","+polarPPGData.samples.get(0).ppg1+","+polarPPGData.samples.get(0).ppg2);
                                                 }
                                             }
-
+                                            // start streaming ppg to lsl
+                                            streamPPG.runPPG(polarPPGData.samples);
                                             float avg = (polarPPGData.samples.get(0).ppg0 + polarPPGData.samples.get(0).ppg1 + polarPPGData.samples.get(0).ppg2) / 3;
                                             ppgData.setText("ppg0: " + polarPPGData.samples.get(0).ppg0 + "   ppg1: " + polarPPGData.samples.get(0).ppg1 + "   ppg2: " + polarPPGData.samples.get(0).ppg2);
                                             timeplotterPPG.sendSingleSample((float) ((float) avg));
@@ -322,22 +357,20 @@ public class PolarOH1Frag extends Fragment {
                         //show plot
                         showPlotPPG(view);
                         plotPPG.clear();
-                        plotPPG.setVisibility(View.GONE);
                     } else {
                         if (ppgDisposable != null) {
                             ppgDisposable.dispose();
                             ppgDisposable = null;
                         }
                         ppgData.setText("");
-                        plotPPG.setVisibility(View.GONE);
                     }
+                    plotPPG.setVisibility(View.GONE);
                 }
             }
         });
 
         // edit ppi CSV
         ppiCSV.append("System Time, Internal Time, ppi");
-        hrCSV.append("System Time, Internal Time, hr");
 
         // start PPi streaming
         startPPI = (ToggleButton) view.findViewById(R.id.start_ppi_frag2);
@@ -349,6 +382,22 @@ public class PolarOH1Frag extends Fragment {
                     startPPI.setChecked(false);
                 }
                 else {
+
+                    //create PPI stream
+                    streamPPI = new LSLStream();
+                    // streaming LSL
+                    // declare info strings to store stream data info for LSL
+                    // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
+                    String[] ppiInfo = new String[]{"Polar OH1", "PPI", "1", "50", DEVICE_ID};
+                    try {
+                        streamPPI.StreamOutlet(ppiInfo);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+
+
                     if (isChecked) {
                         ppiData.setText("loading data...");
                         if(ppiDisposable == null) {
@@ -360,12 +409,13 @@ public class PolarOH1Frag extends Fragment {
                                                 sdf.setTimeZone(TimeZone.getDefault());
                                                 String currentDateAndTime = sdf.format(new Date());
                                                 ppiCSV.append("\n"+currentDateAndTime+","+showStartTime.getText()+","+polarOhrPPIData.samples.get(0).ppi);
-                                                hrCSV.append("\n"+currentDateAndTime+","+showStartTime.getText()+","+polarOhrPPIData.samples.get(0).hr);
                                             }
                                         }
                                         // display data in UI
-                                        heartRate.setText(polarOhrPPIData.samples.get(0).hr + "bpm");
                                         ppiData.setText(polarOhrPPIData.samples.get(0).ppi + "ms");
+                                        // start streaming ppi to lsl
+                                        streamPPI.runPPI(polarOhrPPIData.samples);
+
                                     },
                                     throwable -> Log.e(TAG,""+throwable.getLocalizedMessage()),
                                     () -> Log.d(TAG,"complete")
@@ -515,6 +565,16 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void hrFeatureReady(String s) {
                 Log.d(TAG, "HR Feature ready " + s);
+                //Create HR stream if HR is ready
+                streamHr = new LSLStream();
+                String[] hrInfo = new String[]{"Polar OH1", "HR/RR", "1", "1", DEVICE_ID};
+                try {
+                    streamHr.StreamOutlet(hrInfo);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
 
             @Override
@@ -535,8 +595,22 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void hrNotificationReceived(String s, PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
-                //heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
+                heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
                 timeplotter.addValues(polarHrData);
+                try {
+                    streamHr.runHr(polarHrData.hr);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+                // edit hrCSV
+                hrCSV.append("System Time, Internal Time, hr");
+                if (recording) {
+                    SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
+                    sdf.setTimeZone(TimeZone.getDefault());
+                    String currentDateAndTime = sdf.format(new Date());
+                    hrCSV.append("\n"+currentDateAndTime+","+showStartTime.getText() + ","+polarHrData.hr+",");
+                }
             }
 
             @Override
@@ -751,51 +825,5 @@ public class PolarOH1Frag extends Fragment {
         catch(Exception e){
             e.printStackTrace();
         }
-    }
-
-    public void showExportPpgDialogue(View view) {
-        try{
-            //saving the file into device
-            FileOutputStream out = classActivity.openFileOutput("ppg data.csv", Context.MODE_PRIVATE);
-            out.write((ppgCSV.toString()).getBytes());
-            out.close();
-
-            //exporting
-            Context context = classContext;
-            File fileLocation = new File(classActivity.getFilesDir(), "ppg data.csv");
-            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
-            Intent fileIntent = new Intent(Intent.ACTION_SEND);
-            fileIntent.setType("text/csv");
-            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
-            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
-            startActivity(Intent.createChooser(fileIntent, "Send Ppg data"));
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    public void showExportPpiDialogue(View view) {
-//        try{
-//            //saving the file into device
-//            FileOutputStream out = classActivity.openFileOutput("ppi data.csv", Context.MODE_PRIVATE);
-//            out.write((ppiCSV.toString()).getBytes());
-//            out.close();
-//
-//            //exporting
-//            Context context = classContext;
-//            File fileLocation = new File(classActivity.getFilesDir(), "ppi data.csv");
-//            Uri path = FileProvider.getUriForFile(context, "com.hri_physio.polarstreamer", fileLocation);
-//            Intent fileIntent = new Intent(Intent.ACTION_SEND);
-//            fileIntent.setType("text/csv");
-//            fileIntent.putExtra(Intent.EXTRA_SUBJECT, "Data");
-//            fileIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            fileIntent.putExtra(Intent.EXTRA_STREAM, path);
-//            startActivity(Intent.createChooser(fileIntent, "Send ppi data"));
-//        }
-//        catch(Exception e){
-//            e.printStackTrace();
-//        }
     }
 }

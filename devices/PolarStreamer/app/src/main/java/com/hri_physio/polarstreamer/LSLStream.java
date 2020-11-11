@@ -6,6 +6,8 @@ import java.util.List;
 
 import edu.ucsd.sccn.LSL;
 import polar.com.sdk.api.model.PolarAccelerometerData;
+import polar.com.sdk.api.model.PolarOhrPPGData;
+import polar.com.sdk.api.model.PolarOhrPPIData;
 
 public class LSLStream {
     public LSL.StreamOutlet outlet;
@@ -45,6 +47,14 @@ public class LSLStream {
         outlet.push_chunk(chunk);
     }
 
+    public void runPPI(List<PolarOhrPPIData.PolarOhrPPISample> samples) throws InterruptedException {
+        chunk = new int[samples.size()];
+        for (int k=0;k<chunk.length;k++){
+            chunk[k] = samples.get(k).ppi;
+        }
+        outlet.push_chunk(chunk);
+    }
+
     public void runAcc(List<PolarAccelerometerData.PolarAccelerometerSample> samples) throws InterruptedException {
         //Sending data by chunk size = list size
         chunk = new int[samples.size()*3];
@@ -53,6 +63,18 @@ public class LSLStream {
             chunk[k] = samples.get(sampleIndex).x;
             chunk[k+1] = samples.get(sampleIndex).y;
             chunk[k+2] = samples.get(sampleIndex).z;
+            sampleIndex++;
+        }
+        outlet.push_chunk(chunk);
+    }
+
+    public void runPPG (List<PolarOhrPPGData.PolarOhrPPGSample> samples ) throws InterruptedException {
+        chunk = new int[samples.size()*3];
+        int sampleIndex = 0;
+        for (int k=0;k<samples.size()*3;k+=3){
+            chunk[k] = samples.get(sampleIndex).ppg0;
+            chunk[k+1] = samples.get(sampleIndex).ppg1;
+            chunk[k+2] = samples.get(sampleIndex).ppg2;
             sampleIndex++;
         }
         outlet.push_chunk(chunk);
