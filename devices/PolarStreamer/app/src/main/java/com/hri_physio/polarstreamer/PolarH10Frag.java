@@ -114,6 +114,7 @@ public class PolarH10Frag extends Fragment {
 
     // LSL streaming
     public LSLStream streamHr;
+    public LSLStream streamRr;
     public LSLStream streamEcg;
     public LSLStream streamAcc;
     // plots
@@ -135,6 +136,7 @@ public class PolarH10Frag extends Fragment {
     };
     public Disposable ecgDisposable;
     public Disposable accDisposable;
+
 
     @Nullable
     @Override
@@ -290,6 +292,7 @@ public class PolarH10Frag extends Fragment {
                             ecgDisposable = null;
                         }
                         ecgData.setText("");
+                        if(streamEcg.outlet != null) streamEcg.close();
                     }
                 }
             }
@@ -305,23 +308,23 @@ public class PolarH10Frag extends Fragment {
                     toggleStreamACC.setChecked(false);
                 }
                 else {
-                    //create ACC stream
-                    streamAcc = new LSLStream();
-                    // streaming LSL
-                    // declare info strings to store stream data info for LSL
-                    // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                    String[] accInfo = new String[]{"Polar H10", "ACC", "3", "200", DEVICE_ID};
-                    if(sensorSetting!= null){
-                        accInfo[3] = String.valueOf(sensorSetting.settings.get(PolarSensorSetting.SettingType.SAMPLE_RATE));
-                    }
-                    try {
-                        streamAcc.StreamOutlet(accInfo);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
                     if (isChecked) {
+                        //create ACC stream
+                        streamAcc = new LSLStream();
+                        // streaming LSL
+                        // declare info strings to store stream data info for LSL
+                        // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
+                        String[] accInfo = new String[]{"Polar H10", "ACC", "3", "200", DEVICE_ID};
+                        if(sensorSetting!= null){
+                            accInfo[3] = String.valueOf(sensorSetting.settings.get(PolarSensorSetting.SettingType.SAMPLE_RATE));
+                        }
+                        try {
+                            streamAcc.StreamOutlet(accInfo);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
                         accelerometerData.setText("loading data...");
                         if(accDisposable == null) {
                             accDisposable = api.requestAccSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarAccelerometerData>>) settings -> {
@@ -366,6 +369,7 @@ public class PolarH10Frag extends Fragment {
                             accDisposable = null;
                         }
                         accelerometerData.setText("");
+                        if(streamAcc.outlet != null) streamAcc.close();
                     }
                 }
             }
@@ -460,7 +464,11 @@ public class PolarH10Frag extends Fragment {
 
             @Override
             public void deviceDisconnected(PolarDeviceInfo s) {
+                Toast.makeText(classContext, R.string.disconnected,
+                        Toast.LENGTH_SHORT).show();
                 apiConnected = Boolean.FALSE;
+                if(streamHr.outlet != null) streamHr.close();
+                if(streamRr.outlet != null) streamRr.close();
             }
 
             @Override
@@ -491,7 +499,7 @@ public class PolarH10Frag extends Fragment {
                 Log.d(TAG, "HR Feature ready " + s);
                 //Create HR stream if HR is ready
                 streamHr = new LSLStream();
-                String[] hrInfo = new String[]{"Polar H10", "HR/RR", "1", "1", DEVICE_ID};
+                String[] hrInfo = new String[]{"Polar H10", "HR", "1", "1", DEVICE_ID};
                 try {
                     streamHr.StreamOutlet(hrInfo);
                 } catch (IOException e) {
@@ -499,6 +507,17 @@ public class PolarH10Frag extends Fragment {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+                //create RR stream
+                streamRr = new LSLStream();
+                String[] rrInfo = new String[]{"Polar H10", "RR", "1", "2", DEVICE_ID};
+                try {
+                    streamRr.StreamOutlet(rrInfo);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                //show plot for HR
                 showPlotHR(view);
                 plotHR.clear();
                 plotHR.setVisibility(View.GONE);
@@ -533,7 +552,8 @@ public class PolarH10Frag extends Fragment {
                         rrInterval.setText(String.valueOf(rr));
                     //stream to LSL: overloaded runHr method
                     try {
-                        streamHr.runHr(polarHrData.hr, polarHrData.rrsMs);
+                        streamHr.runHr(polarHrData.hr);
+                        streamRr.runList(polarHrData.rrsMs);
                     } catch (InterruptedException e) {
                         e.printStackTrace();
                     }
@@ -796,7 +816,6 @@ public class PolarH10Frag extends Fragment {
     public void onClickStopConnection(View view) {
         try {
             api.disconnectFromDevice(DEVICE_ID);
-            apiConnected = Boolean.FALSE;
 
             textViewBattery.setText("");
             connectStatus.setText("");
@@ -816,6 +835,7 @@ public class PolarH10Frag extends Fragment {
             plotHR.setVisibility(View.GONE);
             plotECG.setVisibility(View.GONE);
             plotACC.setVisibility(View.GONE);
+
             recording = false;
             Log.d(TAG, "finish");
         } catch (PolarInvalidArgument a){

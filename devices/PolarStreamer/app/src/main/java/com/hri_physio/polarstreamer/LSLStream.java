@@ -1,7 +1,6 @@
 package com.hri_physio.polarstreamer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import edu.ucsd.sccn.LSL;
@@ -26,15 +25,6 @@ public class LSLStream {
 
     public void runHr(int sample) throws InterruptedException {
         chunk = new int[]{sample};
-        outlet.push_chunk(chunk);
-    }
-
-    public void runHr(int sample, List<Integer> rr) throws InterruptedException {
-        List<Integer> list = new ArrayList<Integer>();
-        list.add(sample);
-        for(int j=0; j<rr.size();j++)
-            list.add(rr.get(j));
-        chunk = list.stream().mapToInt(i -> i).toArray();
         outlet.push_chunk(chunk);
     }
 
