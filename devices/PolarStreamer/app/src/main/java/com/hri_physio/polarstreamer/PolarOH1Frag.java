@@ -302,7 +302,7 @@ public class PolarOH1Frag extends Fragment {
                     // streaming LSL
                     // declare info strings to store stream data info for LSL
                     // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                    String[] ppgInfo = new String[]{"Polar OH1", "PPG", "3", "50", DEVICE_ID};
+                    String[] ppgInfo = new String[]{"Polar OH1", "PPG", "3", "130", DEVICE_ID};
                     try {
                         streamPPG.StreamOutlet(ppgInfo);
                     } catch (IOException e) {
@@ -388,7 +388,7 @@ public class PolarOH1Frag extends Fragment {
                     // streaming LSL
                     // declare info strings to store stream data info for LSL
                     // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                    String[] ppiInfo = new String[]{"Polar OH1", "PPI", "1", "50", DEVICE_ID};
+                    String[] ppiInfo = new String[]{"Polar OH1", "PPI", "1", "130", DEVICE_ID};
                     try {
                         streamPPI.StreamOutlet(ppiInfo);
                     } catch (IOException e) {
