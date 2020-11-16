@@ -277,6 +277,10 @@ public class PolarOH1Frag extends Fragment {
                             accDisposable = null;
                         }
                         accelerometerData.setText("");
+                        // if it is not checked, stop streaming acc data
+                        if (streamAcc.outlet != null) {
+                            streamAcc.close();
+                        }
                     }
                 }
             }
@@ -363,6 +367,10 @@ public class PolarOH1Frag extends Fragment {
                             ppgDisposable = null;
                         }
                         ppgData.setText("");
+                        // if it is not checked, stop streaming ppg data
+                        if (streamPPG.outlet != null) {
+                            streamPPG.close();
+                        }
                     }
                     plotPPG.setVisibility(View.GONE);
                 }
@@ -430,6 +438,10 @@ public class PolarOH1Frag extends Fragment {
                             ppiDisposable = null;
                         }
                         ppiData.setText("");
+                        // if it is not checked, stop streaming ppi data
+                        if (streamPPI.outlet != null) {
+                            streamPPI.close();
+                        }
                     }
                 }
             }
@@ -533,6 +545,8 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void deviceDisconnected(PolarDeviceInfo s) {
                 apiConnected = Boolean.FALSE;
+                // if device is not connected, stop streaming hr data
+                if(streamHr.outlet != null) streamHr.close();
             }
 
             @Override
@@ -543,8 +557,6 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void accelerometerFeatureReady(String s) {
                 Log.d(TAG, "ACC Feature ready " + s);
-                //Toast.makeText(classContext, "acc ready", Toast.LENGTH_LONG).show();
-                //Snackbar.make(view, "acc ready", Snackbar.LENGTH_LONG).setAction("Action", null).show();
             }
 
             @Override
