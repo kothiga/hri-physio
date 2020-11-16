@@ -171,7 +171,7 @@
             android:id="@+id/acc_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="308dp"
+            android:layout_marginStart="224dp"
             android:layout_marginTop="36dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
@@ -231,16 +231,16 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ppgView_frag2" />
 
+
         <TextView
             android:id="@+id/ppi_frag2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="164dp"
+            android:layout_marginStart="172dp"
             android:layout_marginTop="16dp"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/ppg_frag2" />
-
 
         <ToggleButton
             android:id="@+id/start_stop_recording_frag2"

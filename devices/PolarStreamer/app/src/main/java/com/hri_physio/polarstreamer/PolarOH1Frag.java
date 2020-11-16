@@ -131,6 +131,9 @@ public class PolarOH1Frag extends Fragment {
     public LSLStream streamPPG;
     public LSLStream streamPPI;
 
+    // record device start time in nanoseconds
+    public long start_time;
+
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -151,14 +154,23 @@ public class PolarOH1Frag extends Fragment {
         enterIdText.setInputType(InputType.TYPE_CLASS_TEXT);
         enterIdText.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {  }
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                if (sharedPreferences.getString(DEVICE_ID, null) != null) {
+                    enterIdText.setHint(DEVICE_ID);
+                }
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {  }
 
             @Override
             public void afterTextChanged(Editable s) {
-                DEVICE_ID = enterIdText.getText().toString();
+                String input = enterIdText.getText().toString();
+                // remove trailing white space
+                input = input.replaceAll("\\s","");
+                // convert lower case to upper case
+                input = input.toUpperCase();
+                DEVICE_ID = input;
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(sharedPrefsKey, DEVICE_ID);
                 editor.apply();
@@ -236,7 +248,7 @@ public class PolarOH1Frag extends Fragment {
                                                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                     sdf.setTimeZone(TimeZone.getDefault());
                                                     String currentDateAndTime = sdf.format(new Date());
-                                                    accCSV.append("\n"+currentDateAndTime+","+ showStartTime.getText() + "," +polarAccData.samples.get(0).x+","+polarAccData.samples.get(0).y+","+polarAccData.samples.get(0).z);
+                                                    accCSV.append("\n"+currentDateAndTime+","+ getElapsedNanoTime() + "," +polarAccData.samples.get(0).x+","+polarAccData.samples.get(0).y+","+polarAccData.samples.get(0).z);
                                                 }
                                             }
 
@@ -329,7 +341,7 @@ public class PolarOH1Frag extends Fragment {
                                                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                     sdf.setTimeZone(TimeZone.getDefault());
                                                     String currentDateAndTime = sdf.format(new Date());
-                                                    ppgCSV.append("\n"+currentDateAndTime+","+showStartTime.getText() + ","+polarPPGData.samples.get(0).ppg0+","+polarPPGData.samples.get(0).ppg1+","+polarPPGData.samples.get(0).ppg2);
+                                                    ppgCSV.append("\n"+currentDateAndTime + "," + getElapsedNanoTime() + ","+polarPPGData.samples.get(0).ppg0+","+polarPPGData.samples.get(0).ppg1+","+polarPPGData.samples.get(0).ppg2);
                                                 }
                                             }
                                             // start streaming ppg to lsl
@@ -416,7 +428,7 @@ public class PolarOH1Frag extends Fragment {
                                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                 sdf.setTimeZone(TimeZone.getDefault());
                                                 String currentDateAndTime = sdf.format(new Date());
-                                                ppiCSV.append("\n"+currentDateAndTime+","+showStartTime.getText()+","+polarOhrPPIData.samples.get(0).ppi);
+                                                ppiCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime()+","+polarOhrPPIData.samples.get(0).ppi);
                                             }
                                         }
                                         // display data in UI
@@ -536,6 +548,7 @@ public class PolarOH1Frag extends Fragment {
                 ppgData.setText("loading data...");
                 ppiData.setText("loading data...");
                 apiConnected = Boolean.TRUE;
+                start_time = System.nanoTime();
             }
 
             @Override
@@ -608,20 +621,19 @@ public class PolarOH1Frag extends Fragment {
             public void hrNotificationReceived(String s, PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
-                timeplotter.addValues(polarHrData);
-                try {
-                    streamHr.runHr(polarHrData.hr);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
                 // edit hrCSV
                 hrCSV.append("System Time, Internal Time, hr");
                 if (recording) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                     sdf.setTimeZone(TimeZone.getDefault());
                     String currentDateAndTime = sdf.format(new Date());
-                    hrCSV.append("\n"+currentDateAndTime+","+showStartTime.getText() + ","+polarHrData.hr+",");
+                    hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+polarHrData.hr+",");
+                }
+                timeplotter.addValues(polarHrData);
+                try {
+                    streamHr.runHr(polarHrData.hr);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
 
@@ -838,4 +850,25 @@ public class PolarOH1Frag extends Fragment {
             e.printStackTrace();
         }
     }
+
+    public String getElapsedNanoTime () {
+        long elapsed_time = System.nanoTime() - start_time;
+        StringBuilder sb = new StringBuilder();
+        long seconds = elapsed_time / 1000000000;
+        long days = seconds / (3600 * 24);
+        sb.append(days+"d");
+        seconds -= (days * 3600 * 24);
+        long hours = seconds / 3600;
+        sb.append(hours+"h");
+        seconds -= (hours * 3600);
+        long minutes = seconds / 60;
+        sb.append(minutes+"m");
+        seconds -= (minutes * 60);
+        sb.append(seconds+"s");
+        long nanos = elapsed_time % 1000000000;
+        sb.append(nanos+"ns");
+        return sb.toString();
+    }
+
+
 }
