@@ -558,6 +558,9 @@ public class PolarOH1Frag extends Fragment {
             @Override
             public void deviceDisconnected(PolarDeviceInfo s) {
                 apiConnected = Boolean.FALSE;
+                accelerometerData.setText("");
+                ppgData.setText("");
+                ppiData.setText("");
                 // if device is not connected, stop streaming hr data
                 if(streamHr.outlet != null) streamHr.close();
             }
@@ -738,7 +741,7 @@ public class PolarOH1Frag extends Fragment {
         timeplotter = new TimePlotterHR(classContext, "HR/RR");
         timeplotter.setListener(plotterListener);
         plotHR.addSeries(timeplotter.getHrSeries(), timeplotter.getHrFormatter());
-        plotHR.addSeries(timeplotter.getRrSeries(), timeplotter.getRrFormatter());
+        //plotHR.addSeries(timeplotter.getRrSeries(), timeplotter.getRrFormatter());
         plotHR.setRangeBoundaries(50, 100,
                 BoundaryMode.AUTO);
         plotHR.setDomainBoundaries(0, 360000,
@@ -753,7 +756,6 @@ public class PolarOH1Frag extends Fragment {
     }
 
     public void showPlotACC(View view){
-
         plotACC.setVisibility(View.VISIBLE);
         //Plot ACC graph
         timeplotterACC = new PlotterACC(classContext, "ACC");
@@ -763,8 +765,8 @@ public class PolarOH1Frag extends Fragment {
         plotACC.addSeries(timeplotterACC.getAccZSeries(), timeplotterACC.getAccZFormatter());
         plotACC.setRangeBoundaries(-1000, 1000,
                 BoundaryMode.AUTO);
-        plotACC.setDomainBoundaries(0, 360000,
-                BoundaryMode.AUTO);
+        plotACC.setDomainBoundaries(0, 300,
+                BoundaryMode.FIXED);
         // Left labels
         plotACC.setRangeStep(StepMode.SUBDIVIDE, 10);
         plotACC.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
@@ -775,29 +777,14 @@ public class PolarOH1Frag extends Fragment {
     }
 
     public void showPlotPPG(View view) {
-
-        //Plot ECG graph
-//        plotterECG = new PlotterECG(classContext, "ECG");
-//        plotterECG.setListener(plotterListener);
-//
-//        plotECG.addSeries(plotterECG.getSeries(), plotterECG.getFormatter());
-//        plotECG.setRangeBoundaries(-4, 4, BoundaryMode.FIXED);
-//        plotECG.setDomainBoundaries(0, 800, BoundaryMode.FIXED);
-//
-//        plotACC.setRangeStep(StepMode.SUBDIVIDE, 10);
-//        plotACC.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
-
-
         plotPPG.setVisibility(View.VISIBLE);
         timeplotterPPG = new PlotterPPG(classContext, "PPG");
         timeplotterPPG.setListener(plotterListener);
         plotPPG.addSeries(timeplotterPPG.getSeries(), timeplotterPPG.getFormatter());
         plotPPG.setRangeBoundaries(-500000, 500000, BoundaryMode.AUTO);
         plotPPG.setRangeStep(StepMode.INCREMENT_BY_FIT, 200000);
-        plotPPG.setDomainBoundaries(0, 500, BoundaryMode.AUTO);
+        plotPPG.setDomainBoundaries(0, 500, BoundaryMode.FIXED);
         plotPPG.setDomainStep(StepMode.INCREMENT_BY_VAL, 60000);
-        //plotPPG.setLinesPerRangeLabel(2);
-
     }
 
     public void showExportDialogue(View view) {
