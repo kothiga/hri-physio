@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
@@ -111,6 +112,8 @@ public class PolarH10Frag extends Fragment {
     StringBuilder accCSV = new StringBuilder();
     StringBuilder ecgCSV = new StringBuilder();
     StringBuilder hrCSV = new StringBuilder();
+    // record device start time in nanoseconds
+    public long start_time;
 
     // LSL streaming
     public LSLStream streamHr;
@@ -167,6 +170,9 @@ public class PolarH10Frag extends Fragment {
         enterIdText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+                if (sharedPreferences.getString(DEVICE_ID, null) != null) {
+                    enterIdText.setHint(DEVICE_ID);
+                }
             }
 
             @Override
@@ -175,7 +181,12 @@ public class PolarH10Frag extends Fragment {
 
             @Override
             public void afterTextChanged(Editable s) {
-                DEVICE_ID = enterIdText.getText().toString();
+                String input = enterIdText.getText().toString();
+                // remove trailing white space
+                input = input.replaceAll("\\s","");
+                // convert lower case to upper case
+                input = input.toUpperCase();
+                DEVICE_ID = input;
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString(sharedPrefsKey, DEVICE_ID);
                 editor.apply();
@@ -253,7 +264,7 @@ public class PolarH10Frag extends Fragment {
                         } catch (InterruptedException e) {
                             e.printStackTrace();
                         }
-
+                        ecgData.setText("loading data...");
                         //stream data, add to plot and write to file.
                         if(ecgDisposable == null) {
                             ecgDisposable = api.requestEcgSettings(DEVICE_ID).toFlowable().flatMap((Function<PolarSensorSetting, Publisher<PolarEcgData>>) settings -> {
@@ -268,7 +279,7 @@ public class PolarH10Frag extends Fragment {
                                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                 sdf.setTimeZone(TimeZone.getDefault());
                                                 String currentDateAndTime = sdf.format(new Date());
-                                                ecgCSV.append("\n"+currentDateAndTime+","+showStartTime.getText() + ","+data);
+                                                ecgCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+data);
                                             }
                                         }
                                         streamEcg.runList(polarEcgData.samples);
@@ -347,7 +358,7 @@ public class PolarH10Frag extends Fragment {
                                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                 sdf.setTimeZone(TimeZone.getDefault());
                                                 String currentDateAndTime = sdf.format(new Date());
-                                                accCSV.append("\n"+currentDateAndTime+","+ showStartTime.getText() + "," + sample.x+","+ sample.y+","+sample.z);
+                                                accCSV.append("\n"+currentDateAndTime+","+ getElapsedNanoTime() + "," + sample.x+","+ sample.y+","+sample.z);
                                             }
                                         }
                                         streamAcc.runAcc(polarAccData.samples);
@@ -458,6 +469,7 @@ public class PolarH10Frag extends Fragment {
                 connectStatus.append("Connected\n");
                 heartRate.setText("loading data...");
                 rrInterval.setText("loading data...");
+                start_time = System.nanoTime();
             }
 
             @Override
@@ -577,14 +589,15 @@ public class PolarH10Frag extends Fragment {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                     sdf.setTimeZone(TimeZone.getDefault());
                     String currentDateAndTime = sdf.format(new Date());
-                    hrCSV.append("\n"+currentDateAndTime+","+showStartTime.getText() + ","+polarHrData.hr+",");
+                    hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+polarHrData.hr+",");
                     if(polarHrData.rrsMs.size() != 0){
-                        for(int i = 0; i < polarHrData.rrsMs.size(); i++){
-                            hrCSV.append(polarHrData.rrsMs.get(i)+" ");
-                        }
+                        // only add the max RR interval value for one second.
+                        hrCSV.append(Collections.max(polarHrData.rrsMs));
+//                        for(int i = 0; i < polarHrData.rrsMs.size(); i++){
+//                            hrCSV.append(polarHrData.rrsMs.get(i)+" ");
+//                        }
                     }
                 }
-
             }
 
             @Override
@@ -898,6 +911,24 @@ public class PolarH10Frag extends Fragment {
         catch(Exception e){
             e.printStackTrace();
         }
+    }
+    public String getElapsedNanoTime () {
+        long elapsed_time = System.nanoTime() - start_time;
+        StringBuilder sb = new StringBuilder();
+        long seconds = elapsed_time / 1000000000;
+        long days = seconds / (3600 * 24);
+        sb.append(days+"d");
+        seconds -= (days * 3600 * 24);
+        long hours = seconds / 3600;
+        sb.append(hours+"h");
+        seconds -= (hours * 3600);
+        long minutes = seconds / 60;
+        sb.append(minutes+"m");
+        seconds -= (minutes * 60);
+        sb.append(seconds+"s");
+        long nanos = elapsed_time % 1000000000;
+        sb.append(nanos+"ns");
+        return sb.toString();
     }
 
 }
