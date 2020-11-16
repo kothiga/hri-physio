@@ -11,7 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Implements series ECG using time for the x values.
+ * Implements series ECG using index based x values.
  */
 public class PlotterECG {
     String title;

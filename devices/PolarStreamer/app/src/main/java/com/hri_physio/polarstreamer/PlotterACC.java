@@ -12,7 +12,7 @@ import java.util.Arrays;
 import polar.com.sdk.api.model.PolarAccelerometerData;
 
 /**
- * Implements 3 series for Acceloremeter XYZ using time for the x values.
+ * Implements 3 series for Accelerometer XYZ using index-based x values.
  */
 
 public class PlotterACC {

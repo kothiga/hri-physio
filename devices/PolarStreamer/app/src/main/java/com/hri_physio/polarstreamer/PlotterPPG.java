@@ -23,10 +23,6 @@ public class PlotterPPG {
         this.context = context;
         this.title = title;
 
-//        for(int i = 0; i < yPPGVal.length - 1; i++){
-//            yPPGVal[i] = 0;
-//        }
-
         PPGFormatter = new LineAndPointFormatter(Color.RED,
                 null, null, null);
         PPGSeries = new SimpleXYSeries(Arrays.asList(yPPGVal), SimpleXYSeries.ArrayFormat.Y_VALS_ONLY,
@@ -58,12 +54,4 @@ public class PlotterPPG {
     public void setListener(PlotterListener listener){
         this.listener = listener;
     }
-
-
-
-
-
-
-
-
 }
