@@ -221,7 +221,8 @@ public class PolarOH1Frag extends Fragment {
                     // streaming LSL
                     // declare info strings to store stream data info for LSL
                     // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                    String[] accInfo = new String[]{"Polar OH1", "ACC", "3", "50", DEVICE_ID};
+                    String deviceNameAcc = "PolarOH1/"+DEVICE_ID+"/ACC";
+                    String[] accInfo = new String[]{deviceNameAcc, "ACC", "3", "50", DEVICE_ID};
                     try {
                         streamAcc.StreamOutlet(accInfo);
                     } catch (IOException e) {
@@ -318,7 +319,8 @@ public class PolarOH1Frag extends Fragment {
                     // streaming LSL
                     // declare info strings to store stream data info for LSL
                     // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                    String[] ppgInfo = new String[]{"Polar OH1", "PPG", "3", "130", DEVICE_ID};
+                    String deviceNamePPG = "PolarOH1/"+DEVICE_ID+"/PPG";
+                    String[] ppgInfo = new String[]{deviceNamePPG, "PPG", "3", "130", DEVICE_ID};
                     try {
                         streamPPG.StreamOutlet(ppgInfo);
                     } catch (IOException e) {
@@ -408,7 +410,8 @@ public class PolarOH1Frag extends Fragment {
                     // streaming LSL
                     // declare info strings to store stream data info for LSL
                     // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                    String[] ppiInfo = new String[]{"Polar OH1", "PPI", "1", "130", DEVICE_ID};
+                    String deviceNamePPI = "PolarOH1/"+DEVICE_ID+"/PPI";
+                    String[] ppiInfo = new String[]{deviceNamePPI, "PPI", "1", "130", DEVICE_ID};
                     try {
                         streamPPI.StreamOutlet(ppiInfo);
                     } catch (IOException e) {
@@ -595,7 +598,8 @@ public class PolarOH1Frag extends Fragment {
                 Log.d(TAG, "HR Feature ready " + s);
                 //Create HR stream if HR is ready
                 streamHr = new LSLStream();
-                String[] hrInfo = new String[]{"Polar OH1", "HR/RR", "1", "1", DEVICE_ID};
+                String deviceNameHR = "PolarOH1/"+DEVICE_ID+"/HR";
+                String[] hrInfo = new String[]{deviceNameHR, "HR", "1", "1", DEVICE_ID};
                 try {
                     streamHr.StreamOutlet(hrInfo);
                 } catch (IOException e) {
