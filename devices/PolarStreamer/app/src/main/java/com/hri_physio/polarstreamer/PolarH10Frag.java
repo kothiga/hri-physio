@@ -243,8 +243,9 @@ public class PolarH10Frag extends Fragment {
                         streamEcg = new LSLStream();
                         // streaming LSL
                         // declare info strings to store stream data info for LSL
-                        // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                        String[] ecgInfo = new String[]{"Polar H10", "ECG", "1", "130", DEVICE_ID};
+                        // info input in format of: { [0] "device name in format: PolarDeviceName/DeviceID/service", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id(=device name)"}
+                        String deviceNameEcg = "PolarH10/"+DEVICE_ID+"/ECG";
+                        String[] ecgInfo = new String[]{deviceNameEcg, "ECG", "1", "130", deviceNameEcg};
                         try {
                             streamEcg.StreamOutlet(ecgInfo);
                         } catch (IOException e) {
@@ -313,8 +314,9 @@ public class PolarH10Frag extends Fragment {
                         streamAcc = new LSLStream();
                         // streaming LSL
                         // declare info strings to store stream data info for LSL
-                        // info input in format of: { [0] "device name", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id"}
-                        String[] accInfo = new String[]{"Polar H10", "ACC", "3", "200", DEVICE_ID};
+                        // info input in format of: { [0] "device name in format: PolarDeviceName/DeviceID/service", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id(=device name)"}
+                        String deviceNameAcc = "PolarH10/"+DEVICE_ID+"/ACC";
+                        String[] accInfo = new String[]{deviceNameAcc, "ACC", "3", "200", deviceNameAcc};
                         if(sensorSetting!= null){
                             accInfo[3] = String.valueOf(sensorSetting.settings.get(PolarSensorSetting.SettingType.SAMPLE_RATE));
                         }
@@ -499,7 +501,9 @@ public class PolarH10Frag extends Fragment {
                 Log.d(TAG, "HR Feature ready " + s);
                 //Create HR stream if HR is ready
                 streamHr = new LSLStream();
-                String[] hrInfo = new String[]{"Polar H10", "HR", "1", "1", DEVICE_ID};
+                // info input in format of: { [0] "device name in format: PolarDeviceName/DeviceID/service", [1]  "type of data", [2]"channel count", [3]"sampling rate", [4]"device id(=device name)"}
+                String deviceNameHr = "PolarH10/"+DEVICE_ID+"/HR";
+                String[] hrInfo = new String[]{deviceNameHr, "HR", "1", "1", deviceNameHr};
                 try {
                     streamHr.StreamOutlet(hrInfo);
                 } catch (IOException e) {
@@ -509,7 +513,8 @@ public class PolarH10Frag extends Fragment {
                 }
                 //create RR stream
                 streamRr = new LSLStream();
-                String[] rrInfo = new String[]{"Polar H10", "RR", "1", "2", DEVICE_ID};
+                String deviceNameRr = "PolarH10/"+DEVICE_ID+"/RR";
+                String[] rrInfo = new String[]{deviceNameRr, "RR", "1", "2", deviceNameRr};
                 try {
                     streamRr.StreamOutlet(rrInfo);
                 } catch (IOException e) {
