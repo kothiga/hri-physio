@@ -129,34 +129,6 @@
             app:layout_constraintStart_toEndOf="@id/timerView_frag1"
             app:layout_constraintTop_toBottomOf="@id/batteryView_frag1" />
 
-        <ToggleButton
-            android:id="@+id/stream_ECG_button_frag1"
-            style="@style/Widget.AppCompat.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="30dp"
-            android:layout_marginTop="20dp"
-            android:background="@android:color/white"
-            android:textColor="@color/colorPrimary"
-            android:textOff="Stream ECG"
-            android:textOn="Pause Stream"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/timerView_frag1" />
-
-        <ToggleButton
-            android:id="@+id/stream_ACC_button_frag1"
-            style="@style/Widget.AppCompat.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginTop="20dp"
-            android:background="@android:color/white"
-            android:textColor="@color/colorPrimary"
-            android:textOff="Stream ACC"
-            android:textOn="Pause Stream"
-            app:layout_constraintStart_toEndOf="@+id/stream_ECG_button_frag1"
-            app:layout_constraintTop_toBottomOf="@id/timerView_frag1" />
-
         <TextView
             android:id="@+id/hrView_frag1"
             android:layout_width="wrap_content"
@@ -166,7 +138,7 @@
             android:text="@string/hr"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/stream_ECG_button_frag1" />
+            app:layout_constraintTop_toBottomOf="@+id/timerView_frag1" />
 
         <TextView
             android:id="@+id/hr_frag1"
@@ -178,7 +150,7 @@
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@id/hrView_frag1"
-            app:layout_constraintTop_toBottomOf="@id/stream_ECG_button_frag1" />
+            app:layout_constraintTop_toBottomOf="@id/timerView_frag1" />
 
         <TextView
             android:id="@+id/rrView_frag1"
@@ -203,6 +175,34 @@
             app:layout_constraintStart_toEndOf="@id/rrView_frag1"
             app:layout_constraintTop_toBottomOf="@id/hrView_frag1" />
 
+        <ToggleButton
+            android:id="@+id/stream_ECG_button_frag1"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="30dp"
+            android:layout_marginTop="20dp"
+            android:background="@android:color/white"
+            android:textColor="@color/colorPrimary"
+            android:textOff="Stream ECG"
+            android:textOn="Pause ECG"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/rrView_frag1" />
+
+        <ToggleButton
+            android:id="@+id/stream_ACC_button_frag1"
+            style="@style/Widget.AppCompat.Button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="20dp"
+            android:background="@android:color/white"
+            android:textColor="@color/colorPrimary"
+            android:textOff="Stream ACC"
+            android:textOn="Pause ACC"
+            app:layout_constraintStart_toEndOf="@+id/stream_ECG_button_frag1"
+            app:layout_constraintTop_toBottomOf="@id/rrView_frag1" />
+
         <TextView
             android:id="@+id/ecgView_frag1"
             android:layout_width="wrap_content"
@@ -212,7 +212,7 @@
             android:text="@string/ecg_name"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/rrView_frag1" />
+            app:layout_constraintTop_toBottomOf="@+id/stream_ECG_button_frag1" />
 
 
         <TextView
@@ -225,7 +225,7 @@
             android:textSize="18sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/ecgView_frag1"
-            app:layout_constraintTop_toBottomOf="@id/rrView_frag1" />
+            app:layout_constraintTop_toBottomOf="@id/stream_ECG_button_frag1" />
 
         <TextView
             android:id="@+id/accView_frag1"
