@@ -432,10 +432,16 @@ public class PolarOH1Frag extends Fragment {
                                                 sdf.setTimeZone(TimeZone.getDefault());
                                                 String currentDateAndTime = sdf.format(new Date());
                                                 ppiCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime()+","+polarOhrPPIData.samples.get(0).ppi);
+                                                hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+polarOhrPPIData.samples.get(0).hr);
                                             }
                                         }
                                         // display data in UI
                                         ppiData.setText(polarOhrPPIData.samples.get(0).ppi + "ms");
+                                        if (polarOhrPPIData.samples.get(0).hr != 0) {
+                                            heartRate.setText(polarOhrPPIData.samples.get(0).hr + "bpm");
+                                        }
+
+                                        //Toast.makeText(classContext, "in ppi", Toast.LENGTH_LONG).show();
                                         // start streaming ppi to lsl
                                         streamPPI.runPPI(polarOhrPPIData.samples);
 
@@ -628,13 +634,14 @@ public class PolarOH1Frag extends Fragment {
             public void hrNotificationReceived(String s, PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
+                //Toast.makeText(classContext, "in hr", Toast.LENGTH_LONG).show();
                 // edit hrCSV
                 hrCSV.append("System Time, Internal Time, hr");
                 if (recording) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                     sdf.setTimeZone(TimeZone.getDefault());
                     String currentDateAndTime = sdf.format(new Date());
-                    hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+polarHrData.hr+",");
+                    hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+polarHrData.hr);
                 }
                 timeplotter.addValues(polarHrData);
                 try {
