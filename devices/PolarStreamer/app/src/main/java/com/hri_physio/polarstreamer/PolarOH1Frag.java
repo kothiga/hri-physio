@@ -89,8 +89,11 @@ public class PolarOH1Frag extends Fragment {
 
     private XYPlot plotHR, plotACC, plotPPG;
     private TimePlotterHR timeplotter;
+
     private PlotterACC timeplotterACC;
     private PlotterPPG timeplotterPPG;
+    //private PlotterPPG timeplotter;
+
     public PlotterListener plotterListener = new PlotterListener() {
         @Override
         public void update() {
@@ -249,7 +252,7 @@ public class PolarOH1Frag extends Fragment {
                                                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                     sdf.setTimeZone(TimeZone.getDefault());
                                                     String currentDateAndTime = sdf.format(new Date());
-                                                    accCSV.append("\n"+currentDateAndTime+","+ getElapsedNanoTime() + "," +polarAccData.samples.get(0).x+","+polarAccData.samples.get(0).y+","+polarAccData.samples.get(0).z);
+                                                    accCSV.append("\n"+currentDateAndTime+","+ getElapsedNanoTime() + "," +data.x+","+data.y+","+data.z);
                                                 }
                                             }
 
@@ -343,7 +346,7 @@ public class PolarOH1Frag extends Fragment {
                                                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                     sdf.setTimeZone(TimeZone.getDefault());
                                                     String currentDateAndTime = sdf.format(new Date());
-                                                    ppgCSV.append("\n"+currentDateAndTime + "," + getElapsedNanoTime() + ","+polarPPGData.samples.get(0).ppg0+","+polarPPGData.samples.get(0).ppg1+","+polarPPGData.samples.get(0).ppg2);
+                                                    ppgCSV.append("\n"+currentDateAndTime + "," + getElapsedNanoTime() + ","+data.ppg0+","+data.ppg1+","+data.ppg2);
                                                 }
                                             }
                                             // start streaming ppg to lsl
@@ -431,17 +434,17 @@ public class PolarOH1Frag extends Fragment {
                                                 SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                                                 sdf.setTimeZone(TimeZone.getDefault());
                                                 String currentDateAndTime = sdf.format(new Date());
-                                                ppiCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime()+","+polarOhrPPIData.samples.get(0).ppi);
-                                                hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+polarOhrPPIData.samples.get(0).hr);
+                                                ppiCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime()+","+sample.ppi);
+//                                                if (sample.hr != 0) {
+//                                                    hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+sample.hr);
+//                                                }
                                             }
                                         }
                                         // display data in UI
                                         ppiData.setText(polarOhrPPIData.samples.get(0).ppi + "ms");
-                                        if (polarOhrPPIData.samples.get(0).hr != 0) {
-                                            heartRate.setText(polarOhrPPIData.samples.get(0).hr + "bpm");
-                                        }
 
                                         //Toast.makeText(classContext, "in ppi", Toast.LENGTH_LONG).show();
+
                                         // start streaming ppi to lsl
                                         streamPPI.runPPI(polarOhrPPIData.samples);
 
@@ -498,6 +501,13 @@ public class PolarOH1Frag extends Fragment {
                     plotHR.clear();
                     plotHR.setVisibility(View.GONE);
                     showPlotPPG(view);
+                } else {
+                    plotHR.clear();
+                    plotHR.setVisibility(View.GONE);
+                    plotPPG.clear();
+                    plotPPG.setVisibility(View.GONE);
+                    plotACC.clear();
+                    plotACC.setVisibility(View.GONE);
                 }
             }
         });
@@ -613,6 +623,11 @@ public class PolarOH1Frag extends Fragment {
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
+                //show plot for HR
+                showPlotHR(view);
+                plotHR.clear();
+                plotHR.setVisibility(View.GONE);
             }
 
             @Override
@@ -634,7 +649,8 @@ public class PolarOH1Frag extends Fragment {
             public void hrNotificationReceived(String s, PolarHrData polarHrData) {
                 Log.d(TAG, "HR " + polarHrData.hr);
                 heartRate.setText(String.valueOf(polarHrData.hr)+"bpm");
-                //Toast.makeText(classContext, "in hr", Toast.LENGTH_LONG).show();
+                timeplotter.addValues(polarHrData);
+
                 // edit hrCSV
                 hrCSV.append("System Time, Internal Time, hr");
                 if (recording) {
@@ -643,7 +659,7 @@ public class PolarOH1Frag extends Fragment {
                     String currentDateAndTime = sdf.format(new Date());
                     hrCSV.append("\n"+currentDateAndTime+","+getElapsedNanoTime() + ","+polarHrData.hr);
                 }
-                timeplotter.addValues(polarHrData);
+                // stream hr to lsl
                 try {
                     streamHr.runHr(polarHrData.hr);
                 } catch (InterruptedException e) {

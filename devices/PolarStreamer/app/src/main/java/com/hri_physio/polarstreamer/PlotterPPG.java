@@ -2,11 +2,9 @@ package com.hri_physio.polarstreamer;
 
 import android.content.Context;
 import android.graphics.Color;
-
 import com.androidplot.xy.LineAndPointFormatter;
 import com.androidplot.xy.SimpleXYSeries;
 import com.androidplot.xy.XYSeriesFormatter;
-
 import java.util.Arrays;
 
 public class PlotterPPG {
