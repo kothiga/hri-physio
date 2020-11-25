@@ -207,7 +207,7 @@ public class PolarOH1Frag extends Fragment {
         });
 
         // edit accCSV file
-        accCSV.append("System Time, Internal Time, x, y, z");
+        accCSV.append("System Time,Internal Time,x,y,z");
 
         // start acc streaming
         startAcc = (ToggleButton) view.findViewById(R.id.start_acc_frag2);
@@ -304,7 +304,7 @@ public class PolarOH1Frag extends Fragment {
 
 
         // edit ppg CSV
-        ppgCSV.append("System Time, Internal Time, ppg0, ppg1, ppg2");
+        ppgCSV.append("System Time,Internal Time,ppg0,ppg1,ppg2");
 
         // start ppg streaming
         startPPG = (ToggleButton) view.findViewById(R.id.start_ppg_frag2);
@@ -395,7 +395,7 @@ public class PolarOH1Frag extends Fragment {
         });
 
         // edit ppi CSV
-        ppiCSV.append("System Time, Internal Time, ppi");
+        ppiCSV.append("System Time,Internal Time,ppi");
 
         // start PPi streaming
         startPPI = (ToggleButton) view.findViewById(R.id.start_ppi_frag2);
@@ -652,7 +652,7 @@ public class PolarOH1Frag extends Fragment {
                 timeplotter.addValues(polarHrData);
 
                 // edit hrCSV
-                hrCSV.append("System Time, Internal Time, hr");
+                hrCSV.append("System Time,Internal Time,hr");
                 if (recording) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                     sdf.setTimeZone(TimeZone.getDefault());

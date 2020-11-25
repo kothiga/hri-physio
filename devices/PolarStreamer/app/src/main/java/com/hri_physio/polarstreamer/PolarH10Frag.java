@@ -160,9 +160,9 @@ public class PolarH10Frag extends Fragment {
         plotACC.setVisibility(View.GONE);
 
         //Set column header to to-be-exported CSV
-        hrCSV.append("System Time, Internal Time, hr (bpm), rr interval (ms)");
-        ecgCSV.append("System Time, Internal Time, ecg (micro volt)");
-        accCSV.append("System Time, Internal Time, x (mg), y (mg), z (mg)");
+        hrCSV.append("System Time,Internal Time,hr (bpm),rr interval (ms)");
+        ecgCSV.append("System Time,Internal Time,ecg (micro volt)");
+        accCSV.append("System Time,Internal Time,x (mg),y (mg),z (mg)");
 
         // Enter device ID text field
         EditText enterIdText = (EditText) view.findViewById(R.id.editTextSetID_frag1);
