@@ -50,3 +50,37 @@ TEST_CASE("Test toUpper Function") {
     CHECK(s3 == "HE'LL L1VE FOR THE D@Y TH1S M0MENT COM3S AR0UND AG4IN!?");
 
 }
+
+TEST_CASE("Variant") {
+
+    //-- Test the size of variant
+    std::cout << "Size of varType (<int8_t,int16_t,int32_t,int64_t,float,double>) ";
+    hriPhysio::varType v1;
+    std::cout << sizeof(v1) << std::endl;
+
+    int8_t t8 = 5;
+    std::cout << "sizeof(int8_t) " << sizeof(t8) << std::endl;
+
+    int16_t t16 = 5;
+    std::cout << "sizeof(int16_t) " << sizeof(t16) << std::endl;
+
+    int32_t t32 = 5;
+    std::cout << "sizeof(int32_t) " << sizeof(t32) << std::endl;
+
+    int64_t t64 = 5;
+    std::cout << "sizeof(int64_t) " << sizeof(t64) << std::endl;
+
+    float f = 5.f;
+    std::cout << "sizeof(float) " << sizeof(f) << std::endl;
+
+    double d = 5.0123;
+    std::cout << "sizeof(double) " << sizeof(d) << std::endl;
+
+
+    v1 = (double) 5.0021;
+    std::cout << "double " << std::get<double>(v1) << std::endl;
+
+    v1 = (long long) 5123465789;
+    std::cout << "long long "; std::visit(hriPhysio::printVisitor(), v1); 
+    std::cout << std::endl;
+}

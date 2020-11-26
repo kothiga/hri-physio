@@ -10,32 +10,28 @@
  * ================================================================================
  */
 
-#ifndef HRI_PHYSIO_DEV_SHIMMER_DEVICE_H
-#define HRI_PHYSIO_DEV_SHIMMER_DEVICE_H
+#include <HriPhysio/Stream/streamerInterface.h>
 
-#include <iostream>
-#include <memory>
-#include <mutex>
+using namespace hriPhysio::Stream;
 
-#include <HriPhysio/helpers.h>
 
-namespace hriPhysio {
-    namespace Dev {
-        class ShimmerDevice;
-    }
+StreamerInterface::StreamerInterface() {
+
 }
 
-class hriPhysio::Dev::ShimmerDevice {
 
-private:
-    int temp;
+StreamerInterface::~StreamerInterface() {
 
-public:
-    ShimmerDevice();
+}
 
-private:
-    void tempfunc();
 
-};
+void StreamerInterface::setName(const std::string name) {
+    this->name = name;
+    return;
+}
 
-#endif /* HRI_PHYSIO_DEV_SHIMMER_DEVICE_H */
+
+std::string StreamerInterface::getName() const {
+    return name;
+}
+

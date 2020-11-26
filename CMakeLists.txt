@@ -80,6 +80,9 @@ set( CMAKE_POSITION_INDEPENDENT_CODE ON )
 set( CMAKE_C_EXTENSIONS OFF )
 set( CMAKE_CXX_EXTENSIONS OFF )
 
+set(CMAKE_CXX_STANDARD          17)
+set(CMAKE_CXX_STANDARD_REQUIRED 17)
+
 
 # We use
 # - InstallBasicPackageFiles (http://robotology.github.io/ycm/gh-pages/v0.8/module/InstallBasicPackageFiles.html)

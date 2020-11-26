@@ -13,34 +13,50 @@
 #include <iostream>
 #include <string>
 
-// #include <getopt.h>
-// #include <unistd.h>
-// #include <signal.h>
-// #include <sys/wait.h>
-
 #include <HriPhysio/Manager/physioManager.h>
-//#include <HriPhysio/Stream/streamerInterface.h>
-//#include <HriPhysio/Factory/streamerFactory.h>
+#include <HriPhysio/Stream/streamerInterface.h>
+#include <HriPhysio/Factory/streamerFactory.h>
 #include <HriPhysio/helpers.h>
 
 int main (int argc, char **argv) {
 
-    hriPhysio::InputParser input(argc, argv);
+    //-- Init an argument parser.
+    hriPhysio::ArgParser args(argc, argv);
 
-    const std::string &filename = input.getCmdOption("--conf");
 
-    std::cout << "filename: " << filename << std::endl;
+    //-- Get some vars from command line.
+    const std::string &yaml_file = args.getCmdOption("--conf");
+    const bool interactive_mode  = args.cmdOptionExists("--interactive");
 
-    hriPhysio::Manager::PhysioManager *manager = new hriPhysio::Manager::PhysioManager();
-    manager->start(); 
-    manager->interactive();
+    // TODO: input/output arg type here.
+    
 
-    //hriPhysio::Factory::StreamerFactory factory();
-    //hriPhysio::Stream::StreamerInterface* streamer;
+    //-- Create some input and output streams.
+    hriPhysio::Factory::StreamerFactory   factory;
+    hriPhysio::Stream::StreamerInterface* streamer_input;
+    hriPhysio::Stream::StreamerInterface* streamer_output;
 
-    //streamer = factory.getStreamer("string");
+    // TODO: Make this take YARP or ROS as possible input/output streams.
+    //-- Construct the streams. 
+    streamer_input  = factory.getStreamer("LSL");
+    streamer_output = factory.getStreamer("LSL");
 
-    delete manager;
+
+    //-- Initialize the manager, and pass it the config file.
+    hriPhysio::Manager::PhysioManager manager(streamer_input, streamer_output);
+    manager.configure(yaml_file);
+
+
+    //-- Start the manager.
+    manager.start();
+
+    //-- Run in interactive mode if enabled.
+    if (interactive_mode) {
+        manager.interactive();
+    }
+
+    //-- Wait for everything to finish.
+    manager.wait();
     
     return 0;
 }

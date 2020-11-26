@@ -28,7 +28,7 @@ ThreadManager::ThreadManager() {
 
 ThreadManager::~ThreadManager() {
     //-- Close everything up.
-    close();
+    this->close();
 }
 
 
@@ -107,19 +107,24 @@ bool ThreadManager::getManagerRunning() {
 
 
 void ThreadManager::start() {
-    setThreadStatus(true);
+    
+    if(this->getManagerRunning()) {
+        this->setThreadStatus(true);    
+    }
+
+    return;
 }
 
 
 void ThreadManager::stop() {
-    setThreadStatus(false);
+    this->setThreadStatus(false);
 }
 
 
 void ThreadManager::close() {
     
     //-- Stop all the threads.
-    stop();
+    this->stop();
 
     //-- Tell the threads to stop running.
     running = false;
@@ -151,6 +156,7 @@ void ThreadManager::setThreadStatus(const bool thread_status) {
     lock.unlock();
 }
 
+
 #include <iostream>
 void ThreadManager::looperWrapper(std::function<void(void)> func, const double period) {
 
@@ -158,13 +164,13 @@ void ThreadManager::looperWrapper(std::function<void(void)> func, const double p
     const std::thread::id thread_id = std::this_thread::get_id();
 
     //-- Loop until it's time to shutdown.
-    while (getManagerRunning()) {
+    while (this->getManagerRunning()) {
 
         //-- Get the clock time for now.
         auto start = std::chrono::system_clock::now();
 
         //-- Call the provided function if this thread is enabled.
-        if (getThreadStatus(thread_id)) {
+        if (this->getThreadStatus(thread_id)) {
             func();
         }
 

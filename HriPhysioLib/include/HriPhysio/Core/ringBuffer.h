@@ -55,16 +55,7 @@ public:
     ** 
     ** @param length    Number of indices to allocate. [Optional arg]
     ** ============================================================================ */
-    RingBuffer() : 
-        buffer_length(0),
-        buffer_head(0),
-        buffer_tail(0),
-        buffer_size(0) {
-    
-        bufferInit(buffer_length);
-    }
-
-    RingBuffer(const std::size_t length) : 
+    RingBuffer(const std::size_t length = 0) : 
         buffer_length(length),
         buffer_head(0),
         buffer_tail(0),
@@ -311,13 +302,13 @@ public:
     **
     ** @return Success/Failure of the withdraw.
     ** ============================================================================ */
-    bool dequeue(T* items, const std::size_t length) {
+    bool dequeue(T* items, const std::size_t length, const std::size_t overlap = 0) {
     
         //-- Lock the mutex to ensure read/write atomicity.
         lock.lock();
     
         //-- If length of items exceeds allocated space, exit.
-        if (length > buffer_length || buffer_length == 0) {
+        if (length > buffer_length || buffer_length == 0 || overlap > length) {
     
             //-- Throw a warning if enabled.
             if (warnings) {
@@ -342,16 +333,20 @@ public:
             return false;
         }
     
-    
+        //-- Set a range of values to keep at the end of the copy.
+        std::size_t keep = length - overlap;
+
         //-- Copy items at the ``front``.
         for (std::size_t idx = 0; idx < length; ++idx) {
     
             //-- Copy the item.
             items[idx] = buffer[buffer_head];
-    
-            //-- Update head and size.
-            buffer_head = (buffer_head + 1) % buffer_length;
-            --buffer_size;
+
+            if (idx < keep) {
+                //-- Update head and size.
+                buffer_head = (buffer_head + 1) % buffer_length;
+                --buffer_size;
+            }
         }
     
         //-- Unlock the mutex and return.

@@ -13,19 +13,19 @@
 #ifndef HRI_PHYSIO_MANAGER_PHYSIO_MANAGER_H
 #define HRI_PHYSIO_MANAGER_PHYSIO_MANAGER_H
 
+#include <iostream>
 #include <atomic>
 #include <chrono>
 #include <memory>
 #include <mutex>
 #include <thread>
 
-#include <iostream>
+#include <yaml-cpp/yaml.h>
 
 #include <HriPhysio/Manager/threadManager.h>
+#include <HriPhysio/Stream/streamerInterface.h>
 
-//#include <HriPhysio/Dev/deviceInterface.h>
-//#include <HriPhysio/Stream/streamerInterface.h>
-
+#include <HriPhysio/Core/ringBuffer.h>
 #include <HriPhysio/helpers.h>
 
 namespace hriPhysio {
@@ -37,8 +37,6 @@ namespace hriPhysio {
 class hriPhysio::Manager::PhysioManager : public hriPhysio::Manager::ThreadManager {
 private:
     
-//    hriPhysio::Dev::DeviceInterface* dev;
-//    hriPhysio::Stream::StreamerInterface* stream;
 //
 //    double period_read;
 //    double period_publish;
@@ -48,25 +46,39 @@ private:
 //
 //    std::thread thread_read;
 //    std::thread thread_publish;
-    int tempint;
+
+    std::string dtype;
+    int sampling_rate;
+    int num_samples;
+    int num_channels;
+    int frame_length;
+    int sample_overlap;
+    int buffer_length;
+
+    hriPhysio::Stream::StreamerInterface* stream_input;
+    hriPhysio::Stream::StreamerInterface* stream_output;
+
+    hriPhysio::Core::RingBuffer<hriPhysio::varType> buffer;
 
 
 public:
-    PhysioManager();
+    PhysioManager(hriPhysio::Stream::StreamerInterface* input, hriPhysio::Stream::StreamerInterface* output);
+
     ~PhysioManager();
+
+    void configure(const std::string yaml_file);
 
     void interactive();
 
+    void wait();
+
 
 private:
-    //void setInputStreamName(std::string inputStreamName);
-
     bool threadInit();
 
-    //void tempA();
-    void tempB();
-    //void deviceLoop();
-    //void streamLoop();
+    void inputLoop();
+
+    void outputLoop();
 
 };
 

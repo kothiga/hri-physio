@@ -16,6 +16,8 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
 
 #include <HriPhysio/helpers.h>
 
@@ -28,12 +30,19 @@ namespace hriPhysio {
 class hriPhysio::Stream::StreamerInterface {
 
 private:
-    int temp;
+    std::string name;
 
 public:
     StreamerInterface();
-    
-    void publish();
+
+    ~StreamerInterface();
+
+    void setName(const std::string name);
+
+    std::string getName() const;
+
+    virtual void publish(const std::vector<hriPhysio::varType>&  buff, std::size_t channels) = 0;
+    virtual void receive(std::vector<hriPhysio::varType>& buff, std::size_t channels) = 0;
 
 private:
     void tempfunc();

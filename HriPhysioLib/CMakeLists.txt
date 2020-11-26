@@ -16,10 +16,10 @@ set(${LIBRARY_TARGET_NAME}_SRC
     src/butterworthBandPass.cpp
     src/butterworthHighPass.cpp
     src/butterworthLowPass.cpp
-    #src/deviceInterface.cpp
     src/helpers.cpp
     src/physioManager.cpp
-    #src/streamerFactory.cpp
+    src/streamerFactory.cpp
+    src/streamerInterface.cpp
     src/threadManager.cpp
 )
 
@@ -31,30 +31,29 @@ set(${LIBRARY_TARGET_NAME}_HDR
     # CORE
     include/HriPhysio/Core/ringBuffer.h
     
-    # DEV
-    # include/HriPhysio/Dev/deviceInterface.h
-    # include/HriPhysio/Dev/polarDevice.h          # TODO: uncomment when implementing.
-    # include/HriPhysio/Dev/shimmerDevice.h
-    
     # FACTORY
-    # include/HriPhysio/Factory/streamerFactory.h
+    include/HriPhysio/Factory/streamerFactory.h
 
     # MANAGER
     include/HriPhysio/Manager/physioManager.h
     include/HriPhysio/Manager/threadManager.h
 
+    # PROCESSING
     include/HriPhysio/Processing/biquadratic.h
     include/HriPhysio/Processing/butterworthBandNoch.h
     include/HriPhysio/Processing/butterworthBandPass.h
     include/HriPhysio/Processing/butterworthHighPass.h
     include/HriPhysio/Processing/butterworthLowPass.h
     
+    # STREAM
+    # TODO: uncomment when implementing.
     # include/HriPhysio/Stream/ros/rosStreamer.h   
-    # include/HriPhysio/Stream/yarp/yarpStreamer.h # TODO: uncomment when implementing.
+    # include/HriPhysio/Stream/yarp/yarpStreamer.h 
     # include/HriPhysio/Stream/lslStreamer.h
-    # include/HriPhysio/Stream/streamerInterface.h
+    include/HriPhysio/Stream/streamerInterface.h
     # include/HriPhysio/Stream/udpStreamer.h       
     
+    # HELPERS
     include/HriPhysio/helpers.h
 )
 
@@ -139,6 +138,7 @@ target_include_directories(
 target_link_libraries(
     ${LIBRARY_TARGET_NAME} 
     pthread
+    yaml-cpp
 )
 
 

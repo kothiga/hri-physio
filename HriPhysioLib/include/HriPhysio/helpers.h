@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <variant>
 #include <vector>
 
 namespace hriPhysio {
@@ -24,8 +25,24 @@ namespace hriPhysio {
     /* ============================================================================
     **  Helpful classes for parsing and others single tasks.
     ** ============================================================================ */
-    class InputParser;
+    class ArgParser;
 
+
+    /* ============================================================================
+    **  Initialize a common variant type to support relevant data types.
+    ** ============================================================================ */
+    using varType = std::variant<int8_t,int16_t,int32_t,int64_t,long long,float,double>;
+    
+    struct printVisitor {
+        void operator()(int8_t    v ) const { std::cout << v; }
+        void operator()(int16_t   v ) const { std::cout << v; }
+        void operator()(int32_t   v ) const { std::cout << v; }
+        void operator()(int64_t   v ) const { std::cout << v; }
+        void operator()(long long v ) const { std::cout << v; }
+        void operator()(float     v ) const { std::cout << v; }
+        void operator()(double    v ) const { std::cout << v; }
+    };
+    
 
     /* ============================================================================
     **  Methods for Math.
@@ -42,13 +59,13 @@ namespace hriPhysio {
 }
 
 
-class hriPhysio::InputParser {
+class hriPhysio::ArgParser {
     /* ============================================================================
-    **  Credit to users iain and 0x90
+    **  Adapted from users iain and 0x90
     **    https://stackoverflow.com/questions/865668/
     ** ============================================================================ */
 public:
-    InputParser(int &argc, char **argv) {
+    ArgParser(int &argc, char **argv) {
         for (int i = 1; i < argc; ++i) {
             this->tokens.push_back(std::string(argv[i]));
         }
@@ -82,7 +99,7 @@ public:
     const long double getCmdOption_asLongDouble(const std::string &option) const {
         return std::stold( getCmdOption(option) );
     }
-    const double getCmdOption_asLongLong(const std::string &option) const {
+    const long long getCmdOption_asLongLong(const std::string &option) const {
         return std::stoll( getCmdOption(option) );
     }
     const unsigned long getCmdOption_asUnsignedLong(const std::string &option) const {
@@ -97,7 +114,7 @@ public:
         ) != this->tokens.end();
     }
 private:
-    std::vector <std::string> tokens;
+    std::vector<std::string> tokens;
 };
 
 #endif /* HRI_PHYSIO_HELPERS_H */

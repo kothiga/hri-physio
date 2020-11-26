@@ -10,32 +10,29 @@
  * ================================================================================
  */
 
-#ifndef HRI_PHYSIO_DEV_POLAR_DEVICE_H
-#define HRI_PHYSIO_DEV_POLAR_DEVICE_H
+#ifndef HRI_PHYSIO_FACTORY_STREAMER_FACTORY_H
+#define HRI_PHYSIO_FACTORY_STREAMER_FACTORY_H
 
-#include <iostream>
-#include <memory>
-#include <mutex>
+#include <string>
+
+#include <HriPhysio/Stream/streamerInterface.h>
 
 #include <HriPhysio/helpers.h>
 
 namespace hriPhysio {
-    namespace Dev {
-        class PolarDevice;
+    namespace Factory {
+        class StreamerFactory;
     }
 }
 
-class hriPhysio::Dev::PolarDevice {
-
+class hriPhysio::Factory::StreamerFactory {
 private:
-    int temp;
-
+    
 public:
-    PolarDevice();
+    StreamerFactory();
+    ~StreamerFactory();
 
-private:
-    void tempfunc();
-
+    hriPhysio::Stream::StreamerInterface* getStreamer(std::string streamerType);
 };
 
-#endif /* HRI_PHYSIO_DEV_POLAR_DEVICE_H */
+#endif /* HRI_PHYSIO_FACTORY_STREAMER_FACTORY_H */

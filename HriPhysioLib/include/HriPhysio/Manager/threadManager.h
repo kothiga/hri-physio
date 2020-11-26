@@ -46,9 +46,6 @@ public:
 
     ~ThreadManager();
 
-    //virtual void interactive();
-    //virtual void configure(std::string yaml_conf);
-
     //std::thread::id addThread(int (*func)(int,int), bool start=true);
     std::thread::id addThread(std::function<void(void)> func, const bool start=true);
 
