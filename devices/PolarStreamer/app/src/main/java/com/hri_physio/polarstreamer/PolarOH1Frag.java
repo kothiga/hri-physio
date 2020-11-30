@@ -206,6 +206,9 @@ public class PolarOH1Frag extends Fragment {
             }
         });
 
+        // edit hrCSV file
+        hrCSV.append("System Time,Internal Time,hr");
+
         // edit accCSV file
         accCSV.append("System Time,Internal Time,x,y,z");
 
@@ -652,7 +655,6 @@ public class PolarOH1Frag extends Fragment {
                 timeplotter.addValues(polarHrData);
 
                 // edit hrCSV
-                hrCSV.append("System Time,Internal Time,hr");
                 if (recording) {
                     SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd_HH:mm:ss", Locale.getDefault());
                     sdf.setTimeZone(TimeZone.getDefault());
