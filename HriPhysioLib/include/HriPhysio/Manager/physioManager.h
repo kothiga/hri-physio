@@ -48,12 +48,12 @@ private:
 //    std::thread thread_publish;
 
     std::string dtype;
-    int sampling_rate;
-    int num_samples;
-    int num_channels;
-    int frame_length;
-    int sample_overlap;
-    int buffer_length;
+    std::size_t sampling_rate;
+    std::size_t input_frame;
+    std::size_t num_channels;
+    std::size_t output_frame;
+    std::size_t sample_overlap;
+    std::size_t buffer_length;
 
     hriPhysio::Stream::StreamerInterface* stream_input;
     hriPhysio::Stream::StreamerInterface* stream_output;

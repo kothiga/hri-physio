@@ -46,10 +46,8 @@ public:
 
     ~ThreadManager();
 
-    //std::thread::id addThread(int (*func)(int,int), bool start=true);
     std::thread::id addThread(std::function<void(void)> func, const bool start=true);
 
-    //std::thread::id addLoopThread(void (*func)(void), ThreadManager* tm, const double period=0.0, const bool start=true);
     std::thread::id addLoopThread(std::function<void(void)> func, const double period=0.0, const bool start=true);
 
     void interruptThread(const std::thread::id thread_id);

@@ -29,8 +29,16 @@ namespace hriPhysio {
 
 class hriPhysio::Stream::StreamerInterface {
 
-private:
+protected:
     std::string name;
+    std::string dtype;
+    std::size_t frame_length;
+    std::size_t num_channels;
+
+    hriPhysio::varTag var;
+
+    enum modeTag {NOTSET, SENDER, RECEIVER} mode;
+    
 
 public:
     StreamerInterface();
@@ -38,8 +46,19 @@ public:
     ~StreamerInterface();
 
     void setName(const std::string name);
+    void setDataType(const std::string dtype);
+    void setFrameLength(const std::size_t frame_length);
+    void setNumChannels(const std::size_t num_channels);
 
     std::string getName() const;
+    std::string getDataType() const;
+    std::size_t getFrameLength() const;
+    std::size_t getNumChannels() const;
+
+    hriPhysio::varTag getVariableTag() const;
+
+    virtual bool openInputStream() = 0;
+    virtual bool openOutputStream() = 0;
 
     virtual void publish(const std::vector<hriPhysio::varType>&  buff, std::size_t channels) = 0;
     virtual void receive(std::vector<hriPhysio::varType>& buff, std::size_t channels) = 0;
