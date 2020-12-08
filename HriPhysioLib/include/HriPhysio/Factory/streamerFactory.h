@@ -17,6 +17,8 @@
 
 #include <HriPhysio/Stream/streamerInterface.h>
 
+#include <HriPhysio/Stream/lslStreamer.h>
+
 #include <HriPhysio/helpers.h>
 
 namespace hriPhysio {

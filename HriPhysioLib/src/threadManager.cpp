@@ -52,7 +52,6 @@ std::thread::id ThreadManager::addThread(std::function<void(void)> func, const b
 }
 
 
-//std::thread::id ThreadManager::addLoopThread(void (*func)(void), ThreadManager* tm, const double period/*=0.0*/, const bool start/*=true*/) {
 std::thread::id ThreadManager::addLoopThread(std::function<void(void)> func, const double period/*=0.0*/, const bool start/*=true*/) {
 
     //-- Lock the mutex to ensure read/write atomicity.
@@ -83,6 +82,8 @@ void ThreadManager::interruptThread(const std::thread::id thread_id) {
 
     //-- Unlock the mutex and return.
     lock.unlock();
+
+    return;
 }
 
 
@@ -118,6 +119,7 @@ void ThreadManager::start() {
 
 void ThreadManager::stop() {
     this->setThreadStatus(false);
+    return;
 }
 
 
@@ -137,6 +139,21 @@ void ThreadManager::close() {
     //-- Destroy all elements in the pool and running.
     pool.clear();
     status.clear();
+
+    return;
+}
+
+
+void ThreadManager::wait() {
+
+    //-- Wait for the thread manager to stop.
+    while (this->getManagerRunning()) {
+        std::this_thread::sleep_for(
+            std::chrono::duration<double>( 0.5 ) //seconds.
+        );
+    }
+
+    return;
 }
 
 
@@ -154,10 +171,11 @@ void ThreadManager::setThreadStatus(const bool thread_status) {
 
     //-- Unlock the mutex and return.
     lock.unlock();
+
+    return;
 }
 
 
-#include <iostream>
 void ThreadManager::looperWrapper(std::function<void(void)> func, const double period) {
 
     //-- Get the id for the current thread.

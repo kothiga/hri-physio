@@ -38,7 +38,7 @@ void PhysioManager::configure(const std::string yaml_file) {
     const std::string output_name = config["output"].as<std::string>();
 
     //-- Parameters about the data.
-    dtype          = config[ "dtype"          ].as<std::string>(/*default=*/ "int32");
+    dtype          = config[ "dtype"          ].as<std::string>( /*default=*/ "int32");
     sampling_rate  = config[ "sampling_rate"  ].as<std::size_t>( /*default=*/ 20  );
     input_frame    = config[ "input_frame"    ].as<std::size_t>( /*default=*/ 10  );
     output_frame   = config[ "output_frame"   ].as<std::size_t>( /*default=*/ 20  );
@@ -65,11 +65,13 @@ void PhysioManager::configure(const std::string yaml_file) {
     stream_input->setDataType(dtype);
     stream_input->setFrameLength(input_frame);
     stream_input->setNumChannels(num_channels);
+    stream_input->setSamplingRate(sampling_rate);
 
     stream_output->setName(output_name);
     stream_output->setDataType(dtype);
     stream_output->setFrameLength(output_frame);
     stream_output->setNumChannels(num_channels);
+    stream_output->setSamplingRate(sampling_rate);
 
 
     //-- Try opening the streams.
@@ -110,19 +112,6 @@ void PhysioManager::interactive() {
 }
 
 
-void PhysioManager::wait() {
-
-    //-- Wait for the thread manager to stop.
-    while (this->getManagerRunning()) {
-        std::this_thread::sleep_for(
-            std::chrono::duration<double>( 0.5 ) //seconds.
-        );
-    }
-
-    return;
-}
-
-
 bool PhysioManager::threadInit() {
 
     //-- Initialize threads but don't start them yet.
@@ -139,16 +128,17 @@ void PhysioManager::inputLoop() {
     const std::thread::id thread_id = std::this_thread::get_id();
 
     //-- Construct a vector for moving data between stream and the buffer.
-    std::vector<hriPhysio::varType> transfer; //TODO: allocate space.
+    std::vector<hriPhysio::varType> transfer;
+    transfer.reserve(input_frame);
 
     //-- Loop until the manager stops running.
     while (this->getManagerRunning()) {
         
-        //-- If this thread is 
+        //-- If this thread is active, run.
         if (this->getThreadStatus(thread_id)) {
 
             //-- Get data from the stream.
-            stream_input->receive(transfer, num_channels);
+            stream_input->receive(transfer);
 
             //-- Add the data to the buffer.
             buffer.enqueue(transfer.data(), transfer.size());
@@ -177,12 +167,14 @@ void PhysioManager::outputLoop() {
     //-- Loop until the manager stops running.
     while (this->getManagerRunning()) {
         
-        //-- If this thread is 
+        //-- If this thread is active, run.
         if (this->getThreadStatus(thread_id) && buffer.size() >= output_frame) {
 
+            //-- Get data from the buffer.
             buffer.dequeue(transfer.data(), output_frame, sample_overlap);
 
-            stream_output->publish(transfer, num_channels);
+            //-- Write it out with the streamer.
+            stream_output->publish(transfer);
 
         } else {
             std::this_thread::sleep_for(

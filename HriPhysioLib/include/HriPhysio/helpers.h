@@ -31,17 +31,16 @@ namespace hriPhysio {
     /* ============================================================================
     **  Initialize a common variant type to support relevant data types.
     ** ============================================================================ */
-    using varType = std::variant<int8_t,int16_t,int32_t,int64_t,long long,float,double>;
-    enum  varTag { INT8, INT16, INT32, INT64, LONGLONG, FLOAT, DOUBLE };
+    using varType = std::variant<char,int16_t,int32_t,int64_t,float,double>;
+    enum  varTag { CHAR, INT16, INT32, INT64, LONGLONG, FLOAT, DOUBLE };
     
     struct printVisitor {
-        void operator()(int8_t    v ) const { std::cout << v; }
-        void operator()(int16_t   v ) const { std::cout << v; }
-        void operator()(int32_t   v ) const { std::cout << v; }
-        void operator()(int64_t   v ) const { std::cout << v; }
-        void operator()(long long v ) const { std::cout << v; }
-        void operator()(float     v ) const { std::cout << v; }
-        void operator()(double    v ) const { std::cout << v; }
+        void operator()(char    v ) const { std::cout << "char("    << v << ")"; }
+        void operator()(int16_t v ) const { std::cout << "int16_t(" << v << ")"; }
+        void operator()(int32_t v ) const { std::cout << "int32_t(" << v << ")"; }
+        void operator()(int64_t v ) const { std::cout << "int64_t(" << v << ")"; }
+        void operator()(float   v ) const { std::cout << "float("   << v << ")"; }
+        void operator()(double  v ) const { std::cout << "double("  << v << ")"; }
     };
     
 

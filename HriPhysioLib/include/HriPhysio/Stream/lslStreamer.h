@@ -19,6 +19,8 @@
 #include <string>
 #include <vector>
 
+#include <lsl_cpp.h>
+
 #include <HriPhysio/Stream/streamerInterface.h>
 
 #include <HriPhysio/helpers.h>
@@ -33,24 +35,30 @@ class hriPhysio::Stream::LslStreamer : public hriPhysio::Stream::StreamerInterfa
 
 private:
     std::string temp;
+    std::unique_ptr<lsl::stream_inlet> inlet;
+    std::unique_ptr<lsl::stream_outlet> outlet;
 
 public:
     LslStreamer();
 
     ~LslStreamer();
 
+    lsl::channel_format_t getLslFormatType();
+
     bool openInputStream();
+
     bool openOutputStream();
 
-    void publish(const std::vector<hriPhysio::varType>&  buff, std::size_t channels);
-    void receive(std::vector<hriPhysio::varType>& buff, std::size_t channels);
+    void publish(const std::vector<hriPhysio::varType>&  buff);
+    
+    void receive(std::vector<hriPhysio::varType>& buff);
 
 private:
     template<typename T>
-    void pushStream(const std::vector<hriPhysio::varType>&  buff, std::size_t channels);
+    void pushStream(const std::vector<hriPhysio::varType>&  buff);
 
     template<typename T>
-    void pullStream(std::vector<hriPhysio::varType>& buff, std::size_t channels);
+    void pullStream(std::vector<hriPhysio::varType>& buff);
     
 };
 

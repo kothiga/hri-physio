@@ -31,7 +31,7 @@ hriPhysio::Stream::StreamerInterface* StreamerFactory::getStreamer(std::string s
     }
 
     if (streamerType == "LSL") {
-        return nullptr;
+        return new hriPhysio::Stream::LslStreamer();
     }
 
     if (streamerType == "ROS") {

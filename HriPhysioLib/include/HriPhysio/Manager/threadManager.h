@@ -62,6 +62,8 @@ public:
 
     void close();
 
+    void wait();
+
 
 protected:
     //virtual bool threadInit();

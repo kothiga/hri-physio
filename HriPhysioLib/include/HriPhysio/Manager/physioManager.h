@@ -70,8 +70,6 @@ public:
 
     void interactive();
 
-    void wait();
-
 
 private:
     bool threadInit();

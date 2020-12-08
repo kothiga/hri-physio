@@ -23,19 +23,60 @@ LslStreamer::LslStreamer() :
 
 LslStreamer::~LslStreamer() {
 
+    if (this->mode == modeTag::RECEIVER) {
+        inlet.reset();
+    } else if (this->mode == modeTag::SENDER) {
+        outlet.reset();
+    }
+}
+
+
+lsl::channel_format_t LslStreamer::getLslFormatType() {
+
+    lsl::channel_format_t cf_type;
+
+    switch (this->var) {
+    case hriPhysio::varTag::CHAR:
+        cf_type = lsl::channel_format_t::cf_int8;
+        break;
+    case hriPhysio::varTag::INT16:
+        cf_type = lsl::channel_format_t::cf_int16;
+        break;
+    case hriPhysio::varTag::INT32:
+        cf_type = lsl::channel_format_t::cf_int32;
+        break;
+    case hriPhysio::varTag::INT64:
+        cf_type = lsl::channel_format_t::cf_int64;
+        break;
+    case hriPhysio::varTag::FLOAT:
+        cf_type = lsl::channel_format_t::cf_float32;
+        break;
+    case hriPhysio::varTag::DOUBLE:
+        cf_type = lsl::channel_format_t::cf_double64;
+        break;
+    default:
+        break;
+    }
+
+    return cf_type;
 }
 
 
 bool LslStreamer::openInputStream() {
 
+    //-- Set the current mode.
     if (this->mode != modeTag::NOTSET) {
         return false;
     }
 
     this->mode = modeTag::RECEIVER;
 
+    try {
 
+        //-- Create a new inlet from the given input name.
+        inlet.reset(new lsl::stream_inlet(lsl::resolve_stream("name", this->name)[0]));
 
+	} catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
 
 
     return true;
@@ -44,45 +85,54 @@ bool LslStreamer::openInputStream() {
 
 bool LslStreamer::openOutputStream() {
     
+    //-- Set the current mode.
     if (this->mode != modeTag::NOTSET) {
         return false;
     }
 
     this->mode = modeTag::SENDER;
 
+    try {
 
+        //-- Create an info obj and open an outlet with it.
+        lsl::stream_info info(
+            /* name           = */ this->name,
+            /* type           = */ "",
+            /* channel_count  = */ this->num_channels,
+            /* nominal_srate  = */ this->sampling_rate,
+            /* channel_format = */ this->getLslFormatType(),
+            /* source_id      = */ this->name
+        );
 
-    
+        outlet.reset(new lsl::stream_outlet(info, /*chunk_size=*/this->frame_length, /*max_buffered=*/this->frame_length*2));
+
+    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
+
 
     return true;
 }
 
 
-void LslStreamer::publish(const std::vector<hriPhysio::varType>&  buff, std::size_t channels) {
+void LslStreamer::publish(const std::vector<hriPhysio::varType>&  buff) {
 
-    // int8_t,int16_t,int32_t,int64_t,long long,float,double
-
-    switch (var) {
-    case hriPhysio::varTag::INT8:
-        this->pushStream<int8_t>(buff, channels);
+    switch (this->var) {
+    case hriPhysio::varTag::CHAR:
+        this->pushStream<char>(buff);
         break;
     case hriPhysio::varTag::INT16:
-        this->pushStream<int16_t>(buff, channels);
+        this->pushStream<int16_t>(buff);
         break;
     case hriPhysio::varTag::INT32:
-        this->pushStream<int32_t>(buff, channels);
+        this->pushStream<int32_t>(buff);
         break;
     case hriPhysio::varTag::INT64:
-        this->pushStream<int64_t>(buff, channels);
-        break;
-    case hriPhysio::varTag::LONGLONG:
-        this->pushStream<long long>(buff, channels);
+        this->pushStream<int64_t>(buff);
         break;
     case hriPhysio::varTag::FLOAT:
-        this->pushStream<float>(buff, channels);
+        this->pushStream<float>(buff);
         break;
     case hriPhysio::varTag::DOUBLE:
-        this->pushStream<double>(buff, channels);
+        this->pushStream<double>(buff);
         break;
     default:
         break;
@@ -90,30 +140,26 @@ void LslStreamer::publish(const std::vector<hriPhysio::varType>&  buff, std::siz
 }
 
 
-void LslStreamer::receive(std::vector<hriPhysio::varType>& buff, std::size_t channels) {
+void LslStreamer::receive(std::vector<hriPhysio::varType>& buff) {
 
-
-    switch (var) {
-    case hriPhysio::varTag::INT8:
-        this->pullStream<int8_t>(buff, channels);
+    switch (this->var) {
+    case hriPhysio::varTag::CHAR:
+        this->pullStream<char>(buff);
         break;
     case hriPhysio::varTag::INT16:
-        this->pullStream<int16_t>(buff, channels);
+        this->pullStream<int16_t>(buff);
         break;
     case hriPhysio::varTag::INT32:
-        this->pullStream<int32_t>(buff, channels);
+        this->pullStream<int32_t>(buff);
         break;
     case hriPhysio::varTag::INT64:
-        this->pullStream<int64_t>(buff, channels);
-        break;
-    case hriPhysio::varTag::LONGLONG:
-        this->pullStream<long long>(buff, channels);
+        this->pullStream<int64_t>(buff);
         break;
     case hriPhysio::varTag::FLOAT:
-        this->pullStream<float>(buff, channels);
+        this->pullStream<float>(buff);
         break;
     case hriPhysio::varTag::DOUBLE:
-        this->pullStream<double>(buff, channels);
+        this->pullStream<double>(buff);
         break;
     default:
         break;
@@ -122,26 +168,35 @@ void LslStreamer::receive(std::vector<hriPhysio::varType>& buff, std::size_t cha
 
 
 template<typename T>
-void LslStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, std::size_t channels) {
+void LslStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff) {
 
-    std::vector<T> vecOut;
-    
+    std::vector<T> samples;
+    samples.reserve( buff.size() );
+
+    //-- Copy the data into a temporary transfer.
     for (std::size_t idx = 0; idx < buff.size(); ++idx) {
-        vecOut.push_back( std::get<T>(buff[idx]) );
+        samples[idx] = std::get<T>( buff[idx] );
     }
 
-    // push stream.
+    //-- Push a multiplexed chunk from a flat vector.
+    outlet->push_chunk_multiplexed(samples);
+
+    return;
 }
 
 
 template<typename T>
-void LslStreamer::pullStream(std::vector<hriPhysio::varType>& buff, std::size_t channels) {
+void LslStreamer::pullStream(std::vector<hriPhysio::varType>& buff) {
 
-    std::vector<T> vecIn;
+    std::vector<T> samples;
 
-    // receive from stream.
+    //-- Pull a multiplexed chunk into a flat vector.
+    inlet->pull_chunk_multiplexed(samples);
 
-    for (std::size_t idx = 0; idx < vecIn.size(); ++idx) {
-        buff[idx] = vecIn[idx];
+    //-- Copy the data into the buffer.
+    for (std::size_t idx = 0; idx < samples.size(); ++idx) {
+        buff[idx] = samples[idx];
     }
+
+    return;
 }

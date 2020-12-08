@@ -42,16 +42,14 @@ void StreamerInterface::setDataType(const std::string dtype) {
 
     if (upperString == "") {
         return;
-    } else if (upperString == "INT8") {
-        this->var = hriPhysio::varTag::INT8;
+    } else if (upperString == "CHAR") {
+        this->var = hriPhysio::varTag::CHAR;
     } else if (upperString == "INT16") {
         this->var = hriPhysio::varTag::INT16;
     } else if (upperString == "INT32") {
         this->var = hriPhysio::varTag::INT32;
     } else if (upperString == "INT64") {
         this->var = hriPhysio::varTag::INT64;
-    } else if (upperString == "LONGLONG" || upperString == "LONG LONG") {
-        this->var = hriPhysio::varTag::LONGLONG;
     } else if (upperString == "FLOAT") {
         this->var = hriPhysio::varTag::FLOAT;
     } else if (upperString == "DOUBLE") {
@@ -80,6 +78,12 @@ void StreamerInterface::setNumChannels(const std::size_t num_channels) {
 }
 
 
+void StreamerInterface::setSamplingRate(const std::size_t sampling_rate) {
+    this->sampling_rate = sampling_rate;
+    return;
+}
+
+
 std::string StreamerInterface::getName() const {
     return this->name;
 }
@@ -98,6 +102,12 @@ std::size_t StreamerInterface::getFrameLength() const {
 std::size_t StreamerInterface::getNumChannels() const {
     return this->num_channels;
 }
+
+
+std::size_t StreamerInterface::getSamplingRate() const {
+    return this->sampling_rate;
+}
+
 
 hriPhysio::varTag StreamerInterface::getVariableTag() const {
     return this->var;
