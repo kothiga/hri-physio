@@ -113,26 +113,28 @@ bool LslStreamer::openOutputStream() {
 }
 
 
-void LslStreamer::publish(const std::vector<hriPhysio::varType>&  buff) {
+void LslStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps/*=nullptr*/) {
 
+    std::cerr << "[LSL-OUT] Sending: " << this->dtype << " ";
     switch (this->var) {
     case hriPhysio::varTag::CHAR:
-        this->pushStream<char>(buff);
+        this->pushStream<char>(buff, timestamps);
         break;
     case hriPhysio::varTag::INT16:
-        this->pushStream<int16_t>(buff);
+        this->pushStream<int16_t>(buff, timestamps);
         break;
     case hriPhysio::varTag::INT32:
-        this->pushStream<int32_t>(buff);
+        this->pushStream<int32_t>(buff, timestamps);
         break;
     case hriPhysio::varTag::INT64:
-        this->pushStream<int64_t>(buff);
+        this->pushStream<int64_t>(buff, timestamps);
         break;
     case hriPhysio::varTag::FLOAT:
-        this->pushStream<float>(buff);
+        this->pushStream<float>(buff, timestamps);
         break;
     case hriPhysio::varTag::DOUBLE:
-        this->pushStream<double>(buff);
+        std::cerr << "<double>" << std::endl;
+        this->pushStream<double>(buff, timestamps);
         break;
     default:
         break;
@@ -140,26 +142,29 @@ void LslStreamer::publish(const std::vector<hriPhysio::varType>&  buff) {
 }
 
 
-void LslStreamer::receive(std::vector<hriPhysio::varType>& buff) {
+void LslStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps/*=nullptr*/) {
+
+    std::cerr << "[LSL-IN] Receive: " << this->dtype << " ";
 
     switch (this->var) {
     case hriPhysio::varTag::CHAR:
-        this->pullStream<char>(buff);
+        this->pullStream<char>(buff, timestamps);
         break;
     case hriPhysio::varTag::INT16:
-        this->pullStream<int16_t>(buff);
+        this->pullStream<int16_t>(buff, timestamps);
         break;
     case hriPhysio::varTag::INT32:
-        this->pullStream<int32_t>(buff);
+        this->pullStream<int32_t>(buff, timestamps);
         break;
     case hriPhysio::varTag::INT64:
-        this->pullStream<int64_t>(buff);
+        this->pullStream<int64_t>(buff, timestamps);
         break;
     case hriPhysio::varTag::FLOAT:
-        this->pullStream<float>(buff);
+        this->pullStream<float>(buff, timestamps);
         break;
     case hriPhysio::varTag::DOUBLE:
-        this->pullStream<double>(buff);
+        std::cerr << "<double>" << std::endl;
+        this->pullStream<double>(buff, timestamps);
         break;
     default:
         break;
@@ -168,10 +173,9 @@ void LslStreamer::receive(std::vector<hriPhysio::varType>& buff) {
 
 
 template<typename T>
-void LslStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff) {
+void LslStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps) {
 
-    std::vector<T> samples;
-    samples.reserve( buff.size() );
+    std::vector<T> samples(buff.size());
 
     //-- Copy the data into a temporary transfer.
     for (std::size_t idx = 0; idx < buff.size(); ++idx) {
@@ -186,12 +190,12 @@ void LslStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff) {
 
 
 template<typename T>
-void LslStreamer::pullStream(std::vector<hriPhysio::varType>& buff) {
+void LslStreamer::pullStream(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps) {
 
     std::vector<T> samples;
 
     //-- Pull a multiplexed chunk into a flat vector.
-    inlet->pull_chunk_multiplexed(samples);
+    inlet->pull_chunk_multiplexed(samples, timestamps, 1.0);
 
     //-- Copy the data into the buffer.
     for (std::size_t idx = 0; idx < samples.size(); ++idx) {

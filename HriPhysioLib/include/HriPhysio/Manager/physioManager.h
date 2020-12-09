@@ -59,6 +59,7 @@ private:
     hriPhysio::Stream::StreamerInterface* stream_output;
 
     hriPhysio::Core::RingBuffer<hriPhysio::varType> buffer;
+    hriPhysio::Core::RingBuffer<double> timestamps;
 
 
 public:

@@ -48,10 +48,14 @@ void PhysioManager::configure(const std::string yaml_file) {
 
     //-- Enable logging?
     //const bool log_data = config["log"].as<bool>();
+
+    std::cerr << "[CONF] Load complete.\n";
     
 
     //-- Configure the intermediary buffer.
     buffer.resize(buffer_length * num_channels);
+    timestamps.resize(buffer_length);
+
 
     //-- If streams are empty, exit.
     if (input_name == "" || output_name == "") {
@@ -76,13 +80,13 @@ void PhysioManager::configure(const std::string yaml_file) {
 
     //-- Try opening the streams.
     if (!stream_input->openInputStream()) {
-        std::cerr << "Could not open input stream";
+        std::cerr << "Could not open input stream.\n";
         this->close();
         return;
     }
 
     if (!stream_output->openOutputStream()) {
-        std::cerr << "";
+        std::cerr << "Could not open output stream.\n";
         this->close();
         return;
     }
@@ -128,8 +132,8 @@ void PhysioManager::inputLoop() {
     const std::thread::id thread_id = std::this_thread::get_id();
 
     //-- Construct a vector for moving data between stream and the buffer.
-    std::vector<hriPhysio::varType> transfer;
-    transfer.reserve(input_frame);
+    std::vector<hriPhysio::varType> transfer(input_frame * num_channels);
+    std::vector<double> stamps(input_frame);
 
     //-- Loop until the manager stops running.
     while (this->getManagerRunning()) {
@@ -138,10 +142,18 @@ void PhysioManager::inputLoop() {
         if (this->getThreadStatus(thread_id)) {
 
             //-- Get data from the stream.
-            stream_input->receive(transfer);
+            stream_input->receive(transfer, &stamps);
 
-            //-- Add the data to the buffer.
-            buffer.enqueue(transfer.data(), transfer.size());
+            if (transfer.size()) {
+
+                //for (std::size_t idx = 0; idx < transfer.size(); idx++) {
+                //    std::cerr << " [" << stamps[idx] << "]: "; std::visit(hriPhysio::printVisitor(), transfer[idx]);
+                //} std::cerr << std::endl;
+
+                //-- Add the data to the buffer.
+                this->buffer.enqueue(transfer.data(), transfer.size());
+                this->timestamps.enqueue(stamps.data(), stamps.size());
+            }
 
             //TODO: log.
 
@@ -160,21 +172,26 @@ void PhysioManager::outputLoop() {
     //-- Get the id for the current thread.
     const std::thread::id thread_id = std::this_thread::get_id();
 
+    //-- Set a Const which is used a few times here.
+    const std::size_t frame_length = output_frame * num_channels;
+
     //-- Construct a vector for moving data between the buffer and stream.
-    std::vector<hriPhysio::varType> transfer;
-    transfer.reserve(output_frame);
+    std::vector<hriPhysio::varType> transfer(frame_length);
 
     //-- Loop until the manager stops running.
     while (this->getManagerRunning()) {
         
+        std::cerr << "[OUTPUT] " << buffer.size() << std::endl;
         //-- If this thread is active, run.
-        if (this->getThreadStatus(thread_id) && buffer.size() >= output_frame) {
+        if (this->getThreadStatus(thread_id) && buffer.size() >= (frame_length)) {
 
             //-- Get data from the buffer.
-            buffer.dequeue(transfer.data(), output_frame, sample_overlap);
+            buffer.dequeue(transfer.data(), frame_length, sample_overlap);
 
             //-- Write it out with the streamer.
             stream_output->publish(transfer);
+
+            std::cerr << "[OUTPUT] Sent output.\n";
 
         } else {
             std::this_thread::sleep_for(

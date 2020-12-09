@@ -1,0 +1,9 @@
+input: /ecgSim/ECG
+output: /output
+dtype: double
+sampling_rate: 128
+input_frame: 32
+output_frame: 128
+num_channels: 1
+sample_overlap: 32
+buffer_length: 5000

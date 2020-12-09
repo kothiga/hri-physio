@@ -42,7 +42,7 @@ void StreamerInterface::setDataType(const std::string dtype) {
 
     if (upperString == "") {
         return;
-    } else if (upperString == "CHAR") {
+    } else if (upperString == "INT8" || upperString == "CHAR") {
         this->var = hriPhysio::varTag::CHAR;
     } else if (upperString == "INT16") {
         this->var = hriPhysio::varTag::INT16;
@@ -50,9 +50,9 @@ void StreamerInterface::setDataType(const std::string dtype) {
         this->var = hriPhysio::varTag::INT32;
     } else if (upperString == "INT64") {
         this->var = hriPhysio::varTag::INT64;
-    } else if (upperString == "FLOAT") {
+    } else if (upperString == "FLOAT"  || upperString == "FLOAT32") {
         this->var = hriPhysio::varTag::FLOAT;
-    } else if (upperString == "DOUBLE") {
+    } else if (upperString == "DOUBLE" || upperString == "DOUBLE64" ) {
         this->var = hriPhysio::varTag::DOUBLE;
     } else {
         //-- Does not match. TODO: Throw error?

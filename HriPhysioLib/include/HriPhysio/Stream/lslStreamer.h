@@ -49,16 +49,16 @@ public:
 
     bool openOutputStream();
 
-    void publish(const std::vector<hriPhysio::varType>&  buff);
+    void publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps=nullptr);
     
-    void receive(std::vector<hriPhysio::varType>& buff);
+    void receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps=nullptr);
 
 private:
     template<typename T>
-    void pushStream(const std::vector<hriPhysio::varType>&  buff);
+    void pushStream(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps);
 
     template<typename T>
-    void pullStream(std::vector<hriPhysio::varType>& buff);
+    void pullStream(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps);
     
 };
 
