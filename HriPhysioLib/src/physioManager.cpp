@@ -47,7 +47,8 @@ void PhysioManager::configure(const std::string yaml_file) {
     buffer_length  = config[ "buffer_length"  ].as<std::size_t>( /*default=*/ 100 );
 
     //-- Enable logging?
-    //const bool log_data = config["log"].as<bool>();
+    log_data = config["log_data"].as<bool>( /*default=*/ false );
+    log_name = config["log_name"].as<std::string>( /*default=*/ "");
 
     std::cerr << "[CONF] Load complete.\n";
     
@@ -77,6 +78,14 @@ void PhysioManager::configure(const std::string yaml_file) {
     stream_output->setNumChannels(num_channels);
     stream_output->setSamplingRate(sampling_rate);
 
+    if (log_data) {
+        stream_logger.setName(log_name);
+        stream_logger.setDataType(dtype);
+        stream_logger.setFrameLength(input_frame);
+        stream_logger.setNumChannels(num_channels);
+        stream_logger.setSamplingRate(sampling_rate);
+    }
+
 
     //-- Try opening the streams.
     if (!stream_input->openInputStream()) {
@@ -87,6 +96,12 @@ void PhysioManager::configure(const std::string yaml_file) {
 
     if (!stream_output->openOutputStream()) {
         std::cerr << "Could not open output stream.\n";
+        this->close();
+        return;
+    }
+
+    if (log_data && !stream_logger.openOutputStream()) {
+        std::cerr << "Could not open logger stream.\n";
         this->close();
         return;
     }
@@ -153,9 +168,14 @@ void PhysioManager::inputLoop() {
                 //-- Add the data to the buffer.
                 this->buffer.enqueue(transfer.data(), transfer.size());
                 this->timestamps.enqueue(stamps.data(), stamps.size());
+
+
+                if (this->log_data) {
+                    std::cerr << "Logging.\n";
+                    stream_logger.publish(transfer, &stamps);
+                }
             }
 
-            //TODO: log.
 
         } else {
             std::this_thread::sleep_for(

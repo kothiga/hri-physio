@@ -132,8 +132,9 @@ def main():
             inlets.append(MarkerInlet(info))
         elif info.nominal_srate() != pylsl.IRREGULAR_RATE \
                 and info.channel_format() != pylsl.cf_string:
-            print('Adding data inlet: ' + info.name())
-            inlets.append(DataInlet(info, plt))
+            if info.name() == '/output' or True:
+                print('Adding data inlet: ' + info.name())
+                inlets.append(DataInlet(info, plt))
         else:
             print('Don\'t know what to do with stream ' + info.name())
 

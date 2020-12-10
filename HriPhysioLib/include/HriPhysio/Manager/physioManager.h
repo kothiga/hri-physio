@@ -24,6 +24,7 @@
 
 #include <HriPhysio/Manager/threadManager.h>
 #include <HriPhysio/Stream/streamerInterface.h>
+#include <HriPhysio/Stream/csvStreamer.h>
 
 #include <HriPhysio/Core/ringBuffer.h>
 #include <HriPhysio/helpers.h>
@@ -54,9 +55,13 @@ private:
     std::size_t output_frame;
     std::size_t sample_overlap;
     std::size_t buffer_length;
+    
+    bool        log_data;
+    std::string log_name;
 
     hriPhysio::Stream::StreamerInterface* stream_input;
     hriPhysio::Stream::StreamerInterface* stream_output;
+    hriPhysio::Stream::CsvStreamer stream_logger;
 
     hriPhysio::Core::RingBuffer<hriPhysio::varType> buffer;
     hriPhysio::Core::RingBuffer<double> timestamps;

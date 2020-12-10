@@ -10,8 +10,8 @@
  * ================================================================================
  */
 
-#ifndef HRI_PHYSIO_STREAM_LSL_STREAMER_H
-#define HRI_PHYSIO_STREAM_LSL_STREAMER_H
+#ifndef HRI_PHYSIO_STREAM_CSV_STREAMER_H
+#define HRI_PHYSIO_STREAM_CSV_STREAMER_H
 
 #include <iostream>
 #include <memory>
@@ -19,7 +19,9 @@
 #include <string>
 #include <vector>
 
-#include <lsl_cpp.h>
+#include <ctime>
+#include <iomanip>
+#include <fstream>
 
 #include <HriPhysio/Stream/streamerInterface.h>
 
@@ -27,22 +29,22 @@
 
 namespace hriPhysio {
     namespace Stream {
-        class LslStreamer;
+        class CsvStreamer;
     }
 }
 
-class hriPhysio::Stream::LslStreamer : public hriPhysio::Stream::StreamerInterface {
+class hriPhysio::Stream::CsvStreamer : public hriPhysio::Stream::StreamerInterface {
 
 private:
-    std::unique_ptr<lsl::stream_inlet> inlet;
-    std::unique_ptr<lsl::stream_outlet> outlet;
+    std::ifstream input;
+    std::ofstream output;
+    std::string sys_time;
+
 
 public:
-    LslStreamer();
+    CsvStreamer();
 
-    ~LslStreamer();
-
-    lsl::channel_format_t getLslFormatType();
+    ~CsvStreamer();
 
     bool openInputStream();
 
@@ -61,4 +63,4 @@ private:
     
 };
 
-#endif /* HRI_PHYSIO_STREAM_LSL_STREAMER_H */
+#endif /* HRI_PHYSIO_STREAM_CSV_STREAMER_H */

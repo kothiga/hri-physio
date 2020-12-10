@@ -1,7 +1,7 @@
-input: PolarH10/6080292F/ECG     #/ecgSim/ECG
+input: PolarH10/6080292F/ECG
 output: /output
 dtype: double
-sampling_rate: 130 #128
+sampling_rate: 130
 input_frame: 73
 output_frame: 128
 num_channels: 1

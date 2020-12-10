@@ -16,6 +16,7 @@ set(${LIBRARY_TARGET_NAME}_SRC
     src/butterworthBandPass.cpp
     src/butterworthHighPass.cpp
     src/butterworthLowPass.cpp
+    src/csvStreamer.cpp
     src/helpers.cpp
     src/lslStreamer.cpp
     src/physioManager.cpp
@@ -50,6 +51,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
     # TODO: uncomment when implementing.
     # include/HriPhysio/Stream/ros/rosStreamer.h   
     # include/HriPhysio/Stream/yarp/yarpStreamer.h 
+    include/HriPhysio/Stream/csvStreamer.h
     include/HriPhysio/Stream/lslStreamer.h
     include/HriPhysio/Stream/streamerInterface.h
     # include/HriPhysio/Stream/udpStreamer.h       

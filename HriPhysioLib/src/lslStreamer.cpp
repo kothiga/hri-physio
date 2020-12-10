@@ -24,6 +24,7 @@ LslStreamer::LslStreamer() :
 LslStreamer::~LslStreamer() {
 
     if (this->mode == modeTag::RECEIVER) {
+        inlet->close_stream();
         inlet.reset();
     } else if (this->mode == modeTag::SENDER) {
         outlet.reset();
