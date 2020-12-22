@@ -1,0 +1,146 @@
+# -*- coding: utf-8 -*-
+"""
+@author: jessys
+#email: jj5song@uwaterloo.ca 
+
+"""
+import neurokit2 as nk
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from scipy.stats import zscore
+import hrvanalysis as hrvanalysis
+import matplotlib.pyplot as plt
+%matplotlib inline
+
+"""Plot given RR-intervals series"""
+def plot_rri(rr):
+    plt.figure(figsize=(10, 7))
+    plt.title("RR-intervals")
+    plt.xlabel("Time (s)")
+    plt.ylabel("RR-interval (ms)")
+    plt.plot(np.arange(len(rr)), rr, label="RR-interval", color="#A651D8")
+
+    plt.show()
+
+""" 
+Apply error correction and plot corrected RR intervals given RRi samples
+ ---> read the RR interval correction paper
+find outliers and graph the zscore regions
+"""
+def rri_error_correction(rr):
+    outlier_low = np.mean(rr) - 2 * np.std(rr)
+    outlier_high = np.mean(rr) + 2 * np.std(rr)
+    rr_corrected = rr.copy()
+    for i in range(len(rr_corrected)):
+        if rr_corrected[i] >= outlier_high or rr_corrected[i] <= outlier_low: 
+            rr_corrected[i] = np.median(rr)
+    
+    plt.figure(figsize=(10, 7))
+    plt.title("RR-intervals")
+    plt.xlabel("Time (s)")
+    plt.ylabel("RR-interval (ms)")
+    
+    plt.plot(rr_corrected, color="green",  label="RR-intervals after correction")
+    plt.legend()
+    plt.show()
+    
+    return rr_corrected.tolist()
+
+"""Perform hrv analysis using hrv_analysis lib"""
+def hrv_analysis(rr): 
+    # 1. This remove outliers from signal
+    rr_intervals_without_outliers = hrvanalysis.remove_outliers(rr_intervals=rr,  
+                                                    low_rri=np.mean(rr) - 2 * np.std(rr),
+                                                    high_rri=np.mean(rr) + 2 * np.std(rr))
+    
+    # 2. This replace outliers nan values with linear interpolation
+    interpolated_rr_intervals = hrvanalysis.interpolate_nan_values(rr_intervals=rr_intervals_without_outliers, 
+                                                       interpolation_method="linear")
+
+    # 3. This remove ectopic beats from signal
+    nn_intervals_list = hrvanalysis.remove_ectopic_beats(rr_intervals=interpolated_rr_intervals, method="malik")
+    # 4. This replace ectopic beats nan values with linear interpolation
+    interpolated_nn_intervals = hrvanalysis.interpolate_nan_values(rr_intervals=nn_intervals_list)
+    # plot_rri(interpolated_nn_intervals)
+
+    ## 5. Make all nan to median 
+    nn = pd.Series(interpolated_nn_intervals)
+    nn = nn.replace(np.nan, np.nanmedian(nn)).tolist()
+
+    ## Time Domain Analysis 
+    time_domain_features = hrvanalysis.get_time_domain_features(nn)
+    # print(time_domain_features)
+    
+    ## Frequency Domain Analysis 
+    freq_domain_features = hrvanalysis.get_frequency_domain_features(nn)
+    # print(freq_domain_features)
+    
+    ## Nonlinear Domain Analysis 
+    geometric_domain_features = hrvanalysis.get_geometrical_features(nn)
+    # print(geometric_domain_features)
+    
+    ## FFT Spectrum / Poincare plots
+    #hrvanalysis.plot_psd(nn, method="welch")
+    #hrvanalysis.plot_poincare(nn, plot_sd_features=True)
+    
+    return [time_domain_features, freq_domain_features, geometric_domain_features]
+
+"""
+Given rr interval data series, break into sub-series of size 20 and return as list
+"""
+def rr_segments(rr, length):
+    remainder = len(rr)%length 
+    num = int((len(rr)-remainder)/length)
+    segments = []
+    end_time = []
+    for i in range(0, num):
+        seg = rr[i*length:length+i*length]
+        end_time.append(length+i*length)
+        segments.append(seg)
+    last = rr[(num)*length:]
+    end_time.append(len(rr))
+    segments.append(last)
+    
+    return end_time, segments
+
+"""Given segments of rr interval data, return list of selected metrics"""
+def perform_hrv_analysis_on_segments(segs): 
+    ans = []
+    for i in segs: 
+        ans.append(hrv_analysis(i))
+    
+    # form result list for selected metrics
+    sdnn = []
+    rmssd = []
+    lf = []
+    hf = []
+    vlf = []
+    mean_hr = []
+    for i in range(0, len(segs)):
+        sdnn.append(ans[i][0]['sdnn'])
+        rmssd.append(ans[i][0]['rmssd'])
+        mean_hr.append(ans[i][0]['mean_hr'])
+        lf.append(ans[i][1]['lf'])
+        hf.append(ans[i][1]['hf'])
+        vlf.append(ans[i][1]['vlf'])
+    
+    return sdnn, rmssd, lf, hf, vlf, mean_hr
+
+"""Execute: """
+# replace '' with file name of recorded csv from app
+hrFile = pd.read_csv('')
+# get rr interval column
+rr = hrFile['rr interval (ms)']
+
+end_time, segs = rr_segments(rr, 20)
+sdnn, rmssd, lf, hf, vlf, mean_hr = perform_hrv_analysis_on_segments(segs)
+    
+results = pd.DataFrame({'time (segment length)': end_time,
+                   'sdnn': sdnn,
+                   'rmssd': rmssd,
+                   'hf': hf,
+                   'lf': lf,
+                   'vlf': vlf, 
+                   'mean hr': mean_hr })
+results.to_csv(r'offline_results.csv', index=False) 

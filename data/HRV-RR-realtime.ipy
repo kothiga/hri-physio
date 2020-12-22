@@ -1,0 +1,168 @@
+# -*- coding: utf-8 -*-
+"""
+@author: jessys
+#email: jj5song@uwaterloo.ca 
+
+"""
+import itertools
+from datetime import datetime
+import neurokit2 as nk
+import numpy as np
+import pandas as pd
+import seaborn as sns
+from scipy.stats import zscore
+import hrvanalysis as hrvanalysis
+import matplotlib.pyplot as plt
+%matplotlib inline
+from pylsl import StreamInlet, resolve_stream
+
+"""Perform hrv analysis using hrv_analysis lib"""
+def hrv_analysis(rr): 
+    # 1. This remove outliers from signal
+    rr_intervals_without_outliers = hrvanalysis.remove_outliers(rr_intervals=rr,  
+                                                    low_rri=np.mean(rr) - 2 * np.std(rr),
+                                                    high_rri=np.mean(rr) + 2 * np.std(rr))
+    # plot_rri(rr_intervals_without_outliers)
+    
+    # 2. This replace outliers nan values with linear interpolation
+    interpolated_rr_intervals = hrvanalysis.interpolate_nan_values(rr_intervals=rr_intervals_without_outliers, 
+                                                       interpolation_method="linear")
+    # plot_rri(interpolated_rr_intervals)
+
+    # 3. This remove ectopic beats from signal
+    nn_intervals_list = hrvanalysis.remove_ectopic_beats(rr_intervals=interpolated_rr_intervals, method="malik")
+    # 4. This replace ectopic beats nan values with linear interpolation
+    interpolated_nn_intervals = hrvanalysis.interpolate_nan_values(rr_intervals=nn_intervals_list)
+    # plot_rri(interpolated_nn_intervals)
+
+    ## 5. Make all nan to median 
+    nn = pd.Series(interpolated_nn_intervals)
+    nn = nn.replace(np.nan, np.nanmedian(nn)).tolist()
+
+    ## Time Domain Analysis 
+    time_domain_features = hrvanalysis.get_time_domain_features(nn)
+    # print(time_domain_features)
+    
+    ## Frequency Domain Analysis 
+    freq_domain_features = hrvanalysis.get_frequency_domain_features(nn)
+    # print(freq_domain_features)
+    
+    ## Nonlinear Domain Analysis 
+    geometric_domain_features = hrvanalysis.get_geometrical_features(nn)
+    # print(geometric_domain_features)
+    
+    ## FFT Spectrum / Poincare plots
+    # hrvanalysis.plot_psd(nn, method="welch")
+    # hrvanalysis.plot_poincare(nn, plot_sd_features=True)
+    
+    return [time_domain_features, freq_domain_features, geometric_domain_features]
+
+"""Given a segment of rr interval data, return values of selected metrics"""
+def perform_hrv_analysis_on_segment(seg): 
+    ans = hrv_analysis(seg)
+    # form result variables for selected metrics
+    sdnn=ans[0]['sdnn']
+    rmssd=ans[0]['rmssd']
+    mean_hr=ans[0]['mean_hr']
+    lf=ans[1]['lf']
+    hf=ans[1]['hf']
+    vlf=ans[1]['vlf']
+    
+    return sdnn, rmssd, lf, hf, vlf, mean_hr
+  
+"""Execute: """
+# first resolve a stream on the lab network
+print("looking for stream...")
+streams = resolve_stream('type', 'RR')
+inlets = []
+
+# create a new inlet to read from the stream
+for i in streams:
+    inlets.append(StreamInlet(i))
+    print(StreamInlet(i).info())
+
+# create initial rr seg
+seg_rr = []
+seg_timestamp = [] 
+rr_segments = []
+timestamp_segments = []
+
+# form result list for selected metrics
+sdnn_list = []
+rmssd_list = []
+lf_list = []
+hf_list = []
+vlf_list = []
+mean_hr_list = []
+seg_last_timestamp_list= []
+analysis_time = [] 
+diff_time = 0
+
+while True:
+    for i in range(0,len(inlets)):
+        chunk, timestamps = inlets[i].pull_chunk()
+        if timestamps:
+            print(timestamps, chunk)
+            # store the larger rri value in one chunk
+            if len(chunk)>= 2: 
+                rr_val = max(chunk[0][0], chunk[1][0])
+                print("checking max")
+            else: 
+                rr_val = chunk[0][0]
+            seg_rr.append(rr_val)
+            timestamp_temp = timestamps[0]
+            if len(seg_timestamp) == 0: initial_time = timestamps[0]
+            
+            # compute difference in timestamps
+            diff_time = timestamp_temp - initial_time
+            seg_timestamp.append(timestamp_temp)
+            print(diff_time)
+    
+    # if len(seg_rr)==20: # check by length of rr seg
+    if diff_time >= 20: # check by time difference between timestamps
+        seg_last_timestamp_list.append(timestamp_temp)
+        rr_segments.append(seg_rr.copy())
+        timestamp_segments.append(seg_timestamp.copy())
+        
+        # get before time 
+        before = datetime.now()
+        # perform hrv analysis and add to metric result list
+        sdnn, rmssd, lf, hf, vlf, mean_hr = perform_hrv_analysis_on_segment(seg_rr)
+        # get after analysis time 
+        after = datetime.now()
+        # compute time difference
+        timediff = after - before 
+        analysis_time.append(timediff.total_seconds())
+        
+        # put result into lists 
+        sdnn_list.append(sdnn)
+        rmssd_list.append(rmssd)
+        lf_list.append(lf)
+        hf_list.append(hf)
+        vlf_list.append(vlf)
+        mean_hr_list.append(mean_hr)
+        
+        # clear seg_rr and seg_timestamp
+        seg_rr.clear()
+        print(len(rr_segments))
+        diff_time = 0 
+        seg_timestamp.clear() 
+        
+    # record 30 segments as a test (~10 mins)
+    if len(rr_segments)==30: break
+
+results = pd.DataFrame({'lsl timestamp': seg_last_timestamp_list, 
+                        'sdnn': sdnn_list,
+                        'rmssd': rmssd_list,
+                        'hf': hf_list,
+                        'lf': lf_list,
+                        'vlf': vlf_list, 
+                        'mean hr (bpm)': mean_hr_list,
+                        'analysis time (s)': analysis_time  }) 
+
+results.to_csv(r'realtime_results.csv', index=False)
+
+rr_csv = pd.DataFrame({'timestamp': list(itertools.chain.from_iterable(timestamp_segments)), 
+                       'rr interval (ms)': list(itertools.chain.from_iterable(rr_segments))})
+
+rr_csv.to_csv(r'realtime_rr.csv', index=False) 
