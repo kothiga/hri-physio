@@ -92,7 +92,12 @@ set(CMAKE_CXX_STANDARD_REQUIRED 17)
 # See https://github.com/robotology/ycm/
 # YCM aquired from icub-common (apt)
 
-find_package( YCM REQUIRED )
+find_package( YCM QUIET )
+if( YCM_FOUND )
+    list(APPEND CMAKE_MODULE_PATH ${YCM_MODULE_PATH})
+else( YCM_FOUND )
+    list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+endif( YCM_FOUND )
 
 
 ############################################################
