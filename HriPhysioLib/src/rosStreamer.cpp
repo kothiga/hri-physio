@@ -10,24 +10,25 @@
  * ================================================================================
  */
 
-#include <HriPhysio/Stream/csvStreamer.h>
+#include <HriPhysio/Stream/ros/rosStreamer.h>
 
 using namespace hriPhysio::Stream;
 
 
-CsvStreamer::CsvStreamer() : 
+RosStreamer::RosStreamer() : 
     StreamerInterface() {
 
 }
 
 
-CsvStreamer::~CsvStreamer() {
+RosStreamer::~RosStreamer() {
 
-    if (this->mode == modeTag::RECEIVER) {
-        input.close();
-    } else if (this->mode == modeTag::SENDER) {
-        output.close();
-    }
+    //if (this->mode == modeTag::RECEIVER) {
+    //    inlet->close_stream();
+    //    inlet.reset();
+    //} else if (this->mode == modeTag::SENDER) {
+    //    outlet.reset();
+    //}
 }
 
 
@@ -62,7 +63,7 @@ CsvStreamer::~CsvStreamer() {
 //}
 
 
-bool CsvStreamer::openInputStream() {
+bool RosStreamer::openInputStream() {
 
     //-- Set the current mode.
     if (this->mode != modeTag::NOTSET) {
@@ -71,19 +72,19 @@ bool CsvStreamer::openInputStream() {
 
     this->mode = modeTag::RECEIVER;
 
-    try {
-
-        //-- Open the specified file for reading from.
-        input.open(this->name);
-
-	} catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
+//    try {
+//
+//        //-- Create a new inlet from the given input name.
+//        inlet.reset(new lsl::stream_inlet(lsl::resolve_stream("name", this->name)[0]));
+//
+//    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
 
 
     return true;
 }
 
 
-bool CsvStreamer::openOutputStream() {
+bool RosStreamer::openOutputStream() {
     
     //-- Set the current mode.
     if (this->mode != modeTag::NOTSET) {
@@ -92,30 +93,30 @@ bool CsvStreamer::openOutputStream() {
 
     this->mode = modeTag::SENDER;
 
-    try {
-
-        //-- Open the specified file for writing to.
-        output.open(this->name);
-
-    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
-
-    //-- Write the header information.
-    output << "System Time" << "," << "Internal Time";
-
-    for (std::size_t ch = 0; ch < this->num_channels; ++ch) {
-        output << "," << "ch-" << ch;
-    } 
-    
-    output << std::endl;
+//    try {
+//
+//        //-- Create an info obj and open an outlet with it.
+//        lsl::stream_info info(
+//            /* name           = */ this->name,
+//            /* type           = */ "",
+//            /* channel_count  = */ this->num_channels,
+//            /* nominal_srate  = */ this->sampling_rate,
+//            /* channel_format = */ this->getLslFormatType(),
+//            /* source_id      = */ this->name
+//        );
+//
+//        outlet.reset(new lsl::stream_outlet(info, /*chunk_size=*/this->frame_length, /*max_buffered=*/this->frame_length*2));
+//
+//    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
 
 
     return true;
 }
 
 
-void CsvStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps/*=nullptr*/) {
+void RosStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps/*=nullptr*/) {
 
-    std::cerr << "[CSV-OUT] WRITING: " << this->dtype << " ";
+    std::cerr << "[ROS-OUT] Sending: " << this->dtype << " ";
     switch (this->var) {
     case hriPhysio::varTag::CHAR:
         this->pushStream<char>(buff, timestamps);
@@ -142,9 +143,9 @@ void CsvStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const st
 }
 
 
-void CsvStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps/*=nullptr*/) {
+void RosStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps/*=nullptr*/) {
 
-    std::cerr << "[CSV-IN] READING FROM: " << this->dtype << " ";
+    std::cerr << "[ROS-IN] Receive: " << this->dtype << " ";
 
     switch (this->var) {
     case hriPhysio::varTag::CHAR:
@@ -173,57 +174,34 @@ void CsvStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<dou
 
 
 template<typename T>
-void CsvStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps) {
+void RosStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps) {
 
-    //TODO: Should put in some error catching here for buff and timestamp.
-    //      buff should logically be the length of timestamps by the num channels.
+    std::vector<T> samples(buff.size());
 
-    std::time_t t = std::time(nullptr);
-
-    std::size_t idx_buff = 0;
-    std::size_t idx_time = 0;
-
-    std::cerr << "buff len: " << buff.size() << "  ts len: " << timestamps->size() << std::endl;
-
-    while (idx_buff < buff.size()) {
-        
-        //-- "System Time" 
-        output << std::put_time(std::localtime(&t), "%Y/%m/%d_%H:%M:%S") << ",";
-
-        //-- "Internal Time"
-        if (timestamps == nullptr) {
-            output << 0.0;
-        } else {
-            output << std::setprecision(17) << timestamps->at(idx_time);
-            ++idx_time;
-        } 
-
-        //-- "Channels"
-        for (std::size_t ch = 0; ch < this->num_channels; ++ch) {
-            output << "," << std::get<T>( buff[idx_buff + ch] );
-        }
-        idx_buff += this->num_channels;
-
-        //-- Move to the next line.
-        output << std::endl;
+    //-- Copy the data into a temporary transfer.
+    for (std::size_t idx = 0; idx < buff.size(); ++idx) {
+        samples[idx] = std::get<T>( buff[idx] );
     }
+
+    //-- Push a multiplexed chunk from a flat vector.
+//    outlet->push_chunk_multiplexed(samples);
 
     return;
 }
 
 
 template<typename T>
-void CsvStreamer::pullStream(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps) {
+void RosStreamer::pullStream(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps) {
 
-    //std::vector<T> samples;
-    //
-    ////-- Pull a multiplexed chunk into a flat vector.
-    //inlet->pull_chunk_multiplexed(samples, timestamps, 1.0);
-    //
-    ////-- Copy the data into the buffer.
-    //for (std::size_t idx = 0; idx < samples.size(); ++idx) {
-    //    buff[idx] = samples[idx];
-    //}
+    std::vector<T> samples;
+
+    //-- Pull a multiplexed chunk into a flat vector.
+//    inlet->pull_chunk_multiplexed(samples, timestamps, 1.0);
+
+    //-- Copy the data into the buffer.
+    for (std::size_t idx = 0; idx < samples.size(); ++idx) {
+        buff[idx] = samples[idx];
+    }
 
     return;
 }

@@ -1,5 +1,5 @@
 /* ================================================================================
- * Copyright: (C) 2020, SIRRL Social and Intelligent Robotics Research Laboratory, 
+ * Copyright: (C) 2021, SIRRL Social and Intelligent Robotics Research Laboratory, 
  *     University of Waterloo, All rights reserved.
  * 
  * Authors: 
@@ -48,8 +48,7 @@ public:
     ** @param rate    Sampling-rate of the provided signal.
     ** @param width   Width for the band pass/notch.        [Optional arg]
     ** ============================================================================ */
-    Biquadratic(const unsigned int rate);
-    Biquadratic(const unsigned int rate, const double width);
+    Biquadratic(const unsigned int rate, const double width=0.0);
 
 
     /* ============================================================================

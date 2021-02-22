@@ -15,15 +15,7 @@
 using namespace hriPhysio::Processing;
 
 
-Biquadratic::Biquadratic(const unsigned int rate) : 
-    sampling_rate(rate),
-    band_width(0.0),
-    center_frequency(0.0) {
-    
-}
-
-
-Biquadratic::Biquadratic(const unsigned int rate, const double width) : 
+Biquadratic::Biquadratic(const unsigned int rate, const double width/*=0.0*/) : 
     sampling_rate(rate),
     band_width(width),
     center_frequency(0.0) {

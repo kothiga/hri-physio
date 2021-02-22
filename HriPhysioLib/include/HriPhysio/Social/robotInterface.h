@@ -42,27 +42,21 @@ public:
     
     enum peripheral { HEAD, RIGHTARM, LEFTARM, RIGHTLEG, LEFTLEG };
     
-    virtual bool setPerphState(const peripheral perph, const std::vector<double>& pos) {
-        warning("setPerphState");
-    }
+    virtual bool setPerphState(const peripheral perph, const std::vector<double>& pos);
 
-    virtual bool getPerphState(const peripheral perph, std::vector<double>& pos) {
-        warning("getPerphState");
-    }
+    virtual bool getPerphState(const peripheral perph, std::vector<double>& pos);
 
-    enum expression { }
+    virtual bool setPerphVelocity(const peripheral perph, const std::vector<double>& speed);
 
-    virtual 
+    virtual bool getPerphVelocity(const peripheral perph, std::vector<double>& speed);
 
+    virtual bool setEmotionState(const std::string emotion);
 
+    virtual bool getEmotionState(std::string& emotion);
 
+    virtual bool addSpeech(const std::string phrase);
 
-
-    virtual bool openInputStream() = 0;
-    virtual bool openOutputStream() = 0;
-
-    virtual void publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps = nullptr) = 0;
-    virtual void receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps = nullptr) = 0;
+    virtual bool addAudioFile(const std::string filename, const size_t channel=-1);
 
 private:
     void warning(std::string func) {

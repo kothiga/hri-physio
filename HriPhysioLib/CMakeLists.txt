@@ -1,4 +1,4 @@
-# Copyright: (C) 2020, SIRRL Social and Intelligent Robotics Research Laboratory, University of Waterloo
+# Copyright: (C) 2021, SIRRL Social and Intelligent Robotics Research Laboratory, University of Waterloo
 # Authors: Austin Kothig <austin.kothig@uwaterloo.ca>
 # CopyPolicy: Released under the terms of the BSD 3-Clause License.
 
@@ -20,6 +20,7 @@ set(${LIBRARY_TARGET_NAME}_SRC
     src/helpers.cpp
     src/lslStreamer.cpp
     src/physioManager.cpp
+    src/robotInterface.cpp
     src/streamerFactory.cpp
     src/streamerInterface.cpp
     src/threadManager.cpp
@@ -46,11 +47,11 @@ set(${LIBRARY_TARGET_NAME}_HDR
     include/HriPhysio/Processing/butterworthBandPass.h
     include/HriPhysio/Processing/butterworthHighPass.h
     include/HriPhysio/Processing/butterworthLowPass.h
+
+    # SOCIAL
+    include/HriPhysio/Social/robotInterface.h
     
     # STREAM
-    # TODO: uncomment when implementing.
-    # include/HriPhysio/Stream/ros/rosStreamer.h   
-    # include/HriPhysio/Stream/yarp/yarpStreamer.h 
     include/HriPhysio/Stream/csvStreamer.h
     include/HriPhysio/Stream/lslStreamer.h
     include/HriPhysio/Stream/streamerInterface.h
@@ -62,32 +63,38 @@ set(${LIBRARY_TARGET_NAME}_HDR
 
 ############################################################
 
-##
-## TODO: set these up properly and make sure libraries get linked.
-##
-## if( ENABLE_COMPILE_YARP )
-## 
-##     list(APPEND ${LIBRARY_TARGET_NAME}_SRC
-##         src/yarpStreamer.cpp
-##     )
-## 
-##     list(APPEND ${LIBRARY_TARGET_NAME}_HDR
-##         include/HriPhysio/Stream/yarp/yarpStreamer.h
-##     )
-## 
-## endif( ENABLE_COMPILE_YARP )
-## 
-## if( ENABLE_COMPILE_ROS )
-## 
-##     list(APPEND ${LIBRARY_TARGET_NAME}_SRC
-##         src/rosStreamer.cpp
-##     )
-## 
-##     list(APPEND ${LIBRARY_TARGET_NAME}_HDR
-##         include/HriPhysio/Stream/ros/rosStreamer.h
-##     )
-## 
-## endif( ENABLE_COMPILE_ROS )
+if( ENABLE_YARP )
+
+    find_package( YARP REQUIRED )
+    
+
+    list(APPEND ${LIBRARY_TARGET_NAME}_SRC
+        src/yarpStreamer.cpp
+    )
+
+    list(APPEND ${LIBRARY_TARGET_NAME}_HDR
+        include/HriPhysio/Stream/yarp/yarpStreamer.h
+    )
+
+endif( ENABLE_YARP )
+
+if( ENABLE_ROS )
+
+    find_package( roscpp   REQUIRED )
+    find_package( std_msgs REQUIRED )
+
+    include_directories(/opt/ros/noetic/include /opt/ros/noetic/lib)
+
+
+    list(APPEND ${LIBRARY_TARGET_NAME}_SRC
+        src/rosStreamer.cpp
+    )
+
+    list(APPEND ${LIBRARY_TARGET_NAME}_HDR
+        include/HriPhysio/Stream/ros/rosStreamer.h
+    )
+
+endif( ENABLE_ROS )
 
 ############################################################
 

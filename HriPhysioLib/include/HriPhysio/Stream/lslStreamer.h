@@ -1,5 +1,5 @@
 /* ================================================================================
- * Copyright: (C) 2020, SIRRL Social and Intelligent Robotics Research Laboratory, 
+ * Copyright: (C) 2021, SIRRL Social and Intelligent Robotics Research Laboratory, 
  *     University of Waterloo, All rights reserved.
  * 
  * Authors: 

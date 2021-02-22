@@ -1,5 +1,5 @@
 /* ================================================================================
- * Copyright: (C) 2020, SIRRL Social and Intelligent Robotics Research Laboratory, 
+ * Copyright: (C) 2021, SIRRL Social and Intelligent Robotics Research Laboratory, 
  *     University of Waterloo, All rights reserved.
  * 
  * Authors: 
@@ -16,6 +16,14 @@
 #include <iostream>
 #include <memory>
 #include <mutex>
+#include <string>
+#include <vector>
+
+#include <yarp/math/Math.h>
+#include <yarp/sig/all.h>
+#include <yarp/os/all.h>
+
+#include <HriPhysio/Stream/streamerInterface.h>
 
 #include <HriPhysio/helpers.h>
 
@@ -25,7 +33,7 @@ namespace hriPhysio {
     }
 }
 
-class hriPhysio::Stream::YarpStreamer {
+class hriPhysio::Stream::YarpStreamer : public hriPhysio::Stream::StreamerInterface {
 
 private:
     int temp;
@@ -33,9 +41,25 @@ private:
 public:
     YarpStreamer();
 
-private:
-    void tempfunc();
+    ~YarpStreamer();
 
+//    lsl::channel_format_t getLslFormatType();
+
+    bool openInputStream();
+
+    bool openOutputStream();
+
+    void publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps=nullptr);
+    
+    void receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps=nullptr);
+
+private:
+    template<typename T>
+    void pushStream(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps);
+
+    template<typename T>
+    void pullStream(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps);
+    
 };
 
 #endif /* HRI_PHYSIO_STREAM_YARP_STREAMER_H */

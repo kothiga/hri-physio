@@ -1,4 +1,4 @@
-# Copyright: (C) 2020, SIRRL Social and Intelligent Robotics Research Laboratory, University of Waterloo
+# Copyright: (C) 2021, SIRRL Social and Intelligent Robotics Research Laboratory, University of Waterloo
 # Authors: Austin Kothig <austin.kothig@uwaterloo.ca>
 # CopyPolicy: Released under the terms of the BSD 3-Clause License.
 
@@ -101,7 +101,7 @@ endif( YCM_FOUND )
 
 
 ############################################################
-######################### Options ##########################
+################## Options and Packages ####################
 ############################################################
 
 # Shared/Dynamic or Static library?
@@ -136,6 +136,12 @@ if( NOT CMAKE_CONFIGURATION_TYPES )
         set_property( CACHE CMAKE_BUILD_TYPE PROPERTY VALUE "Release" )
     endif( )
 endif( )
+
+
+option(ENABLE_ROS   "Compile with support for ROS?"  OFF)
+option(ENABLE_YARP  "Compile with support for YARP?" OFF)
+
+find_package( yaml-cpp REQUIRED )
 
 
 ############################################################
