@@ -1,0 +1,11 @@
+input: PolarH10/68D3E226/PPG
+output: /output
+dtype: double
+sampling_rate: 130
+input_frame: 73
+output_frame: 128
+num_channels: 1
+sample_overlap: 0
+buffer_length: 5000
+log_data: true
+log_name: "../data/test1_ecg.csv"

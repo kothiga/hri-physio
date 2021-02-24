@@ -21,6 +21,7 @@ set(${LIBRARY_TARGET_NAME}_SRC
     src/lslStreamer.cpp
     src/physioManager.cpp
     src/robotInterface.cpp
+    src/robotManager.cpp
     src/streamerFactory.cpp
     src/streamerInterface.cpp
     src/threadManager.cpp
@@ -39,6 +40,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
 
     # MANAGER
     include/HriPhysio/Manager/physioManager.h
+    include/HriPhysio/Manager/robotManager.h
     include/HriPhysio/Manager/threadManager.h
 
     # PROCESSING
@@ -83,7 +85,7 @@ if( ENABLE_ROS )
     find_package( roscpp   REQUIRED )
     find_package( std_msgs REQUIRED )
 
-    include_directories(/opt/ros/noetic/include /opt/ros/noetic/lib)
+    include_directories(/opt/ros/$ENV{ROS_DISTRO}/include /opt/ros/$ENV{ROS_DISTRO}/lib)
 
 
     list(APPEND ${LIBRARY_TARGET_NAME}_SRC

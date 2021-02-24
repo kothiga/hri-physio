@@ -16,6 +16,7 @@
 #include <iostream>
 #include <algorithm>
 #include <cmath>
+#include <sstream>
 #include <string>
 #include <variant>
 #include <vector>
@@ -26,7 +27,7 @@ namespace hriPhysio {
     **  Helpful classes for parsing and others single tasks.
     ** ============================================================================ */
     class ArgParser;
-
+    
 
     /* ============================================================================
     **  Initialize a common variant type to support relevant data types.
@@ -42,7 +43,7 @@ namespace hriPhysio {
         void operator()(float   v ) const { std::cout << "float("   << v << ")"; }
         void operator()(double  v ) const { std::cout << "double("  << v << ")"; }
     };
-    
+
 
     /* ============================================================================
     **  Methods for Math.
@@ -54,6 +55,9 @@ namespace hriPhysio {
     /* ============================================================================
     **  Methods for Strings.
     ** ============================================================================ */
+    std::vector< std::string > parseString(std::string& str);
+    std::vector< double > toVecDouble(const std::vector< std::string >& source, size_t idx=0);
+    std::string combineString(const std::vector< std::string >& source, size_t idx=0);
     void toLower(std::string& str);
     void toUpper(std::string& str);
 }

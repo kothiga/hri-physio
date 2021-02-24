@@ -39,6 +39,8 @@ public:
 
     void setName(const std::string name);
     std::string getName() const;
+
+    virtual bool configure(int argc, char **argv) = 0;
     
     enum peripheral { HEAD, RIGHTARM, LEFTARM, RIGHTLEG, LEFTLEG };
     
