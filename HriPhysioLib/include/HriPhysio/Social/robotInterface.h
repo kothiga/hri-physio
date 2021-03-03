@@ -56,9 +56,13 @@ public:
 
     virtual bool getEmotionState(std::string& emotion);
 
+    virtual bool addGesture(const std::string gesture, const double speed=1.0);
+
     virtual bool addSpeech(const std::string phrase);
 
     virtual bool addAudioFile(const std::string filename, const size_t channel=-1);
+
+    virtual bool addVideoFile(const std::string filename);
 
 private:
     void warning(std::string func) {

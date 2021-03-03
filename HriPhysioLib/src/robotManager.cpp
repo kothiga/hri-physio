@@ -27,13 +27,8 @@ RobotManager::~RobotManager() {
 
 
 void RobotManager::configure(int argc, char **argv) {
-
     
     robot->configure(argc, argv);
-
-
-
-
 
     //-- Load the yaml file.
     //YAML::Node config = YAML::LoadFile(yaml_file);
@@ -57,13 +52,11 @@ void RobotManager::configure(int argc, char **argv) {
 
     std::cerr << "[CONF] Load complete.\n";
     
-
     //-- If streams are empty, exit.
     //if (input_name == "" || output_name == "") {
     //    this->close();
     //    return;
     //}
-
 
     //-- Configure the streams.
     //stream_input->setName(input_name);
@@ -115,6 +108,7 @@ void RobotManager::configure(int argc, char **argv) {
 
 
 void RobotManager::interactive() {
+    
     std::string cmd, inp, str;
     while (this->getManagerRunning()) {
         
@@ -180,39 +174,88 @@ bool RobotManager::threadInit() {
 
 bool RobotManager::setFunctions(const std::vector< std::string >& input) {
 
+    if (input.size() < 2) { return false; }
+
     std::string func = input[1];
     hriPhysio::toLower(func);
 
     if (func == "state") {
-        // set state head 0.0 0.0
-        // right-arm 0.0 0.0 0.0
-        // left-arm 0.0 0.0 0.0
+
+        // set state {head,rightarm,leftarm,rightleg,leftleg} 0.0 0.0 [0.0]
+
+        if (input.size() < 4) { return false; }
 
         std::string perph = input[2];
         hriPhysio::toLower(perph);
 
         std::vector< double > pos = hriPhysio::toVecDouble(input, 3);
 
-        if (perph == "head") { //TODO: check input range and length.
-            robot->setPerphState(hriPhysio::Social::RobotInterface::peripheral::HEAD, pos);
+        if (perph == "head") { 
+            return robot->setPerphState(hriPhysio::Social::RobotInterface::peripheral::HEAD, pos);
+        } else if (perph == "rightarm") {
+            return robot->setPerphState(hriPhysio::Social::RobotInterface::peripheral::RIGHTARM, pos);
+        } else if (perph == "leftarm") {
+            return robot->setPerphState(hriPhysio::Social::RobotInterface::peripheral::LEFTARM, pos);
+        } else if (perph == "rightleg") {
+            return robot->setPerphState(hriPhysio::Social::RobotInterface::peripheral::RIGHTLEG, pos);
+        } else if (perph == "leftleg") {
+            return robot->setPerphState(hriPhysio::Social::RobotInterface::peripheral::LEFTLEG, pos);
         }
-
-        //setPerphState(const peripheral perph, const std::vector<double>& pos);
-    
+        
     } else if (func == "velocity") {
+
         //setPerphVelocity(const peripheral perph, const std::vector<double>& speed);
 
+    } else if (func == "gesture") {
+
+        // set gesture jump [1.5]
+
+        if (input.size() == 3) {
+            return robot->addGesture(input[2]);
+        } else if (input.size() == 4) {
+            return robot->addGesture(input[2], std::stod(input[3]));
+        } else {
+            return false;
+        }
+
     } else if (func == "emotion") {
-        //setEmotionState(const std::string emotion);
+        
+        // set emotion happy
+
+        if (input.size() != 3) { return false; }
+        
+        return robot->setEmotionState(input[2]);
+
 
     } else if (func == "speech") {
+
+        // set speech I am showing an example.
+
+        if (input.size() < 3) { return false; }
 
         //-- Combine the string and send it out.
         std::string phrase = hriPhysio::combineString(input, 2);
         return robot->addSpeech(phrase);
 
     } else if (func == "audio") {
-        //addAudioFile(const std::string filename, const size_t channel=-1);
+
+        // set audio temp.wav [1]
+        if (input.size() == 3) {
+            return robot->addAudioFile(input[2]);
+        } else if (input.size() == 4) {
+            return robot->addAudioFile(input[2], std::stoi(input[3]));
+        } else {
+            return false;
+        }
+    
+    } else if (func == "video") {
+
+        // set video temp.mp4
+        if (input.size() != 3) {
+            return robot->addVideoFile(input[2]);
+        } else {
+            return false;
+        }
 
     } else {
         return false;

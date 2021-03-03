@@ -20,6 +20,9 @@ set(${TARGET_NAME}_SRC
 
 set(${TARGET_NAME}_HDR
     include/qtController.h
+    include/qt_gesture_play.h
+    include/qt_gesture_playResponse.h
+    include/qt_gesture_playRequest.h
 )
 
 add_executable(

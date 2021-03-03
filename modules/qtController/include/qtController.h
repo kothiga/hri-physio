@@ -23,6 +23,8 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Float64MultiArray.h>
 
+#include <qt_gesture_play.h>
+
 #include <HriPhysio/Social/robotInterface.h>
 #include <HriPhysio/helpers.h>
 
@@ -30,10 +32,20 @@ class QtController : public hriPhysio::Social::RobotInterface {
 
 private:
     
-    ros::Publisher speech_say_pub;
+    //-- Motor interface.
     ros::Publisher head_pos_pub;
     ros::Publisher right_arm_pos_pub;
     ros::Publisher left_arm_pos_pub;
+
+    //-- Behavior interface.
+    ros::Publisher emotion_show_pub; 
+    ros::ServiceClient gesture_play_client;
+    ros::Publisher speech_say_pub;
+    
+    //-- Other interface.
+    ros::Publisher audio_file_pub;
+    ros::Publisher video_file_pub;
+    
 
 public:
     QtController();
@@ -57,9 +69,13 @@ public:
 
     bool getEmotionState(std::string& emotion);
 
+    bool addGesture(const std::string gesture, const double speed=1.0);
+
     bool addSpeech(const std::string phrase);
 
     bool addAudioFile(const std::string filename, const size_t channel=-1);
+
+    bool addVideoFile(const std::string filename);
 
 private:
     void temp();

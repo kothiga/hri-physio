@@ -72,6 +72,11 @@ bool RobotInterface::getEmotionState(std::string& emotion) {
 }
 
 
+bool RobotInterface::addGesture(const std::string gesture, const double speed/*=1.0*/) {
+    warning("addGesture");
+}
+
+
 bool RobotInterface::addSpeech(const std::string phrase) {
     warning("addSpeech");
     return false;
@@ -80,5 +85,10 @@ bool RobotInterface::addSpeech(const std::string phrase) {
 
 bool RobotInterface::addAudioFile(const std::string filename, const size_t channel/*=-1*/) {
     warning("addAudioFile");
+    return false;
+}
+
+bool RobotInterface::addVideoFile(const std::string filename) {
+    warning("addVideoFile");
     return false;
 }
