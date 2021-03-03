@@ -48,11 +48,20 @@ def listener():
 	    # Check if the video_name changed.
         if video_name != prev_name:
 
-            # Open the new video.
-	        cap.open(video_name)
-
             # Keep track of the last video_name.
-	        prev_name = video_name
+            prev_name = video_name
+
+            # Open the new video.
+            cap.open(video_name)
+
+            # Check if the video opened successfully.
+            if not cap.isOpened():
+                print("Video name ``{}`` could not be found!!".format(video_name))
+                continue
+
+            fps = cap.get(cv2.CAP_PROP_FPS)
+            print("Loaded video. Fps: {} {}".format(fps, 1000 // fps))
+
 
         else:
             # Sleep for a short time.
@@ -77,7 +86,7 @@ def listener():
                 cap.set(cv2.CAP_PROP_POS_FRAMES,0)
 
             # Check if capture close has occurred.
-            key = cv2.waitKey(100)
+            key = cv2.waitKey(int(1000 / fps))
             if key == 27 or key == 1048603:
                 cv2.destroyWindow("videoStreamer")
                 rospy.signal_shutdown("Shutting down Video Streamer...")
