@@ -60,6 +60,10 @@ public:
 
     virtual bool addSpeech(const std::string phrase);
 
+    virtual bool setSpeechConfig(const std::string config);
+
+    virtual bool setVolume(const double percent);
+
     virtual bool addAudioFile(const std::string filename, const size_t channel=-1);
 
     virtual bool addVideoFile(const std::string filename);

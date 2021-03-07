@@ -8,8 +8,8 @@
 #include <ros/service_traits.h>
 
 
-#include <qt_gesture_playRequest.h>
-#include <qt_gesture_playResponse.h>
+#include <qt_services/gesture_playRequest.h>
+#include <qt_services/gesture_playResponse.h>
 
 
 namespace qt_gesture_controller

@@ -237,9 +237,28 @@ bool RobotManager::setFunctions(const std::vector< std::string >& input) {
         std::string phrase = hriPhysio::combineString(input, 2);
         return robot->addSpeech(phrase);
 
+    } else if (func == "speechConfig") {
+
+        // set speechConfig 140 80
+
+        if (input.size() < 3) { return false; }
+
+        //-- Combine the string and send it out.
+        std::string config = hriPhysio::combineString(input, 2);
+        return robot->setSpeechConfig(config);
+
+    } else if (func == "volume") {
+
+        // set volume 42
+        
+        if (input.size() != 3) { return false; }
+
+        return robot->setVolume(std::stod(input[3]));
+
     } else if (func == "audio") {
 
         // set audio temp.wav [1]
+        
         if (input.size() == 3) {
             return robot->addAudioFile(input[2]);
         } else if (input.size() == 4) {
@@ -251,6 +270,7 @@ bool RobotManager::setFunctions(const std::vector< std::string >& input) {
     } else if (func == "video") {
 
         // set video temp.mp4
+        
         if (input.size() != 3) {
             return robot->addVideoFile(input[2]);
         } else {

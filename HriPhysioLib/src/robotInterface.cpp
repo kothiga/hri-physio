@@ -74,11 +74,23 @@ bool RobotInterface::getEmotionState(std::string& emotion) {
 
 bool RobotInterface::addGesture(const std::string gesture, const double speed/*=1.0*/) {
     warning("addGesture");
+    return false;
 }
 
 
 bool RobotInterface::addSpeech(const std::string phrase) {
     warning("addSpeech");
+    return false;
+}
+
+
+bool RobotInterface::setSpeechConfig(const std::string config) {
+    warning("setSpeechConfig");
+    return false;
+}
+
+bool RobotInterface::setVolume(const double) {
+    warning("setVolume");
     return false;
 }
 

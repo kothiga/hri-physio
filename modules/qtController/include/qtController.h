@@ -23,7 +23,9 @@
 #include <std_msgs/String.h>
 #include <std_msgs/Float64MultiArray.h>
 
-#include <qt_gesture_play.h>
+#include <qt_services/gesture_play.h>
+#include <qt_services/setting_setVolume.h>
+#include <qt_services/speech_config.h>
 
 #include <HriPhysio/Social/robotInterface.h>
 #include <HriPhysio/helpers.h>
@@ -40,7 +42,12 @@ private:
     //-- Behavior interface.
     ros::Publisher emotion_show_pub; 
     ros::ServiceClient gesture_play_client;
+    
+    //-- Speech interface
     ros::Publisher speech_say_pub;
+    ros::ServiceClient speech_config_client;
+    ros::ServiceClient set_volume_client;
+    
     
     //-- Other interface.
     ros::Publisher audio_file_pub;
@@ -73,12 +80,13 @@ public:
 
     bool addSpeech(const std::string phrase);
 
+    bool setSpeechConfig(const std::string config);
+
+    bool setVolume(const double percent);
+
     bool addAudioFile(const std::string filename, const size_t channel=-1);
 
     bool addVideoFile(const std::string filename);
-
-private:
-    void temp();
 
 };
 

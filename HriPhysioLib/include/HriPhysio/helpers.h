@@ -55,7 +55,7 @@ namespace hriPhysio {
     /* ============================================================================
     **  Methods for Strings.
     ** ============================================================================ */
-    std::vector< std::string > parseString(std::string& str);
+    std::vector< std::string > parseString(const std::string& str);
     std::vector< double > toVecDouble(const std::vector< std::string >& source, size_t idx=0);
     std::string combineString(const std::vector< std::string >& source, size_t idx=0);
     void toLower(std::string& str);

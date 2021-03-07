@@ -13,7 +13,7 @@
 #include <HriPhysio/helpers.h>
 
 
-std::vector< std::string > hriPhysio::parseString(std::string& str) {
+std::vector< std::string > hriPhysio::parseString(const std::string& str) {
 
     std::stringstream ss(str);
     std::vector< std::string > ret;
