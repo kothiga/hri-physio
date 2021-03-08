@@ -78,7 +78,7 @@ def listener():
                 exit(0)
 
             # Open the new track.
-            if player.openAudio(audio_name):
+            if player.openAudio(audio_name, fade=args.fade):
                 print("Loaded file ``{}`` successfully!!".format(audio_name))
             else:
                 continue

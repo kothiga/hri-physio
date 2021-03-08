@@ -47,19 +47,33 @@ class AudioPlayer(object):
 
     def fadeOut(self, duration):
         
-        # Generate the fade out.
-        samples_left = self.data_len - self.window
-        num_samples  = np.min((int(duration * self.rate), samples_left))
-        fade_out     = np.linspace(1.0, 0.0, num=num_samples)
-        
-        # Fade the data out.
-        self.data[self.window : self.window+num_samples] *= fade_out[:,None]
+        # Fade the audio.
+        self.fadeAudio(duration)
 
         # Trim off the remaining samples.
+        samples_left = self.data_len - self.window
+        num_samples  = np.min((int(duration * self.rate), samples_left))
         self.data_len = self.window + num_samples
 
         # Play out the rest of the sample.
         while self.play(): None
+
+        return
+
+    def fadeAudio(self, duration):
+
+        # Generate the fade.
+        samples_left = self.data_len - self.window
+        num_samples = np.min((int(duration * self.rate), samples_left))
+
+        fade = None
+        if self.window == 0: #fade in.
+            fade = np.linspace(0.0, 1.0, num=num_samples)
+        else: #fade out.
+            fade = np.linspace(1.0, 0.0, num=num_samples)
+
+        # Fade the segment of data.
+        self.data[self.window : self.window+num_samples] *= fade[:,None]
 
         return
 
@@ -88,13 +102,16 @@ class AudioPlayer(object):
         return True
 
 
-    def openAudio(self, filename):
+    def openAudio(self, filename, fade=0.0):
         
         # Reset the position of the window.
         self.window = 0
         try:
             self.data, self.rate = sf.read(filename)
             self.data_len = len(self.data)
+            
+            if fade > 0.0:
+                self.fadeAudio(fade)
 
         except RuntimeError:
             print("Audio file ``{}`` could not be opened!!".format(filename))
