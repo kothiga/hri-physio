@@ -48,8 +48,17 @@ def listener():
 	    # Check if the video_name changed.
         if video_name != prev_name:
 
+            print("Got a new video name ``{}``".format(video_name))
+
             # Keep track of the last video_name.
             prev_name = video_name
+
+            # Check for break out name.
+            if video_name.lower() == "exit" or video_name.lower() == "quit":
+                if cap.isOpened():
+                    cv2.destroyWindow("videoStreamer")
+                rospy.signal_shutdown("Shutting down Video Streamer...")
+                exit(0)
 
             # Open the new video.
             cap.open(video_name)
@@ -92,7 +101,6 @@ def listener():
                 rospy.signal_shutdown("Shutting down Video Streamer...")
                 exit(0)
     return
-
 
 if __name__ == '__main__':
     listener()

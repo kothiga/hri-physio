@@ -253,7 +253,7 @@ bool RobotManager::setFunctions(const std::vector< std::string >& input) {
         
         if (input.size() != 3) { return false; }
 
-        return robot->setVolume(std::stod(input[3]));
+        return robot->setVolume(std::stod(input[2]));
 
     } else if (func == "audio") {
 
@@ -270,12 +270,10 @@ bool RobotManager::setFunctions(const std::vector< std::string >& input) {
     } else if (func == "video") {
 
         // set video temp.mp4
-        
-        if (input.size() != 3) {
-            return robot->addVideoFile(input[2]);
-        } else {
-            return false;
-        }
+        std::cerr << input.size() << " " << input[2] << std::endl;
+        if (input.size() != 3) { return false; }
+
+        return robot->addVideoFile(input[2]);
 
     } else {
         return false;

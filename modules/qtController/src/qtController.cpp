@@ -45,8 +45,8 @@ bool QtController::configure(int argc, char **argv) {
     set_volume_client    = nh.serviceClient<qt_robot_interface::setting_setVolume>("/qt_robot/setting/setVolume");
 
     //-- Open Other Interfaces.
-    audio_file_pub = nh.advertise<std_msgs::String>("/audio_stream/audio_name", 10);
-    video_file_pub = nh.advertise<std_msgs::String>("/video_stream/video_name", 10);
+    audio_file_pub = nh.advertise<std_msgs::String>("/audio_streamer/audio_name", 10);
+    video_file_pub = nh.advertise<std_msgs::String>("/video_streamer/video_name", 10);
 
     return true;
 }

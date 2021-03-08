@@ -34,9 +34,9 @@ def get_args():
 # Global variable.
 audio_name = ""
 
-def callback(data):
+def callback(msg):
     global audio_name
-    audio_name = data.data
+    audio_name = msg.data
     return
 
 
