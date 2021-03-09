@@ -47,13 +47,19 @@ int main (int argc, char **argv) {
     //-- Start the manager.
     manager.start();
 
+
     //-- Run in interactive mode if enabled.
     if (interactive_mode) {
         manager.interactive();
     }
 
+    
     //-- Wait for everything to finish.
     manager.wait();
+
+
+    //-- Shut down nodes.
+    ros::shutdown();
     
     return 0;
 }

@@ -155,7 +155,7 @@ void CsvStreamer::publish(const std::string& buff, const double* timestamps/*=nu
     } 
 
     //-- Data.
-    output << "," << buff;
+    output << "," << "\"" << buff << "\"";
 
     //-- Move to the next line.
     output << std::endl;

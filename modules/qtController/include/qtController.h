@@ -64,9 +64,6 @@ public:
     ~QtController();
 
     bool configure(int argc, char **argv);
-
-    void setName(const std::string name);
-    std::string getName() const;
     
     bool setPerphState(const peripheral perph, const std::vector<double>& pos);
 

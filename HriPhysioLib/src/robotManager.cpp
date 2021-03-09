@@ -61,13 +61,14 @@ void RobotManager::configure(int argc, char **argv) {
     std::cerr << "[CONF] Load complete.\n";
     
     //-- If streams are empty, exit.
-    if (log_name == "") {
+    if (log_data && log_name == "") {
         this->close();
         return;
     }
 
 
     if (log_data) {
+
         robot_logger.setName(log_name);
         robot_logger.setDataType("STRING");
         robot_logger.setNumChannels(1);
@@ -105,13 +106,19 @@ void RobotManager::interactive() {
 bool RobotManager::threadInit() {
 
     //-- Initialize threads but don't start them yet.
-    addThread(std::bind(&RobotManager::inputLoop, this),  /*start=*/ false);
+    addLoopThread(std::bind(&RobotManager::inputLoop, this), /*period=*/ 0.1, /*start=*/ false);
     
     return true;
 }
 
 
 void RobotManager::process(const std::string& inp) {
+
+    //-- Log the data received.
+    if (this->log_data) {
+        std::cerr << "Logging.\n";
+        this->robot_logger.publish(inp);
+    }
 
     //-- Parse it up.
     std::vector< std::string > input = hriPhysio::parseString(inp);
@@ -292,41 +299,12 @@ bool RobotManager::getFunctions(const std::vector< std::string >& input) {
 
 void RobotManager::inputLoop() {
 
-    //-- Get the id for the current thread.
-    const std::thread::id thread_id = std::this_thread::get_id();
-
-    //-- Construct a vector for moving data between stream and the buffer.
-    //std::vector<hriPhysio::varType> transfer(input_frame * num_channels);
-    //std::vector<double> stamps(input_frame);
-
-    bool ret;
+    //-- Check to see if there is a command from the robot.
     std::string command;
+    bool ret = robot->getRobotCommand(command);
 
-    //-- Loop until the manager stops running.
-    while (this->getManagerRunning()) {
-        
-        //-- If this thread is active, run.
-        if (this->getThreadStatus(thread_id)) {
+    //-- If a command is given, process it.
+    if (ret) { this->process(command); }
 
-            //-- Get data from the stream.
-            //stream_input->receive(transfer, &stamps);
-            ret = robot->getRobotCommand(command);
-
-            if (ret) {
-
-                if (this->log_data) {
-                    std::cerr << "Logging.\n";
-                    robot_logger.publish(command);
-                }
-
-                this->process(command);
-            }
-
-        } else {
-            std::this_thread::sleep_for(
-                std::chrono::duration<double>( 0.01 ) //seconds.
-            );
-        }
-    }
-
+    return;
 }

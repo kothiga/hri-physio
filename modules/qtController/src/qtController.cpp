@@ -237,6 +237,8 @@ bool QtController::addVideoFile(const std::string filename) {
 
 bool QtController::getRobotCommand(std::string& command) {
 
+    ros::spinOnce();
+
     if (inbox.empty()) { return false; }
 
     command = inbox.front(); 
@@ -247,7 +249,7 @@ bool QtController::getRobotCommand(std::string& command) {
 
 
 void QtController::inputCallback(const std_msgs::String::ConstPtr& msg) {
-
+    
     std::string str = msg->data.c_str();
     ROS_INFO("I heard: [%s]", str.c_str());
 

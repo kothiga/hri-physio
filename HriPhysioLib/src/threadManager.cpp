@@ -89,6 +89,8 @@ void ThreadManager::interruptThread(const std::thread::id thread_id) {
 
 bool ThreadManager::getThreadStatus(const std::thread::id thread_id) {
 
+    //TODO: Maybe don't lock here.. just return the status.
+
     //-- Lock the mutex to ensure read/write atomicity.
     lock.lock();
 
@@ -109,7 +111,7 @@ bool ThreadManager::getManagerRunning() {
 
 void ThreadManager::start() {
     
-    if(this->getManagerRunning()) {
+    if (this->getManagerRunning()) {
         this->setThreadStatus(true);    
     }
 
@@ -129,7 +131,7 @@ void ThreadManager::close() {
     this->stop();
 
     //-- Tell the threads to stop running.
-    running = false;
+    this->running = false;
 
     //-- Join all the threads.
     for (std::size_t idx = 0; idx < pool.size(); ++idx) {
@@ -200,8 +202,8 @@ void ThreadManager::looperWrapper(std::function<void(void)> func, const double p
             std::chrono::duration<double>( (diff > 0.0) ? diff : 0.0 ) //seconds.
         );
 
-        auto loop_time = std::chrono::system_clock::now();
-        std::chrono::duration<double> loop_dur = loop_time - start;
-        std::cout << "[DEBUG] Thread id ("<< thread_id << ") executed in " << loop_dur.count() << " seconds." << std::endl;
+        //auto loop_time = std::chrono::system_clock::now();
+        //std::chrono::duration<double> loop_dur = loop_time - start;
+        //std::cout << "[DEBUG] Thread id ("<< thread_id << ") executed in " << loop_dur.count() << " seconds." << std::endl;
     }
 }
