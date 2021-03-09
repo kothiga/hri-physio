@@ -25,8 +25,6 @@ QtController::~QtController() {
 
 bool QtController::configure(int argc, char **argv) {
 
-    ros::init(argc, argv, "QtController");
-    
     ros::NodeHandle nh;
     
     //-- Open Moter Interfaces.
@@ -47,6 +45,9 @@ bool QtController::configure(int argc, char **argv) {
     //-- Open Other Interfaces.
     audio_file_pub = nh.advertise<std_msgs::String>("/audio_streamer/audio_name", 10);
     video_file_pub = nh.advertise<std_msgs::String>("/video_streamer/video_name", 10);
+
+    //-- Open the input stream.
+    command_sub = nh.subscribe("/QtController/input", 1000, &QtController::inputCallback, this);
 
     return true;
 }
@@ -232,3 +233,26 @@ bool QtController::addVideoFile(const std::string filename) {
     
     return true;
 }
+
+
+bool QtController::getRobotCommand(std::string& command) {
+
+    if (inbox.empty()) { return false; }
+
+    command = inbox.front(); 
+    inbox.pop();
+
+    return true;
+}
+
+
+void QtController::inputCallback(const std_msgs::String::ConstPtr& msg) {
+
+    std::string str = msg->data.c_str();
+    ROS_INFO("I heard: [%s]", str.c_str());
+
+    inbox.push( str );
+
+    return;
+}
+

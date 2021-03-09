@@ -25,6 +25,8 @@
 
 #include <HriPhysio/Manager/threadManager.h>
 #include <HriPhysio/Social/robotInterface.h>
+#include <HriPhysio/Stream/streamerInterface.h>
+#include <HriPhysio/Stream/csvStreamer.h>
 
 #include <HriPhysio/helpers.h>
 
@@ -37,9 +39,10 @@ namespace hriPhysio {
 class hriPhysio::Manager::RobotManager : public hriPhysio::Manager::ThreadManager {
 private:
     
-    //bool        log_data;
-    //std::string log_name;
+    bool        log_data;
+    std::string log_name;
 
+    hriPhysio::Stream::CsvStreamer robot_logger;
     hriPhysio::Social::RobotInterface* robot;
 
 public:
@@ -55,10 +58,11 @@ public:
 private:
     bool threadInit();
 
+    void process(const std::string& inp);
     bool setFunctions(const std::vector< std::string >& input);
     bool getFunctions(const std::vector< std::string >& input);
 
-    //void inputLoop();
+    void inputLoop();
 
 };
 

@@ -72,6 +72,15 @@ bool RosStreamer::openInputStream() {
 
     this->mode = modeTag::RECEIVER;
 
+    try {
+        //-- Create a new subscriber from the given input name.
+               
+        ros::NodeHandle n;
+        //sub = n.subscribe(this->name, );
+    
+    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
+
+
 //    try {
 //
 //        //-- Create a new inlet from the given input name.

@@ -141,6 +141,28 @@ void CsvStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const st
     }
 }
 
+void CsvStreamer::publish(const std::string& buff, const double* timestamps/*=nullptr*/) {
+
+    //-- "System Time" 
+    std::time_t t = std::time(nullptr);
+    output << std::put_time(std::localtime(&t), "%Y/%m/%d_%H:%M:%S") << ",";
+
+    //-- "Internal Time"
+    if (timestamps == nullptr) {
+        output << 0.0;
+    } else {
+        output << std::setprecision(17) << (*timestamps);
+    } 
+
+    //-- Data.
+    output << "," << buff;
+
+    //-- Move to the next line.
+    output << std::endl;
+
+    return;
+}
+
 
 void CsvStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps/*=nullptr*/) {
 
@@ -169,6 +191,12 @@ void CsvStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<dou
     default:
         break;
     }
+}
+
+
+void CsvStreamer::receive(std::string& buff, double* timestamps/*=nullptr*/) {
+    
+    return;
 }
 
 

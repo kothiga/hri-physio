@@ -88,13 +88,13 @@ if( ENABLE_ROS )
     include_directories(/opt/ros/$ENV{ROS_DISTRO}/include /opt/ros/$ENV{ROS_DISTRO}/lib)
 
 
-    list(APPEND ${LIBRARY_TARGET_NAME}_SRC
-        src/rosStreamer.cpp
-    )
-
-    list(APPEND ${LIBRARY_TARGET_NAME}_HDR
-        include/HriPhysio/Stream/ros/rosStreamer.h
-    )
+    #list(APPEND ${LIBRARY_TARGET_NAME}_SRC
+    #    src/rosStreamer.cpp
+    #)
+    #
+    #list(APPEND ${LIBRARY_TARGET_NAME}_HDR
+    #    include/HriPhysio/Stream/ros/rosStreamer.h
+    #)
 
 endif( ENABLE_ROS )
 
@@ -153,6 +153,17 @@ target_link_libraries(
     yaml-cpp
     lsl
 )
+
+
+if( ENABLE_ROS )
+
+    target_link_libraries(
+        ${LIBRARY_TARGET_NAME} 
+        -I/opt/ros/$ENV{ROS_DISTRO}/include -L/opt/ros/$ENV{ROS_DISTRO}/lib
+        -lroscpp -lrostime -lrosconsole -lroscpp_serialization
+    )
+
+endif( ENABLE_ROS )
 
 
 # Specify installation targets, typology and destination folders.

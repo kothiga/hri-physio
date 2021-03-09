@@ -33,7 +33,7 @@ namespace hriPhysio {
     **  Initialize a common variant type to support relevant data types.
     ** ============================================================================ */
     using varType = std::variant<char,int16_t,int32_t,int64_t,float,double>;
-    enum  varTag { CHAR, INT16, INT32, INT64, LONGLONG, FLOAT, DOUBLE };
+    enum  varTag { CHAR, INT16, INT32, INT64, LONGLONG, FLOAT, DOUBLE, STRING };
     
     struct printVisitor {
         void operator()(char    v ) const { std::cout << "char("    << v << ")"; }

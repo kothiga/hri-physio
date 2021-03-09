@@ -54,6 +54,8 @@ void StreamerInterface::setDataType(const std::string dtype) {
         this->var = hriPhysio::varTag::FLOAT;
     } else if (upperString == "DOUBLE" || upperString == "DOUBLE64" ) {
         this->var = hriPhysio::varTag::DOUBLE;
+    } else if (upperString == "STRING") {
+        this->var = hriPhysio::varTag::STRING;
     } else {
         //-- Does not match. TODO: Throw error?
         return;

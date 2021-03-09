@@ -68,6 +68,8 @@ public:
 
     virtual bool addVideoFile(const std::string filename);
 
+    virtual bool getRobotCommand(std::string& command);
+
 private:
     void warning(std::string func) {
         std::cerr << "[DEBUG] " << "Function ``" << func << "`` has not been implemented!!" << std::endl;

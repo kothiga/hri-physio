@@ -104,3 +104,8 @@ bool RobotInterface::addVideoFile(const std::string filename) {
     warning("addVideoFile");
     return false;
 }
+
+bool RobotInterface::getRobotCommand(std::string& command) {
+    warning("getRobotCommand");
+    return false;
+}

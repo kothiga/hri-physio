@@ -63,8 +63,13 @@ public:
     virtual bool openInputStream() = 0;
     virtual bool openOutputStream() = 0;
 
+    // General data streams.
     virtual void publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps = nullptr) = 0;
     virtual void receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps = nullptr) = 0;
+    
+    // Special string stream.
+    virtual void publish(const std::string&  buff, const double* timestamps = nullptr) = 0;
+    virtual void receive(std::string& buff, double* timestamps = nullptr) = 0;
 
 private:
     void tempfunc();

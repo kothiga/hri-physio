@@ -48,9 +48,13 @@ public:
 
     bool openOutputStream();
 
-    void publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps=nullptr);
+    // General data streams.
+    void publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps = nullptr);
+    void receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps = nullptr);
     
-    void receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps=nullptr);
+    // Special string stream.
+    void publish(const std::string&  buff, const double* timestamps = nullptr);
+    void receive(std::string& buff, double* timestamps = nullptr);
 
 private:
     template<typename T>

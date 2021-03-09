@@ -55,6 +55,9 @@ lsl::channel_format_t LslStreamer::getLslFormatType() {
     case hriPhysio::varTag::DOUBLE:
         cf_type = lsl::channel_format_t::cf_double64;
         break;
+    case hriPhysio::varTag::STRING:
+        cf_type = lsl::channel_format_t::cf_string;
+        break;
     default:
         break;
     }
@@ -100,7 +103,7 @@ bool LslStreamer::openOutputStream() {
             /* name           = */ this->name,
             /* type           = */ "",
             /* channel_count  = */ this->num_channels,
-            /* nominal_srate  = */ this->sampling_rate,
+            /* nominal_srate  = */ this->sampling_rate, // lsl::IRREGULAR_RATE -> 0.0.
             /* channel_format = */ this->getLslFormatType(),
             /* source_id      = */ this->name
         );
@@ -143,6 +146,15 @@ void LslStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const st
 }
 
 
+void LslStreamer::publish(const std::string& buff, const double* timestamps/*=nullptr*/) {
+
+    //-- Push out the string.
+    outlet->push_sample(&buff);
+
+    return;
+}
+
+
 void LslStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps/*=nullptr*/) {
 
     std::cerr << "[LSL-IN] Receive: " << this->dtype << " ";
@@ -170,6 +182,17 @@ void LslStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<dou
     default:
         break;
     }
+}
+
+
+void LslStreamer::receive(std::string& buff, double* timestamps/*=nullptr*/) {
+
+    //-- Pull in the string.
+    double ts = inlet->pull_sample(&buff, 1, 0.2);
+
+    if (timestamps != nullptr) { *timestamps = ts; }
+
+    return;
 }
 
 

@@ -13,6 +13,8 @@
 #include <iostream>
 #include <string>
 
+#include <ros/ros.h>
+
 #include <qtController.h>
 
 #include <HriPhysio/Manager/robotManager.h>
@@ -20,6 +22,10 @@
 #include <HriPhysio/helpers.h>
 
 int main (int argc, char **argv) {
+
+    //-- Init the ros node.
+    ros::init(argc, argv, "QtController");
+    
 
     //-- Init an argument parser.
     hriPhysio::ArgParser args(argc, argv);

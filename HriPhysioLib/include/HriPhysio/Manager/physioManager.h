@@ -37,16 +37,6 @@ namespace hriPhysio {
 
 class hriPhysio::Manager::PhysioManager : public hriPhysio::Manager::ThreadManager {
 private:
-    
-//
-//    double period_read;
-//    double period_publish;
-//    
-//    std::atomic<bool> run_read;
-//    std::atomic<bool> run_publish;
-//
-//    std::thread thread_read;
-//    std::thread thread_publish;
 
     std::string dtype;
     std::size_t sampling_rate;

@@ -17,6 +17,7 @@
 #include <memory>
 #include <mutex>
 #include <string>
+#include <queue>
 #include <vector>
 
 #include <ros/ros.h>
@@ -48,10 +49,13 @@ private:
     ros::ServiceClient speech_config_client;
     ros::ServiceClient set_volume_client;
     
-    
     //-- Other interface.
     ros::Publisher audio_file_pub;
     ros::Publisher video_file_pub;
+
+    //-- Input commands.
+    ros::Subscriber command_sub;
+    std::queue< std::string > inbox;
     
 
 public:
@@ -87,6 +91,11 @@ public:
     bool addAudioFile(const std::string filename, const size_t channel=-1);
 
     bool addVideoFile(const std::string filename);
+
+    bool getRobotCommand(std::string& command);
+
+private:
+    void inputCallback(const std_msgs::String::ConstPtr& msg);
 
 };
 

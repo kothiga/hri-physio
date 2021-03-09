@@ -28,10 +28,17 @@ RobotManager::~RobotManager() {
 
 void RobotManager::configure(int argc, char **argv) {
     
+    //-- Configure the robot.
     robot->configure(argc, argv);
 
+
+    //-- Init an argument parser.
+    hriPhysio::ArgParser args(argc, argv);
+
+
     //-- Load the yaml file.
-    //YAML::Node config = YAML::LoadFile(yaml_file);
+    const std::string &yaml_file = args.getCmdOption("--conf");
+    YAML::Node config = YAML::LoadFile(yaml_file);
 
     //-- Parameters about the streamer.
     //const std::string input_name  = config["input"].as<std::string>();
@@ -46,58 +53,31 @@ void RobotManager::configure(int argc, char **argv) {
     //sample_overlap = config[ "sample_overlap" ].as<std::size_t>( /*default=*/ 0   );
     //buffer_length  = config[ "buffer_length"  ].as<std::size_t>( /*default=*/ 100 );
 
+
     //-- Enable logging?
-    //log_data = config["log_data"].as<bool>( /*default=*/ false );
-    //log_name = config["log_name"].as<std::string>( /*default=*/ "");
+    log_data = config["log_data"].as<bool>( /*default=*/ false );
+    log_name = config["log_name"].as<std::string>( /*default=*/ "");
 
     std::cerr << "[CONF] Load complete.\n";
     
     //-- If streams are empty, exit.
-    //if (input_name == "" || output_name == "") {
-    //    this->close();
-    //    return;
-    //}
-
-    //-- Configure the streams.
-    //stream_input->setName(input_name);
-    //stream_input->setDataType(dtype);
-    //stream_input->setFrameLength(input_frame);
-    //stream_input->setNumChannels(num_channels);
-    //stream_input->setSamplingRate(sampling_rate);
-    //
-    //stream_output->setName(output_name);
-    //stream_output->setDataType(dtype);
-    //stream_output->setFrameLength(output_frame);
-    //stream_output->setNumChannels(num_channels);
-    //stream_output->setSamplingRate(sampling_rate);
-
-    //if (log_data) {
-    //    stream_logger.setName(log_name);
-    //    stream_logger.setDataType(dtype);
-    //    stream_logger.setFrameLength(input_frame);
-    //    stream_logger.setNumChannels(num_channels);
-    //    stream_logger.setSamplingRate(sampling_rate);
-    //}
+    if (log_name == "") {
+        this->close();
+        return;
+    }
 
 
-    //-- Try opening the streams.
-    //if (!stream_input->openInputStream()) {
-    //    std::cerr << "Could not open input stream.\n";
-    //    this->close();
-    //    return;
-    //}
-    //
-    //if (!stream_output->openOutputStream()) {
-    //    std::cerr << "Could not open output stream.\n";
-    //    this->close();
-    //    return;
-    //}
-    //
-    //if (log_data && !stream_logger.openOutputStream()) {
-    //    std::cerr << "Could not open logger stream.\n";
-    //    this->close();
-    //    return;
-    //}
+    if (log_data) {
+        robot_logger.setName(log_name);
+        robot_logger.setDataType("STRING");
+        robot_logger.setNumChannels(1);
+    
+        if (!robot_logger.openOutputStream()) {
+            std::cerr << "Could not open logger stream.\n";
+            this->close();
+            return;
+        }
+    }
 
 
     //-- Initialize the threads.
@@ -109,55 +89,15 @@ void RobotManager::configure(int argc, char **argv) {
 
 void RobotManager::interactive() {
     
-    std::string cmd, inp, str;
+    std::string inp;
     while (this->getManagerRunning()) {
         
         //-- Get some input.
         std::cout << ">>> ";
         getline(std::cin, inp);
 
-        //-- Parse it up.
-        std::vector< std::string > input = hriPhysio::parseString(inp);
-        
-        //-- If line was empty, skip to next input.
-        if (input.size() == 0) { continue; }
-        
-        //-- Get the command.
-        cmd = input[0];
-        hriPhysio::toLower(cmd);
-        if (cmd == "exit") {
-
-            //-- Close the threads.
-            this->close();
-            
-            break;
-
-        } else if (cmd == "set") {
-
-            if(!setFunctions(input)) {
-                std::cerr << "[ERROR] "
-                          << "Unrecognized set input ``"
-                          << hriPhysio::combineString(input, 1)
-                          << "``" << std::endl;
-            }
-
-        } else if (cmd == "get") {
-
-            if(!getFunctions(input)) {
-                std::cerr << "[ERROR] "
-                          << "Unrecognized get input ``"
-                          << hriPhysio::combineString(input, 1)
-                          << "``" << std::endl;
-            }
-
-
-        } else if (cmd == "help") {
-            
-        } else {
-            std::cerr << "[ERROR] "
-                      << "Unrecognized command ``"
-                      << cmd << "``" << std::endl;
-        }
+        //-- Process the request.
+        this->process(inp);
     }
 }
 
@@ -165,10 +105,55 @@ void RobotManager::interactive() {
 bool RobotManager::threadInit() {
 
     //-- Initialize threads but don't start them yet.
-    //addThread(std::bind(&PhysioManager::inputLoop, this),  /*start=*/ false);
-    //addThread(std::bind(&PhysioManager::outputLoop, this), /*start=*/ false);
-
+    addThread(std::bind(&RobotManager::inputLoop, this),  /*start=*/ false);
+    
     return true;
+}
+
+
+void RobotManager::process(const std::string& inp) {
+
+    //-- Parse it up.
+    std::vector< std::string > input = hriPhysio::parseString(inp);
+    
+    //-- If line was empty, skip to next input.
+    if (input.size() == 0) { return; }
+    
+    //-- Get the command.
+    std::string cmd = input[0];
+    hriPhysio::toLower(cmd);
+    if (cmd == "exit") {
+
+        //-- Close the threads.
+        this->close();
+
+    } else if (cmd == "set") {
+
+        if(!this->setFunctions(input)) {
+            std::cerr << "[ERROR] "
+                        << "Unrecognized set input ``"
+                        << hriPhysio::combineString(input, 1)
+                        << "``" << std::endl;
+        }
+
+    } else if (cmd == "get") {
+
+        if(!this->getFunctions(input)) {
+            std::cerr << "[ERROR] "
+                        << "Unrecognized get input ``"
+                        << hriPhysio::combineString(input, 1)
+                        << "``" << std::endl;
+        }
+
+    } else if (cmd == "help") {
+        
+    } else {
+        std::cerr << "[ERROR] "
+                    << "Unrecognized command ``"
+                    << cmd << "``" << std::endl;
+    }
+
+    return;
 }
 
 
@@ -270,7 +255,7 @@ bool RobotManager::setFunctions(const std::vector< std::string >& input) {
     } else if (func == "video") {
 
         // set video temp.mp4
-        std::cerr << input.size() << " " << input[2] << std::endl;
+        
         if (input.size() != 3) { return false; }
 
         return robot->addVideoFile(input[2]);
@@ -305,47 +290,43 @@ bool RobotManager::getFunctions(const std::vector< std::string >& input) {
 }
 
 
-//void RobotManager::inputLoop() {
-//
-//    //-- Get the id for the current thread.
-//    const std::thread::id thread_id = std::this_thread::get_id();
-//
-//    //-- Construct a vector for moving data between stream and the buffer.
-//    std::vector<hriPhysio::varType> transfer(input_frame * num_channels);
-//    std::vector<double> stamps(input_frame);
-//
-//    //-- Loop until the manager stops running.
-//    while (this->getManagerRunning()) {
-//        
-//        //-- If this thread is active, run.
-//        if (this->getThreadStatus(thread_id)) {
-//
-//            //-- Get data from the stream.
-//            stream_input->receive(transfer, &stamps);
-//
-//            if (transfer.size()) {
-//
-//                //for (std::size_t idx = 0; idx < transfer.size(); idx++) {
-//                //    std::cerr << " [" << stamps[idx] << "]: "; std::visit(hriPhysio::printVisitor(), transfer[idx]);
-//                //} std::cerr << std::endl;
-//
-//                //-- Add the data to the buffer.
-//                this->buffer.enqueue(transfer.data(), transfer.size());
-//                this->timestamps.enqueue(stamps.data(), stamps.size());
-//
-//
-//                if (this->log_data) {
-//                    std::cerr << "Logging.\n";
-//                    stream_logger.publish(transfer, &stamps);
-//                }
-//            }
-//
-//
-//        } else {
-//            std::this_thread::sleep_for(
-//                std::chrono::duration<double>( 0.1 ) //seconds.
-//            );
-//        }
-//    }
-//
-//}
+void RobotManager::inputLoop() {
+
+    //-- Get the id for the current thread.
+    const std::thread::id thread_id = std::this_thread::get_id();
+
+    //-- Construct a vector for moving data between stream and the buffer.
+    //std::vector<hriPhysio::varType> transfer(input_frame * num_channels);
+    //std::vector<double> stamps(input_frame);
+
+    bool ret;
+    std::string command;
+
+    //-- Loop until the manager stops running.
+    while (this->getManagerRunning()) {
+        
+        //-- If this thread is active, run.
+        if (this->getThreadStatus(thread_id)) {
+
+            //-- Get data from the stream.
+            //stream_input->receive(transfer, &stamps);
+            ret = robot->getRobotCommand(command);
+
+            if (ret) {
+
+                if (this->log_data) {
+                    std::cerr << "Logging.\n";
+                    robot_logger.publish(command);
+                }
+
+                this->process(command);
+            }
+
+        } else {
+            std::this_thread::sleep_for(
+                std::chrono::duration<double>( 0.01 ) //seconds.
+            );
+        }
+    }
+
+}
