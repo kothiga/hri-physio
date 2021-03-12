@@ -1,0 +1,29 @@
+input: PolarH10/6080292F/HR
+videopattern: "/home/austin/exercise/video/{}.mp4"
+audiopattern: "/home/austin/exercise/audio/{}.wav"
+relax: "relaxing"
+exercises:
+  - "marching"
+  - "step_up"
+  - "lateral"
+  - "arms_forward"
+music: "FutureHouse_{}x"
+tempo:
+  - "0.85"
+  - "0.90"
+  - "0.95"
+  - "1.00"
+  - "1.05"
+  - "1.10"
+  - "1.15"
+
+#output: /output
+#dtype: double
+#sampling_rate: 130 #128
+#input_frame: 73
+#output_frame: 128
+#num_channels: 1
+#sample_overlap: 0
+#buffer_length: 5000
+log_data: true
+log_name: "/usr/local/src/robot/hri-physio/data/logs/testlog.csv"

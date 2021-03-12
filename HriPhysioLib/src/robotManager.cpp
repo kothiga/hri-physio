@@ -114,9 +114,8 @@ bool RobotManager::threadInit() {
 
 void RobotManager::process(const std::string& inp) {
 
-    //-- Log the data received.
     if (this->log_data) {
-        std::cerr << "Logging.\n";
+        //-- Log the data received.
         this->robot_logger.publish(inp);
     }
 

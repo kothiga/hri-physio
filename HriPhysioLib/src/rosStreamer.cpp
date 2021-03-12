@@ -102,6 +102,40 @@ bool RosStreamer::openOutputStream() {
 
     this->mode = modeTag::SENDER;
 
+
+    try {
+
+        //-- Create a publisher.
+        ros::NodeHandle nh;
+
+        std::string pub_name = "/QtCoach/input";
+        size_t pub_buffer = 1000;
+
+        switch (this->var) {
+        case hriPhysio::varTag::CHAR:
+            pub = nh.advertise<std_msgs::Int8MultiArray>(pub_name, pub_buffer);
+            break;
+        case hriPhysio::varTag::INT16:
+            pub = nh.advertise<std_msgs::Int16MultiArray>(pub_name, pub_buffer);
+            break;
+        case hriPhysio::varTag::INT32:
+            pub = nh.advertise<std_msgs::Int32MultiArray>(pub_name, pub_buffer);
+            break;
+        case hriPhysio::varTag::INT64:
+            pub = nh.advertise<std_msgs::Int64MultiArray>(pub_name, pub_buffer);
+            break;
+        case hriPhysio::varTag::FLOAT:
+            pub = nh.advertise<std_msgs::Float32MultiArray>(pub_name, pub_buffer);
+            break;
+        case hriPhysio::varTag::DOUBLE:
+            pub = nh.advertise<std_msgs::Float64MultiArray>(pub_name, pub_buffer);
+            break;
+        case hriPhysio::varTag::STRING:
+            pub = nh.advertise<std_msgs::String>(pub_name, pub_buffer);
+            break;
+        default:
+            break;
+        }
 //    try {
 //
 //        //-- Create an info obj and open an outlet with it.
@@ -116,7 +150,7 @@ bool RosStreamer::openOutputStream() {
 //
 //        outlet.reset(new lsl::stream_outlet(info, /*chunk_size=*/this->frame_length, /*max_buffered=*/this->frame_length*2));
 //
-//    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
+    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
 
 
     return true;
@@ -184,6 +218,11 @@ void RosStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<dou
 
 template<typename T>
 void RosStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps) {
+
+    std_msgs::Float64MultiArray msg;
+    for (size_t idx = 0; idx < pos.size(); ++idx) {
+        msg.data.push_back( pos[idx] );
+    }
 
     std::vector<T> samples(buff.size());
 
