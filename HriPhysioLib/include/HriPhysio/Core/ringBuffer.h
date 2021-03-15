@@ -335,12 +335,14 @@ public:
     
         //-- Set a range of values to keep at the end of the copy.
         std::size_t keep = length - overlap;
-
+        
         //-- Copy items at the ``front``.
+        std::size_t buffer_pos = buffer_head;
         for (std::size_t idx = 0; idx < length; ++idx) {
     
             //-- Copy the item.
-            items[idx] = buffer[buffer_head];
+            items[idx] = buffer[buffer_pos];
+            buffer_pos = (buffer_pos + 1) % buffer_length;
 
             if (idx < keep) {
                 //-- Update head and size.
