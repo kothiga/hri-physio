@@ -49,7 +49,6 @@ target_link_libraries(
     -lroscpp -lrostime -lrosconsole -lroscpp_serialization
 )
 
-
 install(
     TARGETS        ${TARGET_NAME}
     DESTINATION    bin  

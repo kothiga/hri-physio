@@ -88,13 +88,13 @@ if( ENABLE_ROS )
     include_directories(/opt/ros/$ENV{ROS_DISTRO}/include /opt/ros/$ENV{ROS_DISTRO}/lib)
 
 
-    #list(APPEND ${LIBRARY_TARGET_NAME}_SRC
-    #    src/rosStreamer.cpp
-    #)
-    #
-    #list(APPEND ${LIBRARY_TARGET_NAME}_HDR
-    #    include/HriPhysio/Stream/ros/rosStreamer.h
-    #)
+    list(APPEND ${LIBRARY_TARGET_NAME}_SRC
+        src/rosStreamer.cpp
+    )
+    
+    list(APPEND ${LIBRARY_TARGET_NAME}_HDR
+        include/HriPhysio/Stream/ros/rosStreamer.h
+    )
 
 endif( ENABLE_ROS )
 

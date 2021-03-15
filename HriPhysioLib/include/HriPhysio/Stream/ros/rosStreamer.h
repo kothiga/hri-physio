@@ -20,6 +20,12 @@
 #include <vector>
 
 #include <ros/ros.h>
+#include <std_msgs/Int8MultiArray.h>
+#include <std_msgs/Int16MultiArray.h>
+#include <std_msgs/Int32MultiArray.h>
+#include <std_msgs/Int64MultiArray.h>
+#include <std_msgs/Float32MultiArray.h>
+#include <std_msgs/Float64MultiArray.h>
 #include <std_msgs/String.h>
 
 #include <HriPhysio/Stream/streamerInterface.h>
@@ -58,13 +64,11 @@ public:
     void receive(std::string& buff, double* timestamps = nullptr);
 
 private:
-    template<typename T>
+    template<typename T, typename U>
     void pushStream(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps);
 
     template<typename T>
     void pullStream(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps);
-
-
     
 };
 

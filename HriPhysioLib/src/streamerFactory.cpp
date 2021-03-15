@@ -27,6 +27,8 @@ hriPhysio::Stream::StreamerInterface* StreamerFactory::getStreamer(std::string s
 
     hriPhysio::toUpper(streamerType);
     if (streamerType == "") {
+        std::cerr << "[WARNING] "
+                  << "Stream Factory received no type!!" << std::endl;
         return nullptr;
     }
 
@@ -35,12 +37,23 @@ hriPhysio::Stream::StreamerInterface* StreamerFactory::getStreamer(std::string s
     }
 
     if (streamerType == "ROS") {
+        #ifdef WITH_ROS
+        return new hriPhysio::Stream::RosStreamer();
+        #endif
+
+        std::cerr << "[WARNING] " 
+                  << "Stream Factory type ``" << streamerType
+                  << "`` is not compiled!!" << std::endl;
         return nullptr;
     }
 
     if (streamerType == "YARP") {
         return nullptr;
-    }
-
+    } 
+    
+    std::cerr << "[WARNING] "
+              << "Stream Factory type ``" << streamerType
+              << "`` is not defined!!" << std::endl;
+    
     return nullptr;
 }

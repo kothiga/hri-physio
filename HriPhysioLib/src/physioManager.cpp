@@ -203,7 +203,7 @@ void PhysioManager::outputLoop() {
         
         std::cerr << "[OUTPUT] " << buffer.size() << std::endl;
         //-- If this thread is active, run.
-        if (this->getThreadStatus(thread_id) && buffer.size() >= (frame_length)) {
+        if (this->getThreadStatus(thread_id) && buffer.size() >= frame_length) {
 
             //-- Get data from the buffer.
             buffer.dequeue(transfer.data(), frame_length, sample_overlap);

@@ -10,6 +10,10 @@ set(${TARGET_NAME}_SRC
     src/physioStreamer.cpp
 )
 
+if( ENABLE_ROS )
+    include_directories(/opt/ros/$ENV{ROS_DISTRO}/include /opt/ros/$ENV{ROS_DISTRO}/lib)
+endif( ENABLE_ROS )
+
 add_executable(
     ${TARGET_NAME} 
     ${${TARGET_NAME}_SRC}

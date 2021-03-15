@@ -1,0 +1,6 @@
+name: linSim
+type: lin
+chunk: 32
+seconds: 5
+rate: 64
+loop: True

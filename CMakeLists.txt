@@ -141,6 +141,15 @@ endif( )
 option(ENABLE_ROS   "Compile with support for ROS?"  OFF)
 option(ENABLE_YARP  "Compile with support for YARP?" OFF)
 
+
+if ( ENABLE_ROS )
+    add_definitions( -DWITH_ROS )
+endif( )
+if ( ENABLE_YARP )
+    add_definitions( -DWITH_YARP )
+endif( )
+
+
 find_package( yaml-cpp REQUIRED )
 
 

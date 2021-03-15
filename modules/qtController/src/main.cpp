@@ -24,7 +24,7 @@
 int main (int argc, char **argv) {
 
     //-- Init the ros node.
-    ros::init(argc, argv, "QtController");
+    ros::init(argc, argv, "QtController", ros::init_options::AnonymousName);
     
 
     //-- Init an argument parser.

@@ -57,24 +57,24 @@ def get_args():
         description='',
         usage='python neurokitSimulator.py'
     )
-    parser.add_argument('--conf',       default=None,                                                     help='Override argparse with a yaml configuration. Location of a config file. (default: {})'.format(None))
-    parser.add_argument('--name',       default='neuroSim',                                               help='Name for the module prefix.                                             (default: {})'.format('neuroSim'))
-    parser.add_argument('--type',       default='ecg',           choices=['ecg','ppg','rsp','eda','emg'], help='The type of signal to synthesize.                                       (default: {})'.format('ecg'))
-    parser.add_argument('--chunk',      default=32,              type=pos_int,                            help='Size of data chunks to transmit.                                        (default: {})'.format(32))
-    parser.add_argument('--seconds',    default=10,              type=pos_int,                            help='How many seconds of synthetic signal to simulate.                       (default: {})'.format(10))
-    parser.add_argument('--rate',       default=128,             type=pos_int,                            help='Sampling rate of the synthetic signal.                                  (default: {})'.format(128))
-    parser.add_argument('--noise',      default=0.01,            type=float,                              help='The amount of noise that should be added to signal.                     (default: {})'.format(0.01))
-    parser.add_argument('--bpm',        default=70,              type=pos_int,                            help='Beats per minute for signal. Used in ECG and PPG.                       (default: {})'.format(70))
-    parser.add_argument('--ecg-method', default='ecgsyn',        choices=['ecgsyn','simple'],             help='The model used to generate the ECG signal.                              (default: {})'.format('ecgsyn'))
-    parser.add_argument('--resp',       default=15,              type=pos_int,                            help='Respiratory rate (breath cycle per second). Used in RSP.                (default: {})'.format(15))
-    parser.add_argument('--rsp-method', default='breathmetrics', choices=['breathmetrics', 'sinusoidal'], help='The model used to generate the RSP signal.                              (default: {})'.format('breathmetrics'))
-    parser.add_argument('--scr',        default=3,               type=pos_int,                            help='Number of skin conductance responses. Used in EDA.                      (default: {})'.format(3))
-    parser.add_argument('--drift',      default=-0.01,           type=float,                              help='Slope of a linear drift of the signal. Used in EDA.                     (default: {})'.format(-0.01))
-    parser.add_argument('--bnum',       default=3,               type=pos_int,                            help='Number of bursts of activity to simulate. Used in EMG.                  (default: {})'.format(3))
-    parser.add_argument('--bdur',       default=1.0,             type=float,                              help='Duration of the simulated bursts. Used in EMG.                          (default: {})'.format(1.0))
-    parser.add_argument('--loop',       default=False,           action='store_true',                     help='Enable loop until keyboard interrupt.                                   (default: {})'.format(False))
-    parser.add_argument('--plot',       default=False,           action='store_true',                     help='Plot the generated signal as it\'s transmitted.                         (default: {})'.format(False))
-    parser.add_argument('--verbose',    default=False,           action='store_true',                     help='Print out log information.                                              (default: {})'.format(False))
+    parser.add_argument('--conf',       default=None,                                                            help='Override argparse with a yaml configuration. Location of a config file. (default: {})'.format(None))
+    parser.add_argument('--name',       default='neuroSim',                                                      help='Name for the module prefix.                                             (default: {})'.format('neuroSim'))
+    parser.add_argument('--type',       default='ecg',           choices=['ecg','ppg','rsp','eda','emg', 'lin'], help='The type of signal to synthesize.                                       (default: {})'.format('ecg'))
+    parser.add_argument('--chunk',      default=32,              type=pos_int,                                   help='Size of data chunks to transmit.                                        (default: {})'.format(32))
+    parser.add_argument('--seconds',    default=10,              type=pos_int,                                   help='How many seconds of synthetic signal to simulate.                       (default: {})'.format(10))
+    parser.add_argument('--rate',       default=128,             type=pos_int,                                   help='Sampling rate of the synthetic signal.                                  (default: {})'.format(128))
+    parser.add_argument('--noise',      default=0.01,            type=float,                                     help='The amount of noise that should be added to signal.                     (default: {})'.format(0.01))
+    parser.add_argument('--bpm',        default=70,              type=pos_int,                                   help='Beats per minute for signal. Used in ECG and PPG.                       (default: {})'.format(70))
+    parser.add_argument('--ecg-method', default='ecgsyn',        choices=['ecgsyn','simple'],                    help='The model used to generate the ECG signal.                              (default: {})'.format('ecgsyn'))
+    parser.add_argument('--resp',       default=15,              type=pos_int,                                   help='Respiratory rate (breath cycle per second). Used in RSP.                (default: {})'.format(15))
+    parser.add_argument('--rsp-method', default='breathmetrics', choices=['breathmetrics', 'sinusoidal'],        help='The model used to generate the RSP signal.                              (default: {})'.format('breathmetrics'))
+    parser.add_argument('--scr',        default=3,               type=pos_int,                                   help='Number of skin conductance responses. Used in EDA.                      (default: {})'.format(3))
+    parser.add_argument('--drift',      default=-0.01,           type=float,                                     help='Slope of a linear drift of the signal. Used in EDA.                     (default: {})'.format(-0.01))
+    parser.add_argument('--bnum',       default=3,               type=pos_int,                                   help='Number of bursts of activity to simulate. Used in EMG.                  (default: {})'.format(3))
+    parser.add_argument('--bdur',       default=1.0,             type=float,                                     help='Duration of the simulated bursts. Used in EMG.                          (default: {})'.format(1.0))
+    parser.add_argument('--loop',       default=False,           action='store_true',                            help='Enable loop until keyboard interrupt.                                   (default: {})'.format(False))
+    parser.add_argument('--plot',       default=False,           action='store_true',                            help='Plot the generated signal as it\'s transmitted.                         (default: {})'.format(False))
+    parser.add_argument('--verbose',    default=False,           action='store_true',                            help='Print out log information.                                              (default: {})'.format(False))
     args = parser.parse_args()
 
     if args.conf is not None:
@@ -128,7 +128,7 @@ def get_args():
 
     # Do some error checking for the strings.
     errOccurr = False
-    if args.type.upper() not in ['ECG', 'PPG', 'RSP', 'EDA', 'EMG']:
+    if args.type.upper() not in ['ECG', 'PPG', 'RSP', 'EDA', 'EMG', 'LIN']:
         if not errOccurr: # Check to see if this is the first error.
             parser.print_help()
             errOccurr = True
@@ -159,6 +159,7 @@ def get_args():
         print("\t python neurokitSimulator.py --type rsp --resp 40 --rsp-method breathmetrics")
         print("\t python neurokitSimulator.py --type eda --scr 5 --drift -0.04")
         print("\t python neurokitSimulator.py --type emg --bnum 4 --bdur 0.7")
+        print("\t python neurokitSimulator.py --type lin --seconds 10 --rate 128")
         print(" ")
         exit()
 
@@ -243,6 +244,12 @@ class neurokitSimulator(object):
                 noise          = args.noise,
                 burst_number   = args.bnum,
                 burst_duration = args.bdur
+            )
+        if self.type == 'LIN':
+            self.simulated = np.arange(
+                start = 1.0, 
+                stop  = float(args.seconds * self.rate)+1.0,
+                step  = 1.0
             )
 
         # Init a matplotlib figure if enabled.

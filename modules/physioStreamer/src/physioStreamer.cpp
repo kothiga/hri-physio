@@ -13,6 +13,10 @@
 #include <iostream>
 #include <string>
 
+#ifdef WITH_ROS
+#include <ros/ros.h>
+#endif
+
 #include <HriPhysio/Manager/physioManager.h>
 #include <HriPhysio/Stream/streamerInterface.h>
 #include <HriPhysio/Factory/streamerFactory.h>
@@ -28,7 +32,20 @@ int main (int argc, char **argv) {
     const std::string &yaml_file = args.getCmdOption("--conf");
     const bool interactive_mode  = args.cmdOptionExists("--interactive");
 
-    // TODO: input/output arg type here.
+    const std::string input      = args.getCmdOption("--input");
+    const std::string output     = args.getCmdOption("--output");
+
+
+    #ifdef WITH_ROS
+    {
+        std::string t_inp(input);  hriPhysio::toUpper(t_inp);
+        std::string t_out(output); hriPhysio::toUpper(t_out);
+        
+        if (t_inp == "ROS" || t_out == "ROS") {
+            ros::init(argc, argv, "PhysioStreamer",ros::init_options::AnonymousName);
+        }
+    }
+    #endif
     
 
     //-- Create some input and output streams.
@@ -36,10 +53,9 @@ int main (int argc, char **argv) {
     hriPhysio::Stream::StreamerInterface* streamer_input;
     hriPhysio::Stream::StreamerInterface* streamer_output;
 
-    // TODO: Make this take YARP or ROS as possible input/output streams.
     //-- Construct the streams. 
-    streamer_input  = factory.getStreamer("LSL");
-    streamer_output = factory.getStreamer("LSL");
+    streamer_input  = factory.getStreamer(input);
+    streamer_output = factory.getStreamer(output);
 
 
     //-- Initialize the manager, and pass it the config file.
