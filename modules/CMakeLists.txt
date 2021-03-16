@@ -7,5 +7,7 @@ cmake_minimum_required( VERSION 3.12 )
 #add_subdirectory( audioStreamer  )
 add_subdirectory( physioStreamer )
 add_subdirectory( qtController   )
+add_subdirectory( qtPhysioCoach  )
+#add_subdirectory( videoStreamer  )
 
 ############################################################

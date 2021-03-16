@@ -257,4 +257,3 @@ void QtController::inputCallback(const std_msgs::String::ConstPtr& msg) {
 
     return;
 }
-
