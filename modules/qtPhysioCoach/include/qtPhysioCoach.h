@@ -32,25 +32,10 @@ class QtPhysioCoach : public hriPhysio::Manager::ThreadManager {
 
 private:
     
-    //-- Motor interface.
-    ros::Publisher head_pos_pub;
-    ros::Publisher right_arm_pos_pub;
-    ros::Publisher left_arm_pos_pub;
+    //-- Controller interface.
+    ros::Publisher qt_controller_pub;
 
-    //-- Behavior interface.
-    ros::Publisher emotion_show_pub; 
-    ros::ServiceClient gesture_play_client;
-    
-    //-- Speech interface
-    ros::Publisher speech_say_pub;
-    ros::ServiceClient speech_config_client;
-    ros::ServiceClient set_volume_client;
-    
-    //-- Other interface.
-    ros::Publisher audio_file_pub;
-    ros::Publisher video_file_pub;
-
-    //-- Input commands.
+    //-- Input stream.
     ros::Subscriber heart_rate_sub;
     hriPhysio::Core::RingBuffer<double> inbox;
     

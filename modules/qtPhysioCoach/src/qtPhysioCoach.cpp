@@ -25,6 +25,12 @@ QtPhysioCoach::~QtPhysioCoach() {
 
 bool QtPhysioCoach::configure(int argc, char **argv) {
 
+    ros::NodeHandle nh;
+
+    qt_controller_pub = nh.advertise<std_msgs::String>("/QtController/input", 1000);
+
+    heart_rate_sub = nh.subscribe("/PhysioStreamer/hr", 1000, &QtPhysioCoach::inputCallback, this);
+
     return true;
 }
 

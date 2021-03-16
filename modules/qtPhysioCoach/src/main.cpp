@@ -33,8 +33,23 @@ int main (int argc, char **argv) {
     const bool interactive_mode = args.cmdOptionExists("--interactive");
 
 
-    //-- Create a robot interface.
+    //-- Initialize the coach, and pass it the config file.
+    QtPhysioCoach coach;
+    coach.configure(argc, argv);
 
+
+    //-- Start the coach.
+    coach.start();
+
+
+    //-- Run in interactive mode if enabled.
+    if (interactive_mode) {
+        coach.interactive();
+    }
+
+    
+    //-- Wait for everything to finish.
+    coach.wait();
 
 
     //-- Shut down nodes.
