@@ -148,7 +148,7 @@ void PhysioManager::inputLoop() {
 
     //-- Construct a vector for moving data between stream and the buffer.
     std::vector<hriPhysio::varType> transfer(input_frame * num_channels);
-    std::vector<double> stamps(input_frame);
+    std::vector<double>* stamps = new std::vector<double>(input_frame);
 
     //-- Loop until the manager stops running.
     while (this->getManagerRunning()) {
@@ -157,22 +157,22 @@ void PhysioManager::inputLoop() {
         if (this->getThreadStatus(thread_id)) {
 
             //-- Get data from the stream.
-            stream_input->receive(transfer, &stamps);
+            stream_input->receive(transfer, stamps);
 
             if (transfer.size()) {
-
+                
+                //std::cerr << "[INPUT] ";
                 //for (std::size_t idx = 0; idx < transfer.size(); idx++) {
-                //    std::cerr << " [" << stamps[idx] << "]: "; std::visit(hriPhysio::printVisitor(), transfer[idx]);
+                //    std::cerr << " [" << (*stamps)[idx] << "]: "; std::visit(hriPhysio::printVisitor(), transfer[idx]);
                 //} std::cerr << std::endl;
 
                 //-- Add the data to the buffer.
                 this->buffer.enqueue(transfer.data(), transfer.size());
-                this->timestamps.enqueue(stamps.data(), stamps.size());
+                this->timestamps.enqueue(stamps->data(), stamps->size());
 
 
                 if (this->log_data) {
-                    std::cerr << "Logging.\n";
-                    stream_logger.publish(transfer, &stamps);
+                    stream_logger.publish(transfer, stamps);
                 }
             }
 
@@ -201,7 +201,8 @@ void PhysioManager::outputLoop() {
     //-- Loop until the manager stops running.
     while (this->getManagerRunning()) {
         
-        std::cerr << "[OUTPUT] " << buffer.size() << std::endl;
+        //std::cerr << "[OUTPUT] " << buffer.size() << std::endl;
+
         //-- If this thread is active, run.
         if (this->getThreadStatus(thread_id) && buffer.size() >= frame_length) {
 
@@ -211,7 +212,7 @@ void PhysioManager::outputLoop() {
             //-- Write it out with the streamer.
             stream_output->publish(transfer);
 
-            std::cerr << "[OUTPUT] Sent output.\n";
+            //std::cerr << "[OUTPUT] Sent output.\n";
 
         } else {
             std::this_thread::sleep_for(

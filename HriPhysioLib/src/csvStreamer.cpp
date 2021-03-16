@@ -115,7 +115,6 @@ bool CsvStreamer::openOutputStream() {
 
 void CsvStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const std::vector<double>* timestamps/*=nullptr*/) {
 
-    std::cerr << "[CSV-OUT] WRITING: " << this->dtype << " ";
     switch (this->var) {
     case hriPhysio::varTag::CHAR:
         this->pushStream<char>(buff, timestamps);
@@ -133,7 +132,6 @@ void CsvStreamer::publish(const std::vector<hriPhysio::varType>&  buff, const st
         this->pushStream<float>(buff, timestamps);
         break;
     case hriPhysio::varTag::DOUBLE:
-        std::cerr << "<double>" << std::endl;
         this->pushStream<double>(buff, timestamps);
         break;
     default:
@@ -211,7 +209,9 @@ void CsvStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const
     std::size_t idx_buff = 0;
     std::size_t idx_time = 0;
 
-    std::cerr << "buff len: " << buff.size() << "  ts len: " << timestamps->size() << std::endl;
+    //std::cerr << "buff len: " << buff.size() << "  ts len: " << timestamps->size();
+    //if (timestamps->size() == 0) { std::cerr << "!!!!!!!!!!!!!!!!!!!!!!!"; }
+    //std::cerr << std::endl;
 
     while (idx_buff < buff.size()) {
         
@@ -220,6 +220,8 @@ void CsvStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const
 
         //-- "Internal Time"
         if (timestamps == nullptr) {
+            output << 0.0;
+        } else if (timestamps->size() == 0) {
             output << 0.0;
         } else {
             output << std::setprecision(17) << timestamps->at(idx_time);

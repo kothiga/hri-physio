@@ -219,7 +219,7 @@ void LslStreamer::pullStream(std::vector<hriPhysio::varType>& buff, std::vector<
     std::vector<T> samples;
 
     //-- Pull a multiplexed chunk into a flat vector.
-    inlet->pull_chunk_multiplexed(samples, timestamps, 1.0);
+    inlet->pull_chunk_multiplexed(samples, timestamps, 5.0);
 
     //-- Copy the data into the buffer.
     for (std::size_t idx = 0; idx < samples.size(); ++idx) {

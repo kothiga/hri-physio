@@ -132,7 +132,7 @@ def main():
             inlets.append(MarkerInlet(info))
         elif info.nominal_srate() != pylsl.IRREGULAR_RATE \
                 and info.channel_format() != pylsl.cf_string:
-            if info.name() == '/output' or True:
+            if info.name() == '/PhysioStreamer/output' or True:
                 print('Adding data inlet: ' + info.name())
                 inlets.append(DataInlet(info, plt))
         else:

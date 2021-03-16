@@ -73,8 +73,8 @@ bool RosStreamer::openInputStream() {
     this->mode = modeTag::RECEIVER;
 
     try {
+
         //-- Create a new subscriber from the given input name.
-               
         ros::NodeHandle n;
 //        sub = n.subscribe(this->name, );
 //        //-- Create a new inlet from the given input name.
@@ -82,11 +82,6 @@ bool RosStreamer::openInputStream() {
 //
     
     } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
-
-
-//    try {
-//
-//    } catch (std::exception& e) { std::cerr << "Got an exception: " << e.what() << std::endl; return false; }
 
 
     return true;
@@ -101,7 +96,6 @@ bool RosStreamer::openOutputStream() {
     }
 
     this->mode = modeTag::SENDER;
-
 
     try {
 
@@ -236,6 +230,11 @@ void RosStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const
 
     //-- Copy the data into a temporary transfer.
     U msg;
+
+    //TODO: Look at providing msg.layout with info on dims.
+    //for (size_t dim = 0; dim < num_channels; ++dim) {
+    //}
+
     for (size_t idx = 0; idx < buff.size(); ++idx) {
         msg.data.push_back( std::get<T>( buff[idx] ) );
     }
@@ -250,15 +249,15 @@ void RosStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const
 template<typename T>
 void RosStreamer::pullStream(std::vector<hriPhysio::varType>& buff, std::vector<double>* timestamps) {
 
-    std::vector<T> samples;
-
-    //-- Pull a multiplexed chunk into a flat vector.
-//    inlet->pull_chunk_multiplexed(samples, timestamps, 1.0);
-
-    //-- Copy the data into the buffer.
-    for (std::size_t idx = 0; idx < samples.size(); ++idx) {
-        buff[idx] = samples[idx];
-    }
+    //std::vector<T> samples;
+    //
+    ////-- Pull a multiplexed chunk into a flat vector.
+    //inlet->pull_chunk_multiplexed(samples, timestamps, 1.0);
+    //
+    ////-- Copy the data into the buffer.
+    //for (std::size_t idx = 0; idx < samples.size(); ++idx) {
+    //    buff[idx] = samples[idx];
+    //}
 
     return;
 }

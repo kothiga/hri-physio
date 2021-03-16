@@ -1,5 +1,5 @@
 input: PolarH10/6080292F/ACC
-output: /output
+output: /PhysioStreamer/acc
 dtype: double
 sampling_rate: 200
 input_frame: 36
