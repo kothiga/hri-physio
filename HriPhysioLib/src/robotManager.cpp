@@ -106,8 +106,10 @@ void RobotManager::interactive() {
 bool RobotManager::threadInit() {
 
     //-- Initialize threads but don't start them yet.
+    addLoopThread(std::bind(&RobotManager::selfLoop, this),  /*period=*/ 0.1, /*start=*/ false);
     addLoopThread(std::bind(&RobotManager::inputLoop, this), /*period=*/ 0.1, /*start=*/ false);
     
+
     return true;
 }
 
@@ -129,6 +131,10 @@ void RobotManager::process(const std::string& inp) {
     std::string cmd = input[0];
     hriPhysio::toLower(cmd);
     if (cmd == "exit") {
+
+        //-- Close the audio and video.
+        robot->addAudioFile("exit");
+        robot->addVideoFile("exit");
 
         //-- Close the threads.
         this->close();
@@ -295,6 +301,14 @@ bool RobotManager::getFunctions(const std::vector< std::string >& input) {
     return true;
 }
 
+
+void RobotManager::selfLoop() {
+
+    //-- Call the robot's internal self loop.
+    robot->robotLoop();
+
+    return;
+}
 
 void RobotManager::inputLoop() {
 

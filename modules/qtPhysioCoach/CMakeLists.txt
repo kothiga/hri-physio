@@ -36,6 +36,7 @@ target_include_directories(
 target_link_libraries(
     ${TARGET_NAME} 
     HriPhysio
+    fmt
     -I/opt/ros/$ENV{ROS_DISTRO}/include -L/opt/ros/$ENV{ROS_DISTRO}/lib
     -lroscpp -lrostime -lrosconsole -lroscpp_serialization
 )

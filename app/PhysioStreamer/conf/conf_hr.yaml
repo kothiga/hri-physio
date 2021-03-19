@@ -3,7 +3,7 @@ output: /PhysioStreamer/hr
 dtype: double
 sampling_rate: 1
 input_frame: 1
-output_frame: 30
+output_frame: 1
 num_channels: 1
 sample_overlap: 0
 buffer_length: 600

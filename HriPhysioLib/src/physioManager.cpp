@@ -176,14 +176,12 @@ void PhysioManager::inputLoop() {
                 }
             }
 
-
         } else {
             std::this_thread::sleep_for(
                 std::chrono::duration<double>( 0.1 ) //seconds.
             );
         }
     }
-
 }
 
 

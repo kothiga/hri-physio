@@ -36,6 +36,12 @@ std::string RobotInterface::getName() const {
 }
 
 
+void RobotInterface::robotLoop() {
+    //-- empty.
+    return;
+}
+
+
 bool RobotInterface::setPerphState(const peripheral perph, const std::vector<double>& pos) {
     warning("setPerphState");
     return false;

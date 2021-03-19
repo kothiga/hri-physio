@@ -57,6 +57,8 @@ private:
     ros::Subscriber command_sub;
     std::queue< std::string > inbox;
     
+    //-- Atomicity.
+    std::mutex lock;
 
 public:
     QtController();
@@ -64,6 +66,8 @@ public:
     ~QtController();
 
     bool configure(int argc, char **argv);
+
+    void robotLoop();
     
     bool setPerphState(const peripheral perph, const std::vector<double>& pos);
 

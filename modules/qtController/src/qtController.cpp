@@ -53,6 +53,12 @@ bool QtController::configure(int argc, char **argv) {
 }
 
 
+void QtController::robotLoop() {
+    ros::spinOnce();
+    return;   
+}
+
+
 bool QtController::setPerphState(const peripheral perph, const std::vector<double>& pos) {
 
     std_msgs::Float64MultiArray msg;
@@ -237,12 +243,12 @@ bool QtController::addVideoFile(const std::string filename) {
 
 bool QtController::getRobotCommand(std::string& command) {
 
-    ros::spinOnce();
-
     if (inbox.empty()) { return false; }
 
+    lock.lock();
     command = inbox.front(); 
     inbox.pop();
+    lock.unlock();
 
     return true;
 }
@@ -253,7 +259,9 @@ void QtController::inputCallback(const std_msgs::String::ConstPtr& msg) {
     std::string str = msg->data.c_str();
     ROS_INFO("I heard: [%s]", str.c_str());
 
+    lock.lock();
     inbox.push( str );
+    lock.unlock();
 
     return;
 }

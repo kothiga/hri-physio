@@ -62,6 +62,7 @@ private:
     bool setFunctions(const std::vector< std::string >& input);
     bool getFunctions(const std::vector< std::string >& input);
 
+    void selfLoop();
     void inputLoop();
 
 };

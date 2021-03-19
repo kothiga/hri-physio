@@ -41,6 +41,8 @@ public:
     std::string getName() const;
 
     virtual bool configure(int argc, char **argv) = 0;
+
+    virtual void robotLoop();
     
     enum peripheral { HEAD, RIGHTARM, LEFTARM, RIGHTLEG, LEFTLEG };
     
