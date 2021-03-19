@@ -17,6 +17,7 @@ set(${LIBRARY_TARGET_NAME}_SRC
     src/butterworthHighPass.cpp
     src/butterworthLowPass.cpp
     src/csvStreamer.cpp
+    src/graph.cpp
     src/helpers.cpp
     src/lslStreamer.cpp
     src/physioManager.cpp
@@ -34,6 +35,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
     
     # CORE
     include/HriPhysio/Core/ringBuffer.h
+    include/HriPhysio/Core/graph.h
     
     # FACTORY
     include/HriPhysio/Factory/streamerFactory.h
