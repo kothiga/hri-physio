@@ -22,6 +22,7 @@
 #include <vector>
 
 #include <fmt/core.h>
+#include <yaml-cpp/yaml.h>
 
 #include <ros/ros.h>
 #include <std_msgs/String.h>
@@ -45,22 +46,40 @@ private:
     //-- Mutex for atomicity.
     std::mutex lock;
 
+
     //-- Variables from configuration.
     std::string part_name;
+    double      part_age;
     
-    std::string audio_pattern;
-    std::string audio_exercise;
+    std::string audio_path;
+    std::string video_path;
+
+    std::string audio_default;
     std::string audio_relaxing;
+    std::string audio_exercise_base;
+    std::vector< std::string > audio_exercise_tempo;
 
-    std::string video_pattern;
+    std::string video_default;
     std::string video_relaxing;
+    std::string video_prefix;
 
+    std::string gesture_default;
+    std::string gesture_relaxing;
+    std::string gesture_prefix;
+
+    std::vector< std::string > exercises;
+
+    std::vector< std::string > speech_relaxation;
+    std::vector< std::string > speech_motivation;
+    std::vector< std::string > emotion_motivation;
 
     double calib_time;
+    bool   calib_skip;
+
     size_t buffer_length;
 
-    
-    double age;
+
+    //-- Variables derived from calibration phase.
     double HRmax, HRresting, HRR, HRR_40, HRR_70;
 
 

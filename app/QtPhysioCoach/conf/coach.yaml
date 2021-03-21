@@ -1,15 +1,21 @@
-input:  PolarH10/6080292F/HR
-output: /QtController/input
-videopattern: "/home/austin/exercise/video/{}.mp4"
-audiopattern: "/home/austin/exercise/audio/{}.wav"
-relax: "relaxing"
-exercises:
-  - "marching"
-  - "step_up"
-  - "lateral"
-  - "arms_forward"
-music: "FutureHouse_{}x"
-tempo:
+# Participant info.
+part_name: "John"
+part_age: 33
+
+# Stream info.
+#input:  PolarH10/6080292F/HR
+input:  "/PhysioStreamer/hr"
+output: "/QtController/input"
+
+# Data paths.
+audio_path: "/home/austin/exercise/audio/{}.wav"
+video_path: "/home/austin/exercise/video/{}.mp4"
+
+# Audio.
+audio_default: "default"
+audio_relaxing: "relaxing"
+audio_exercise_base: "FutureHouse_{}x"
+audio_exercise_tempo:
   - "0.85"
   - "0.90"
   - "0.95"
@@ -17,6 +23,47 @@ tempo:
   - "1.05"
   - "1.10"
   - "1.15"
+
+# Video.
+video_default:  ""
+video_relaxing: "relaxing"
+video_prefix:   "{}"
+
+# Gestures.
+gesture_default:  "exercise/base"
+gesture_relaxing: "exercise/base"
+gesture_prefix:   "exercise/{}"
+
+# Fill for video and exercise.
+exercises:
+  - "marching"
+  - "step_up"
+  - "lateral"
+  - "arms_forward"
+
+# Speech lists.
+speech_relaxation:
+  - "Don't forget to breath"
+  - "You're doing great"
+  - "Breath in... breath out"
+
+speech_motivation:
+  - "You can do it"
+  - "Keep it up"
+  - ""
+  
+# Emotion.
+emotion_motivation:
+  - "QT/happy"
+
+# Calibration phase.
+calib_time: 180.0 # 3 minutes
+calib_skip: false
+resting_default: 68.0
+
+# System variables.
 buffer: 3600 # 1-sample x 60-seconds x 60-minutes
+
+# Logger info.
 log_data: true
-log_name: "/usr/local/src/robot/hri-physio/data/logs/testlog.csv"
+log_name: "/usr/local/src/robot/hri-physio/data/logs/coach.csv"

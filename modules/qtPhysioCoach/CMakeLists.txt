@@ -37,6 +37,7 @@ target_link_libraries(
     ${TARGET_NAME} 
     HriPhysio
     fmt
+    yaml-cpp
     -I/opt/ros/$ENV{ROS_DISTRO}/include -L/opt/ros/$ENV{ROS_DISTRO}/lib
     -lroscpp -lrostime -lrosconsole -lroscpp_serialization
 )

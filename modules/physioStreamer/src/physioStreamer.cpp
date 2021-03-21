@@ -42,7 +42,7 @@ int main (int argc, char **argv) {
         std::string t_out(output); hriPhysio::toUpper(t_out);
         
         if (t_inp == "ROS" || t_out == "ROS") {
-            ros::init(argc, argv, "PhysioStreamer",ros::init_options::AnonymousName);
+            ros::init(argc, argv, "PhysioStreamer", ros::init_options::AnonymousName);
         }
     }
     #endif

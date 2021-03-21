@@ -18,6 +18,7 @@
 #include <cmath>
 #include <sstream>
 #include <string>
+#include <stdlib.h>
 #include <variant>
 #include <vector>
 
@@ -75,6 +76,23 @@ namespace hriPhysio {
     std::string combineString(const std::vector< std::string >& source, size_t idx=0);
     void toLower(std::string& str);
     void toUpper(std::string& str);
+
+
+    /* ============================================================================
+    **  Other Methods.
+    ** ============================================================================ */
+    
+    template<typename T>
+    T chooseRandom(const std::vector<T>& vec) {
+        
+        T ret;
+        if (vec.size() > 0) { // if vec is empty, return default T.
+            size_t idx = rand() % vec.size();
+            ret = vec[idx];
+        }
+
+        return ret;
+    }
 }
 
 
