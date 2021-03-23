@@ -3,9 +3,25 @@ part_name: "John"
 part_age: 33
 
 # Stream info.
-#input:  PolarH10/6080292F/HR
 input:  "/PhysioStreamer/hr"
 output: "/QtController/input"
+
+# System variables.
+buffer: 3600 # 1-sample x 60-seconds x 60-minutes
+speed_idx: 1
+speed_modifier:
+  - "0.85"
+  - "0.90"
+  - "0.95"
+  - "1.00"
+  - "1.05"
+  - "1.10"
+  - "1.15"
+
+# Calibration phase.
+calib_time: 180.0 # 3 minutes
+calib_skip: false
+resting_default: 68.0
 
 # Data paths.
 audio_path: "/home/austin/exercise/audio/{}.wav"
@@ -15,17 +31,9 @@ video_path: "/home/austin/exercise/video/{}.mp4"
 audio_default: "default"
 audio_relaxing: "relaxing"
 audio_exercise_base: "FutureHouse_{}x"
-audio_exercise_tempo:
-  - "0.85"
-  - "0.90"
-  - "0.95"
-  - "1.00"
-  - "1.05"
-  - "1.10"
-  - "1.15"
 
 # Video.
-video_default:  ""
+video_default:  "default"
 video_relaxing: "relaxing"
 video_prefix:   "{}"
 
@@ -50,19 +58,23 @@ speech_relaxation:
 speech_motivation:
   - "You can do it"
   - "Keep it up"
-  - ""
-  
+  - "Nice work"
+  - "Feeling good"
+  - "Looking good"
+  - "You are doing"
+  - "Your heart rate is pretty good"
+
+speech_faster:
+  - "Let's pick up the pace!"
+  - "We can go faster!"
+  - "Faster! Faster!"
+
+speech_slower:
+  - "You're doing great"
+
 # Emotion.
 emotion_motivation:
   - "QT/happy"
-
-# Calibration phase.
-calib_time: 180.0 # 3 minutes
-calib_skip: false
-resting_default: 68.0
-
-# System variables.
-buffer: 3600 # 1-sample x 60-seconds x 60-minutes
 
 # Logger info.
 log_data: true

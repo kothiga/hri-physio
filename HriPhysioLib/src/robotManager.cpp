@@ -84,6 +84,8 @@ void RobotManager::configure(int argc, char **argv) {
     //-- Initialize the threads.
     this->threadInit();
 
+    start_time = std::chrono::system_clock::now();
+
     return;
 }
 
@@ -106,8 +108,8 @@ void RobotManager::interactive() {
 bool RobotManager::threadInit() {
 
     //-- Initialize threads but don't start them yet.
-    addLoopThread(std::bind(&RobotManager::selfLoop, this),  /*period=*/ 0.1, /*start=*/ false);
-    addLoopThread(std::bind(&RobotManager::inputLoop, this), /*period=*/ 0.1, /*start=*/ false);
+    addLoopThread(std::bind(&RobotManager::selfLoop, this),  /*period=*/ 0.01, /*start=*/ false);
+    addLoopThread(std::bind(&RobotManager::inputLoop, this), /*period=*/ 0.01, /*start=*/ false);
     
 
     return true;
@@ -118,7 +120,9 @@ void RobotManager::process(const std::string& inp) {
 
     if (this->log_data) {
         //-- Log the data received.
-        this->robot_logger.publish(inp);
+        std::chrono::duration<double> now = std::chrono::system_clock::now() - start_time;
+        double t = now.count();
+        this->robot_logger.publish(inp, &t);
     }
 
     //-- Parse it up.

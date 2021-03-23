@@ -149,7 +149,7 @@ void CsvStreamer::publish(const std::string& buff, const double* timestamps/*=nu
     if (timestamps == nullptr) {
         output << 0.0;
     } else {
-        output << std::setprecision(17) << (*timestamps);
+        output << std::setprecision(10) << (*timestamps);
     } 
 
     //-- Data.
@@ -183,7 +183,6 @@ void CsvStreamer::receive(std::vector<hriPhysio::varType>& buff, std::vector<dou
         this->pullStream<float>(buff, timestamps);
         break;
     case hriPhysio::varTag::DOUBLE:
-        std::cerr << "<double>" << std::endl;
         this->pullStream<double>(buff, timestamps);
         break;
     default:
@@ -224,7 +223,7 @@ void CsvStreamer::pushStream(const std::vector<hriPhysio::varType>&  buff, const
         } else if (timestamps->size() == 0) {
             output << 0.0;
         } else {
-            output << std::setprecision(17) << timestamps->at(idx_time);
+            output << std::setprecision(10) << timestamps->at(idx_time);
             ++idx_time;
         } 
 

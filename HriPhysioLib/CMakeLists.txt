@@ -152,8 +152,8 @@ target_include_directories(
 target_link_libraries(
     ${LIBRARY_TARGET_NAME} 
     pthread
-    yaml-cpp
     lsl
+    yaml-cpp
 )
 
 

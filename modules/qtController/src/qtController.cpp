@@ -257,7 +257,7 @@ bool QtController::getRobotCommand(std::string& command) {
 void QtController::inputCallback(const std_msgs::String::ConstPtr& msg) {
     
     std::string str = msg->data.c_str();
-    ROS_INFO("I heard: [%s]", str.c_str());
+    //ROS_INFO("I heard: [%s]", str.c_str());
 
     lock.lock();
     inbox.push( str );

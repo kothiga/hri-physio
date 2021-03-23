@@ -45,6 +45,8 @@ private:
     hriPhysio::Stream::CsvStreamer robot_logger;
     hriPhysio::Social::RobotInterface* robot;
 
+    std::chrono::_V2::system_clock::time_point start_time;
+
 public:
     RobotManager(hriPhysio::Social::RobotInterface* robot);
 

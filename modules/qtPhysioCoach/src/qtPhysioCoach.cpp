@@ -32,6 +32,7 @@ bool QtPhysioCoach::configure(int argc, char **argv) {
     const std::string &yaml_file = args.getCmdOption("--conf");
     YAML::Node config;
     
+    //-- Try to open the config. If not possible load the defaults.
     try {
         config = YAML::LoadFile(yaml_file);
     } catch (YAML::BadFile&) {
@@ -56,16 +57,31 @@ bool QtPhysioCoach::configure(int argc, char **argv) {
     const std::string output_name = config["output"].as<std::string>( /*default=*/ "/output" );
 
 
+    //-- System variables.
+    buffer_length  = config["buffer"   ].as<size_t>( /*default=*/ 1000 );
+    speed_idx      = config["speed_idx"].as<size_t>( /*default=*/ 1 );
+    speed_modifier = config["speed_modifier"].as<std::vector<std::string>>( /*default=*/ empty );
+
+
+    //-- Calibration variables.
+    calib_time = config["calib_time"].as<double>( /*default=*/ 180.0 );
+    calib_skip = config["calib_skip"].as<bool>(   /*default=*/ false );
+
+    //-- Set resting heart rate if skipping calibration.
+    if (calib_skip) {
+        HRresting = config["resting_default"].as<double>( /*default=*/ 61.0 );
+    }
+
+
     //-- Parameters for the audio and video path.
     audio_path = config["audio_path"].as<std::string>( /*default=*/ "./audio/{}.wav" );
     video_path = config["video_path"].as<std::string>( /*default=*/ "./video/{}.mp4" );
 
 
     //-- Parameters for audio files.
-    audio_default        = config["audio_default"       ].as<std::string>( /*default=*/ "default"      );
-    audio_relaxing       = config["audio_relaxing"      ].as<std::string>( /*default=*/ "relaxing"     );
-    audio_exercise_base  = config["audio_exercise_base" ].as<std::string>( /*default=*/ "Exercise_{}x" );
-    audio_exercise_tempo = config["audio_exercise_tempo"].as<std::vector<std::string> >( /*default=*/ empty );
+    audio_default       = config["audio_default"       ].as<std::string>( /*default=*/ "default"      );
+    audio_relaxing      = config["audio_relaxing"      ].as<std::string>( /*default=*/ "relaxing"     );
+    audio_exercise_base = config["audio_exercise_base" ].as<std::string>( /*default=*/ "Exercise_{}x" );    
 
 
     //-- Parameters for video files.
@@ -81,26 +97,13 @@ bool QtPhysioCoach::configure(int argc, char **argv) {
 
 
     //-- Fill for the gesture and video prefix.
-    exercises = config["exercises"].as<std::vector<std::string> >( /*default=*/ empty );
+    exercises = config["exercises"].as<std::vector<std::string>>( /*default=*/ empty );
 
 
     //-- Lists of phrases for Qt to randomly pull from.
-    speech_relaxation  = config["speech_relaxation" ].as<std::vector<std::string> >( /*default=*/ empty );
-    speech_motivation  = config["speech_motivation" ].as<std::vector<std::string> >( /*default=*/ empty );
-    emotion_motivation = config["emotion_motivation"].as<std::vector<std::string> >( /*default=*/ empty );
-
-    calib_time = config["calib_time"].as<double>( /*default=*/ 180.0 );
-    calib_skip = config["calib_skip"].as<bool>(   /*default=*/ false );
-
-    //-- Set resting heart rate if skipping calibration.
-    if (calib_skip) {
-        HRresting = config["resting_default"].as<double>( /*default=*/ 61.0 );
-    }
-
-
-    //-- Other system parameters.
-    buffer_length = config["buffer"].as<size_t>( /*default=*/ 1000);
-
+    speech_relaxation  = config["speech_relaxation" ].as<std::vector<std::string>>( /*default=*/ empty );
+    speech_motivation  = config["speech_motivation" ].as<std::vector<std::string>>( /*default=*/ empty );
+    emotion_motivation = config["emotion_motivation"].as<std::vector<std::string>>( /*default=*/ empty );
 
     //-- Do some error checking.
     if (exercises.size() < 4) {
@@ -171,7 +174,7 @@ bool QtPhysioCoach::threadInit() {
 
     //-- Initialize threads but don't start them yet.
     addThread(std::bind(&QtPhysioCoach::run, this),  /*start=*/ false);
-    addLoopThread(std::bind(&QtPhysioCoach::inputLoop, this), /*period=*/ 0.1, /*start=*/ false);
+    addLoopThread(std::bind(&QtPhysioCoach::inputLoop, this), /*period=*/ 0.01, /*start=*/ false);
 
     return true;
 }
@@ -189,13 +192,55 @@ void QtPhysioCoach::run() {
         if (this->getThreadStatus(thread_id)) {
 
             this->calibrate();
+
+            std::string msg;
+            msg = fmt::format("set speech {}",
+                "The first exercise will be to get you warmed up! "
+                "Follow my lead with this marching in place."
+            );
+            this->sendMessage(msg);
             
+            // 1) marching -- 3 minutes.
+            this->runExercise(exercises[0], 60.0); //TODO: 3 minutes.
 
-            this->sendMessage("exit");
+            // 2) step-up -- 2 minutes.
+            //this->runExercise(exercises[1], 120.0);
+            
+            // 3) marching -- 1 minutes.
+            //this->runExercise(exercises[0], 60.0);
 
+            // 4) lateral -- 2 minutes.
+            //this->runExercise(exercises[2], 120.0);
+
+            // 5) marching -- 1 minutes.
+            //this->runExercise(exercises[0], 60.0);
+
+            // 6) both arms -- 2 minutes.
+            //this->runExercise(exercises[3], 120.0);
+
+            // 7) marching -- 1 minutes.
+            //this->runExercise(exercises[0], 60.0);
+
+            // 8) both lateral -- 2 minutes.
+            //this->runExercise(exercises[2], 120.0);
+            
+            //TODO: Cool Down.
+
+            // 9) step-up -- 2 minutes.
+            //this->runExercise(exercises[1], 120.0);
+
+            // 10) marching -- 3 minutes.
+            //this->runExercise(exercises[0], 180.0);
+
+
+            //TODO: Thank you for exercising with me today.
+
+            
             std::this_thread::sleep_for(
                 std::chrono::duration<double>( 5.0 ) //seconds.
             );
+
+            this->sendMessage("exit");
 
             this->close();
 
@@ -206,18 +251,6 @@ void QtPhysioCoach::run() {
             );
         }
     }
-
-//    if (this->run_calibration) {
-//        this->calibrate();
-//    }
-//
-//    for (size_t idx = 0; idx < this->num_exercise; ++idx) {
-//        //Frequency
-//        //Intensity
-//        //Time
-//        //Type
-//        this->exerciseRoutine()
-//    }
 
     return;
 }
@@ -231,18 +264,30 @@ void QtPhysioCoach::calibrate() {
     //-- Get the current time at the start.
     auto start = std::chrono::system_clock::now();
 
-    //-- Start the relaxing audio and video.
-    std::string str;
-    str = fmt::format("set audio {}", fmt::format(audio_path, audio_relaxing));
-    this->sendMessage(str);
+    std::this_thread::sleep_for(
+        std::chrono::duration<double>( 1.0 ) //seconds
+    );
 
-    str = fmt::format("set video {}", fmt::format(video_path, video_relaxing));
-    this->sendMessage(str);
+    //-- Start the relaxing audio and video.
+    std::string msg;
+    msg = fmt::format("set audio {}", fmt::format(audio_path, audio_relaxing));
+    this->sendMessage(msg);
+
+    std::this_thread::sleep_for(
+        std::chrono::duration<double>( 0.5 ) //seconds
+    );
+
+    msg = fmt::format("set video {}", fmt::format(video_path, video_relaxing));
+    this->sendMessage(msg);
+
+    std::this_thread::sleep_for(
+        std::chrono::duration<double>( 0.5 ) //seconds
+    );
 
     if (!this->calib_skip) {
 
         //-- Give some instructional speech.
-        str = fmt::format("set speech {}", fmt::format(
+        msg = fmt::format("set speech {}", fmt::format(
             "Hello {}, my name is QT, and I will be your "
             "personal trainer for today's session. "
             "I've been told that you are {} years old. "
@@ -255,7 +300,7 @@ void QtPhysioCoach::calibrate() {
             "Let's get started!"
             , this->part_name, this->part_age, (int)(this->calib_time/60)
         ));
-        this->sendMessage(str);
+        this->sendMessage(msg);
 
         //-- Set a time for when the last ``event`` occurred.
         auto event = std::chrono::system_clock::now();
@@ -278,18 +323,18 @@ void QtPhysioCoach::calibrate() {
                 //-- Reset time since last event.
                 event = std::chrono::system_clock::now();
 
-                //-- Choose an emotion to display 75% of the time.
-                size_t what = rand() % 4;
-                if (what) { //1, 2, 3
-                    str = fmt::format("set emotion {}", 
+                //-- Choose an emotion to display 50% of the time.
+                size_t what = rand() % 2;
+                if (what) { //1
+                    msg = fmt::format("set emotion {}", 
                         hriPhysio::chooseRandom(this->emotion_motivation)
                     );
-                } else { // 0
-                    str = fmt::format("set speech {}",
+                } else { //0
+                    msg = fmt::format("set speech {}",
                         hriPhysio::chooseRandom(this->speech_relaxation)
                     );
                 }
-                this->sendMessage(str);
+                this->sendMessage(msg);
             }
 
 
@@ -302,23 +347,16 @@ void QtPhysioCoach::calibrate() {
 
                 dur = current - start;
                 size_t time_left = (int)(this->calib_time/60) - (int)(dur.count()/60);
-                std::cerr << "[DEBUG] " 
-                          << "time_left = " << time_left
-                          << " = " << (int)(this->calib_time/60) 
-                          << " - " << (int)(dur.count()/60)
-                          << std::endl;
 
-                str = fmt::format("set speech {}", fmt::format(
+                msg = fmt::format("set speech {}", fmt::format(
                     "You're doing great {}!! "
                     "Only {} minute{} left."
                     , this->part_name, time_left, ((time_left > 1) ? "s" : "")
                 ));
-                this->sendMessage(str);
+                this->sendMessage(msg);
 
             }
 
-
-            //-- Sleep for some time.
             //-- Wait some time for Qt to complete the above speech.
             std::this_thread::sleep_for(
                 std::chrono::duration<double>( 1.0 ) //seconds
@@ -345,23 +383,31 @@ void QtPhysioCoach::calibrate() {
     HRR_70 = (0.7 * HRR) + HRresting;
 
     //-- Set the video back to being the splash.
-    str = fmt::format("set video {}", fmt::format(video_path, video_default));
-    this->sendMessage(str);
+    msg = fmt::format("set video {}", fmt::format(video_path, video_default));
+    this->sendMessage(msg);
 
     //-- Congratulate user. Tell them between 40 and 70
-    str = fmt::format("set speech {}", fmt::format(
+    msg = fmt::format("set speech {}", fmt::format(
         "My calibrations are complete!! Thank you for your patience. "
-        "I measured your resting heart rate to be {} beats per minute. "
+        "I measured your resting heart rate to be {:.1f} beats per minute. "
         "With this, I am going to do my best to get your "
-        "heart rate between {} and {} beats per minute."
+        "heart rate between {:.1f} and {:.1f} beats per minute."
         , HRresting, HRR_40, HRR_70
     ));
-    this->sendMessage(str);
+    this->sendMessage(msg);
 
     //-- Wait some time for Qt to complete the above speech.
     std::this_thread::sleep_for(
         std::chrono::duration<double>( 10.0 ) //seconds
     );
+
+    return;
+}
+
+
+void QtPhysioCoach::runExercise(std::string typeExercise, double duration) {
+
+    
 
     return;
 }

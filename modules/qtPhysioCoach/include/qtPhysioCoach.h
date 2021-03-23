@@ -50,14 +50,21 @@ private:
     //-- Variables from configuration.
     std::string part_name;
     double      part_age;
+
+    size_t buffer_length;
+    size_t speed_idx;
+    std::vector< std::string > speed_modifier;
     
+
+    double calib_time;
+    bool   calib_skip;
+
     std::string audio_path;
     std::string video_path;
 
     std::string audio_default;
     std::string audio_relaxing;
-    std::string audio_exercise_base;
-    std::vector< std::string > audio_exercise_tempo;
+    std::string audio_exercise_base;    
 
     std::string video_default;
     std::string video_relaxing;
@@ -72,11 +79,6 @@ private:
     std::vector< std::string > speech_relaxation;
     std::vector< std::string > speech_motivation;
     std::vector< std::string > emotion_motivation;
-
-    double calib_time;
-    bool   calib_skip;
-
-    size_t buffer_length;
 
 
     //-- Variables derived from calibration phase.
@@ -110,6 +112,8 @@ private:
     void run();
 
     void calibrate();
+
+    void runExercise(std::string typeExercise, double duration);
 
     void sendMessage(const std::string& message);
 

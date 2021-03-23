@@ -23,6 +23,8 @@
 #include <iomanip>
 #include <fstream>
 
+#include <fmt/core.h>
+
 #include <HriPhysio/Stream/streamerInterface.h>
 
 #include <HriPhysio/helpers.h>
