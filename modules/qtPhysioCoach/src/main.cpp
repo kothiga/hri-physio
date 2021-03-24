@@ -38,13 +38,12 @@ int main (int argc, char **argv) {
     coach.configure(argc, argv);
 
 
-    //-- Start the coach.
-    coach.start();
-
-
     //-- Run in interactive mode if enabled.
     if (interactive_mode) {
         coach.interactive();
+    } else {
+        //-- Start the coach right away if not in interactive mode.
+        coach.start();
     }
 
     

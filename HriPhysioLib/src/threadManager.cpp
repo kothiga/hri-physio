@@ -150,10 +150,18 @@ void ThreadManager::wait() {
 
     //-- Wait for the thread manager to stop.
     while (this->getManagerRunning()) {
-        std::this_thread::sleep_for(
-            std::chrono::duration<double>( 0.5 ) //seconds.
-        );
+        this->sleepThread(0.5);
     }
+
+    return;
+}
+
+
+void ThreadManager::sleepThread(const double seconds) {
+
+    std::this_thread::sleep_for(
+        std::chrono::duration<double>( seconds )
+    );
 
     return;
 }
@@ -198,9 +206,10 @@ void ThreadManager::looperWrapper(std::function<void(void)> func, const double p
         auto end = std::chrono::system_clock::now();
         std::chrono::duration<double> dur = end - start;
         double diff = period - dur.count();
-        std::this_thread::sleep_for(
-            std::chrono::duration<double>( (diff > 0.0) ? diff : 0.0 ) //seconds.
-        );
+
+        diff = (diff > 0.0) ? diff : 0.0;
+        
+        this->sleepThread(diff);
 
         //auto loop_time = std::chrono::system_clock::now();
         //std::chrono::duration<double> loop_dur = loop_time - start;

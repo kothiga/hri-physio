@@ -10,7 +10,6 @@ output: "/QtController/input"
 buffer: 3600 # 1-sample x 60-seconds x 60-minutes
 speed_idx: 1
 speed_modifier:
-  - "0.85"
   - "0.90"
   - "0.95"
   - "1.00"
@@ -24,22 +23,30 @@ calib_skip: false
 resting_default: 68.0
 
 # Data paths.
-audio_path: "/home/austin/exercise/audio/{}.wav"
-video_path: "/home/austin/exercise/video/{}.mp4"
+audio_path: "/usr/local/src/robot/hri-physio/data/exercise/audio/{}.wav"
+video_path: "/usr/local/src/robot/hri-physio/data/exercise/video/{}.mp4"
 
 # Audio.
 audio_default: "default"
 audio_relaxing: "relaxing"
-audio_exercise_base: "FutureHouse_{}x"
+audio_exercise_base: "FutureHouse{}"
+audio_suffix:
+  - "110"
+  - "115"
+  - "120"
+  - "125"
+  - "130"
+  - "135"
 
 # Video.
-video_default:  "default"
+video_default:  "default_v1"
 video_relaxing: "relaxing"
 video_prefix:   "{}"
+video_time: 30.0
 
 # Gestures.
-gesture_default:  "exercise/base"
-gesture_relaxing: "exercise/base"
+gesture_default:  "base"
+gesture_relaxing: "base"
 gesture_prefix:   "exercise/{}"
 
 # Fill for video and exercise.
@@ -51,7 +58,7 @@ exercises:
 
 # Speech lists.
 speech_relaxation:
-  - "Don't forget to breath"
+  - "Don't forget to breathe"
   - "You're doing great"
   - "Breath in... breath out"
 
@@ -61,8 +68,8 @@ speech_motivation:
   - "Nice work"
   - "Feeling good"
   - "Looking good"
-  - "You are doing"
-  - "Your heart rate is pretty good"
+  - "You are doing it"
+  - "Your heart-rate is pretty good"
 
 speech_faster:
   - "Let's pick up the pace!"
@@ -71,10 +78,16 @@ speech_faster:
 
 speech_slower:
   - "You're doing great"
+  - "Don't get too exhausted yet"
+  - "Let's take a little breather and slow it down"
 
 # Emotion.
 emotion_motivation:
   - "QT/happy"
+  - "QT/breathing_exercise"
+  - "QT/calmig_down_exercise_nose"
+  - "QT/one_eye_wink"
+  - "QT/surprise"
 
 # Logger info.
 log_data: true

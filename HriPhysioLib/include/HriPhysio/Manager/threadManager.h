@@ -66,7 +66,7 @@ public:
 
 
 protected:
-    //virtual bool threadInit();
+    virtual void sleepThread(const double seconds);
 
 
 private:

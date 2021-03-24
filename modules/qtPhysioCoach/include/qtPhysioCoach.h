@@ -64,11 +64,13 @@ private:
 
     std::string audio_default;
     std::string audio_relaxing;
-    std::string audio_exercise_base;    
+    std::string audio_exercise_base;
+    std::vector< std::string > audio_suffix;
 
     std::string video_default;
     std::string video_relaxing;
     std::string video_prefix;
+    double      video_time;
 
     std::string gesture_default;
     std::string gesture_relaxing;
@@ -78,6 +80,8 @@ private:
 
     std::vector< std::string > speech_relaxation;
     std::vector< std::string > speech_motivation;
+    std::vector< std::string > speech_faster;
+    std::vector< std::string > speech_slower;
     std::vector< std::string > emotion_motivation;
 
 
@@ -113,9 +117,9 @@ private:
 
     void calibrate();
 
-    void runExercise(std::string typeExercise, double duration);
+    void runExercise(const std::string typeExercise, const double seconds);
 
-    void sendMessage(const std::string& message);
+    void sendMessage(const std::string& message, const double sleep_post=0.0);
 
     void inputLoop();
 

@@ -67,7 +67,8 @@ def listener():
             if not cap.isOpened():
                 print("Video name ``{}`` could not be found!!".format(video_name))
                 continue
-
+            
+            # Get fps.
             fps = cap.get(cv2.CAP_PROP_FPS)
             print("Loaded video. Fps: {} {}".format(fps, 1000 // fps))
 
@@ -88,6 +89,14 @@ def listener():
 
             # Frame ok?
             if ret:
+                # Adjust the frame.
+                frame = cv2.resize(frame,
+                    #(1280,720),
+                    (1920,1080),
+                    fx=0,fy=0, 
+                    interpolation=cv2.INTER_CUBIC
+                )
+                # Show it.
                 cv2.imshow('videoStreamer',frame)
             
             # At the end of the video, loop back to beginning.
