@@ -219,7 +219,7 @@ void QtPhysioCoach::run() {
                 "Follow my lead with this marching exercise."
             );
             this->sendMessage(msg, 5.0);
-            this->runExercise(exercises[0], 180.0); //TODO: 3 minutes.
+            this->runExercise(exercises[0], 180.0);
 
 
             // 2) step-up -- 2 minutes.

@@ -1,0 +1,11 @@
+input: PolarH10/6080292F/ACC
+output: /PhysioStreamer/acc
+dtype: double
+sampling_rate: 200
+input_frame: 36
+output_frame: 128
+num_channels: 3
+sample_overlap: 0
+buffer_length: 5000
+log_data: true
+log_name: "/usr/local/src/robot/hri-physio/data/logs/stream_acc.csv"
