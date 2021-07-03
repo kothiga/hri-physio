@@ -11,7 +11,9 @@ include_directories(../)
 
 set(${TEST_TARGET_NAME}_SRC
     docTestDefine.cpp
+    processingHelperFunctions.cpp
     hilbertTransformTest.cpp
+    spectrogramTest.cpp
 )
 
 add_executable(

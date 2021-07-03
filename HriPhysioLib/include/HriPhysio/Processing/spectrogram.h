@@ -10,8 +10,8 @@
  * ================================================================================
  */
 
-#ifndef HRI_PHYSIO_PROCESSING_HILBERT_TRANSFORM_H
-#define HRI_PHYSIO_PROCESSING_HILBERT_TRANSFORM_H
+#ifndef HRI_PHYSIO_PROCESSING_SPECTROGRAM_H
+#define HRI_PHYSIO_PROCESSING_SPECTROGRAM_H
 
 #include <cmath>
 #include <memory>
@@ -23,11 +23,11 @@
 
 namespace hriPhysio {
     namespace Processing {
-        class HilbertTransform;
+        class Spectrogram;
     }
 }
 
-class hriPhysio::Processing::HilbertTransform {
+class hriPhysio::Processing::Spectrogram {
 private:
 
     /* ============================================================================
@@ -52,19 +52,19 @@ public:
     /* ============================================================================
     **  Main Constructor.
     ** ============================================================================ */
-    HilbertTransform(std::size_t samples);
+    Spectrogram(std::size_t samples);
 
 
     /* ===========================================================================
 	**  Destructor.
 	** =========================================================================== */
-    ~HilbertTransform();
+    ~Spectrogram();
 
 
     /* ===========================================================================
 	**  Process.
 	** =========================================================================== */
-    void process(const std::vector<double>& source, std::vector<double>& target);
+    void process(const std::vector<double>& source, std::vector<std::vector<double>>& target, const double sample_rate, const double stride_ms=20.0, const double window_ms=20.0);
 
 
     /* ===========================================================================
@@ -75,22 +75,34 @@ public:
 
 private:
     /* ===========================================================================
-	**  Real to Complex.
-	** =========================================================================== */
+    **  Hamming Window.
+    ** =========================================================================== */
+    void hammingWindow(std::vector<double>& buffer, const std::size_t length);
+
+
+    /* ===========================================================================
+    **  Resize Matrix.
+    ** =========================================================================== */
+    void resizeMatrix(std::vector<std::vector<double>>& mat, const std::size_t nrows, const std::size_t ncols);
+
+
+    /* ===========================================================================
+    **  Real to Complex.
+    ** =========================================================================== */
     void realToComplex(const double* source, std::complex<double>* target, const std::size_t num_samples);
     
 
     /* ===========================================================================
-	**  Complex to Real.
-	** =========================================================================== */
+    **  Complex to Real.
+    ** =========================================================================== */
     void complexToReal(const std::complex<double>* source, double* target, const std::size_t num_samples);
 
 
     /* ===========================================================================
-	**  Absolute Square.
-	** =========================================================================== */
+    **  Absolute Square.
+    ** =========================================================================== */
     double absoluteSquare(const std::complex<double> value);
     
 };
 
-#endif /* HRI_PHYSIO_PROCESSING_HILBERT_TRANSFORM_H */
+#endif /* HRI_PHYSIO_PROCESSING_SPECTROGRAM_H */

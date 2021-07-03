@@ -21,7 +21,6 @@ HilbertTransform::HilbertTransform(std::size_t samples) {
 
 
 HilbertTransform::~HilbertTransform() {
-    
 }
 
 
@@ -69,6 +68,7 @@ void HilbertTransform::process(const std::vector<double>& source, std::vector<do
         this->data[idx] = (0.,0.);
     }
 
+
     //-- Compute the backward complex-to-complex transform.
     pocketfft::c2c(
         /* shape      =*/ this->shape,
@@ -81,11 +81,14 @@ void HilbertTransform::process(const std::vector<double>& source, std::vector<do
         /* fct        =*/ 1. / this->num_samples
     );
     
+
     //-- Get the magnitude of the complex elements in the vector.
     this->complexToReal(this->output.data(), target.data(), this->num_samples);
 
+
     return;
 }
+
 
 void HilbertTransform::resize(const std::size_t samples) {
 
@@ -141,6 +144,7 @@ void HilbertTransform::complexToReal(const std::complex<double>* source, double*
 
 
 double HilbertTransform::absoluteSquare(const std::complex<double> value) {
+
     return sqrt(value.real()*value.real() + value.imag()*value.imag());
 }
 

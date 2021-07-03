@@ -16,22 +16,10 @@
 
 #define DEBUG 0
 
-void printVector(const std::vector<double>& vec) {
-    std::cout << "[";
-    for (std::size_t idx = 0; idx < vec.size(); ++idx) {
-        if (idx) std::cout << ",";
-        std::cout << vec[idx];
-    } std::cout << "]";
-}
 
-
-double absError(const std::vector<double>& vec1, const std::vector<double>& vec2) {
-    double total_error = 0;
-    for (std::size_t idx = 0; idx < vec1.size(); ++idx) {
-        total_error += abs(vec1[idx] - vec2[idx]);
-    }
-    return total_error;
-}
+//-- Prototypes. Implemented in processingHelperFunctions.cpp.
+void printVector(const std::vector<double>& vec);
+double absError(const std::vector<double>& vec1, const std::vector<double>& vec2);
 
 
 TEST_CASE("Test a simple sinusoidal wave (1 second of a 18 Hz wave at 256 Hz sampling rate)") {
@@ -88,7 +76,7 @@ TEST_CASE("Test a simple sinusoidal wave (1 second of a 18 Hz wave at 256 Hz sam
 
     //-- Check the error with the expected.
     double err = absError(expected, target);
-    std::cout << "Test 1 Error: " << err << std::endl;
+    std::cout << "Hilbert Transform Test 1 Error: " << err << std::endl;
 
     CHECK(err <= 0.001);
 }
@@ -148,7 +136,7 @@ TEST_CASE("Test a complex sinusoidal wave (1 second of a 5, 12, and 20 Hz waves 
 
     //-- Check the error with the expected.
     double err = absError(expected, target);
-    std::cout << "Test 2 Error: " << err << std::endl;
+    std::cout << "Hilbert Transform Test 2 Error: " << err << std::endl;
 
     CHECK(err <= 0.001);
 }
@@ -208,7 +196,7 @@ TEST_CASE("Test a complex amplitude modulated sinusoidal wave (1 second of a 5, 
 
     //-- Check the error with the expected.
     double err = absError(expected, target);
-    std::cout << "Test 3 Error: " << err << std::endl;
+    std::cout << "Hilbert Transform Test 3 Error: " << err << std::endl;
 
     CHECK(err <= 0.001);
 }
