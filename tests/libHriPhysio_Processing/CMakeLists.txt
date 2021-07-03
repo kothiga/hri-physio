@@ -4,11 +4,24 @@
 
 cmake_minimum_required( VERSION 3.12 )
 
-add_subdirectory( libHriPhysio_Core )
-#add_subdirectory( libHriPhysio_Dev )
-#add_subdirectory( libHriPhysio_Manager )
-add_subdirectory( libHriPhysio_Processing )
-#add_subdirectory( libHriPhysio_Stream )
-add_subdirectory( libHriPhysio_Helpers )
+set(TEST_TARGET_NAME test_libHriPhysio_Processing)
+
+# Expose doctest.h to cmake.
+include_directories(../)
+
+set(${TEST_TARGET_NAME}_SRC
+    docTestDefine.cpp
+    hilbertTransformTest.cpp
+)
+
+add_executable(
+    ${TEST_TARGET_NAME} 
+    ${${TEST_TARGET_NAME}_SRC}
+)
+
+target_link_libraries(
+    ${TEST_TARGET_NAME} 
+    HriPhysio
+)
 
 ############################################################

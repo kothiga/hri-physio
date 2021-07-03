@@ -19,6 +19,7 @@ set(${LIBRARY_TARGET_NAME}_SRC
     src/csvStreamer.cpp
     src/graph.cpp
     src/helpers.cpp
+    src/hilbertTransform.cpp
     src/lslStreamer.cpp
     src/physioManager.cpp
     src/robotInterface.cpp
@@ -51,6 +52,7 @@ set(${LIBRARY_TARGET_NAME}_HDR
     include/HriPhysio/Processing/butterworthBandPass.h
     include/HriPhysio/Processing/butterworthHighPass.h
     include/HriPhysio/Processing/butterworthLowPass.h
+    include/HriPhysio/Processing/hilbertTransform.h
     include/HriPhysio/Processing/math.h
 
     # SOCIAL
@@ -64,6 +66,9 @@ set(${LIBRARY_TARGET_NAME}_HDR
     
     # HELPERS
     include/HriPhysio/helpers.h
+
+    # Additional Library Headers
+    include/HriPhysio/Processing/PocketFFT/pocketfft.h
 )
 
 ############################################################

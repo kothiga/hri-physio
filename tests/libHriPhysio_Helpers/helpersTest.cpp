@@ -1,5 +1,5 @@
 /* ================================================================================
- * Copyright: (C) 2020, SIRRL Social and Intelligent Robotics Research Laboratory, 
+ * Copyright: (C) 2021, SIRRL Social and Intelligent Robotics Research Laboratory, 
  *     University of Waterloo, All rights reserved.
  * 
  * Authors: 
@@ -80,7 +80,7 @@ TEST_CASE("Variant") {
     v1 = (double) 5.0021;
     std::cout << "double " << std::get<double>(v1) << std::endl;
 
-    v1 = (long long) 5123465789;
-    std::cout << "long long "; std::visit(hriPhysio::printVisitor(), v1); 
+    v1 = (int64_t) 5123465789;
+    std::cout << "int64_t "; std::visit(hriPhysio::printVisitor(), v1); 
     std::cout << std::endl;
 }
