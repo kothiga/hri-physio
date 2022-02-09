@@ -10,3 +10,6 @@
 [submodule "deps/fmt"]
 	path = deps/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "devices/Shimmer3-to-LSL/pyshimmer"]
+	path = devices/Shimmer3-to-LSL/pyshimmer
+	url = https://github.com/trevor-yu-087/pyshimmer.git

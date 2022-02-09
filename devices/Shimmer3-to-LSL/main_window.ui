@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>834</width>
+    <height>750</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QPushButton" name="connect_to_bluetooth">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>401</width>
+      <height>71</height>
+     </rect>
+    </property>
+    <property name="sizePolicy">
+     <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+      <horstretch>0</horstretch>
+      <verstretch>0</verstretch>
+     </sizepolicy>
+    </property>
+    <property name="text">
+     <string>Connect to Bluetooth</string>
+    </property>
+   </widget>
+   <widget class="QListWidget" name="device_list">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>90</y>
+      <width>401</width>
+      <height>261</height>
+     </rect>
+    </property>
+   </widget>
+   <widget class="QGraphicsView" name="PlotArea">
+    <property name="geometry">
+     <rect>
+      <x>460</x>
+      <y>71</y>
+      <width>361</width>
+      <height>500</height>
+     </rect>
+    </property>
+    <property name="minimumSize">
+     <size>
+      <width>360</width>
+      <height>500</height>
+     </size>
+    </property>
+   </widget>
+   <widget class="QGroupBox" name="groupBox">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>510</y>
+      <width>431</width>
+      <height>141</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Buttons_box</string>
+    </property>
+    <widget class="QPushButton" name="start_streaming_button">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>30</y>
+       <width>121</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Start Streaming</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="stop_streaming_button">
+     <property name="geometry">
+      <rect>
+       <x>10</x>
+       <y>90</y>
+       <width>121</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Stop Streaming</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="start_recording_button">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>30</y>
+       <width>121</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Start Recording</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="stop_recording_button">
+     <property name="geometry">
+      <rect>
+       <x>150</x>
+       <y>90</y>
+       <width>121</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Stop Recording</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="edit_device_button">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>30</y>
+       <width>121</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Edit Devices</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="stop_plotting_button">
+     <property name="geometry">
+      <rect>
+       <x>290</x>
+       <y>90</y>
+       <width>121</width>
+       <height>41</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="text">
+      <string>Stop Plotting</string>
+     </property>
+    </widget>
+   </widget>
+   <widget class="QLabel" name="display_text">
+    <property name="geometry">
+     <rect>
+      <x>30</x>
+      <y>345</y>
+      <width>281</width>
+      <height>60</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>834</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menu_Device">
+    <property name="title">
+     <string>&amp;Device</string>
+    </property>
+    <addaction name="action_Connect_to_Bluetooth"/>
+    <addaction name="actionStart_s_treaming"/>
+    <addaction name="actionSto_p_streaming"/>
+    <addaction name="actionStart_recording"/>
+    <addaction name="actionStop_rec_ording"/>
+   </widget>
+   <addaction name="menu_Device"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionconnect_to_bt">
+   <property name="text">
+    <string>connect_to_bt</string>
+   </property>
+   <property name="toolTip">
+    <string>Scan for available Shimmer devices and establish a Bluetooth connection</string>
+   </property>
+  </action>
+  <action name="action_Connect_to_Bluetooth">
+   <property name="text">
+    <string>&amp;Connect to Bluetooth...</string>
+   </property>
+  </action>
+  <action name="action_Start_streaming">
+   <property name="text">
+    <string>&amp;Start streaming</string>
+   </property>
+  </action>
+  <action name="actionSto_p_streaming">
+   <property name="text">
+    <string>Sto&amp;p streaming</string>
+   </property>
+  </action>
+  <action name="actionStart_recording">
+   <property name="text">
+    <string>Start &amp;recording</string>
+   </property>
+  </action>
+  <action name="actionStop_rec_ording">
+   <property name="text">
+    <string>Stop rec&amp;ording</string>
+   </property>
+  </action>
+  <action name="actionStart_s_treaming">
+   <property name="text">
+    <string>Start s&amp;treaming</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Dialog</class>
+ <widget class="QDialog" name="Dialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>736</width>
+    <height>645</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Dialog</string>
+  </property>
+  <widget class="QDialogButtonBox" name="buttonBox">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>560</y>
+     <width>461</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="orientation">
+    <enum>Qt::Horizontal</enum>
+   </property>
+   <property name="standardButtons">
+    <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+   </property>
+  </widget>
+  <widget class="QLabel" name="display_current_experiment">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>100</y>
+     <width>301</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Current experiment name</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="input_experiment_name">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>70</y>
+     <width>311</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLabel" name="display_current_lsl_name">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>100</y>
+     <width>311</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Current LSL name</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="input_lsl_stream">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>70</y>
+     <width>311</width>
+     <height>31</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QListWidget" name="sensor_list_select">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>190</y>
+     <width>691</width>
+     <height>371</height>
+    </rect>
+   </property>
+   <item>
+    <property name="text">
+     <string>Galvanic Skin Reponse (GSR)</string>
+    </property>
+    <property name="checkState">
+     <enum>Checked</enum>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Photoplethysmography (PPG)</string>
+    </property>
+    <property name="checkState">
+     <enum>Checked</enum>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Accelerometer Low Noise (IMU)</string>
+    </property>
+    <property name="checkState">
+     <enum>Checked</enum>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Accelerometer Wide Range (IMU)</string>
+    </property>
+    <property name="checkState">
+     <enum>Checked</enum>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Gyroscope (IMU)</string>
+    </property>
+    <property name="checkState">
+     <enum>Checked</enum>
+    </property>
+   </item>
+   <item>
+    <property name="text">
+     <string>Mangetometer (IMU)</string>
+    </property>
+    <property name="checkState">
+     <enum>Checked</enum>
+    </property>
+   </item>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>145</y>
+     <width>301</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Select sensors</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="set_experiment_name">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>40</y>
+     <width>301</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Set experiment name:</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="set_experiment_name_2">
+   <property name="geometry">
+    <rect>
+     <x>400</x>
+     <y>40</y>
+     <width>301</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Set LSL stream name:</string>
+   </property>
+  </widget>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>accepted()</signal>
+   <receiver>Dialog</receiver>
+   <slot>accept()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>248</x>
+     <y>254</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>157</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>Dialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>316</x>
+     <y>260</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>286</x>
+     <y>274</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
