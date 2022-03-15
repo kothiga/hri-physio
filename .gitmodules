@@ -10,3 +10,6 @@
 [submodule "deps/fmt"]
 	path = deps/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "modules/eda_feature/pyEDA"]
+	path = modules/eda_feature/pyEDA
+	url = https://github.com/HealthSciTech/pyEDA.git
